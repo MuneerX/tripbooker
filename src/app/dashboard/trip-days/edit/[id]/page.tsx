@@ -11,10 +11,10 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ArrowLeft, PlusCircle, Trash2 } from "lucide-react";
+import { ArrowLeft, PlusCircle, Trash2, Edit } from "lucide-react";
 import mockData from "@/lib/data";
 import { useToast } from "@/hooks/use-toast";
-import type { TripDay } from "@/lib/types";
+import type { TripDay, Activity } from "@/lib/types";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
   Dialog,
@@ -219,12 +219,17 @@ function ActivityFormModal({ children, activity, onSave }: ActivityFormModalProp
         setIsOpen(false);
     }
 
+    const onFormSubmit = (e: React.FormEvent) => {
+      e.preventDefault();
+      activityForm.handleSubmit(handleSave)();
+    }
+
     return (
          <Dialog open={isOpen} onOpenChange={setIsOpen}>
             <DialogTrigger asChild>{children}</DialogTrigger>
             <DialogContent className="sm:max-w-[600px]">
                  <Form {...activityForm}>
-                    <form onSubmit={activityForm.handleSubmit(handleSave)}>
+                    <form onSubmit={onFormSubmit}>
                         <DialogHeader>
                             <DialogTitle>{activity ? 'Edit' : 'Add'} Activity</DialogTitle>
                             <DialogDescription>Fill in the details for the activity.</DialogDescription>
