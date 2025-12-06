@@ -11,7 +11,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel,
 import { Input } from "@/components/ui/input";
 import mockData from "@/lib/data";
 import type { TourPackage } from "@/lib/types";
-import { formatCurrency, getStatusBadgeColor } from "@/lib/utils";
+import { formatCurrency, getStatusBadgeColor, cn } from "@/lib/utils";
 import { StatCard } from "@/components/dashboard/StatCard";
 import { useRouter } from 'next/navigation';
 import {
