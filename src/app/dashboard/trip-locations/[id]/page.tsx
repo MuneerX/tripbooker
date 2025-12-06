@@ -10,6 +10,7 @@ import { ArrowLeft, Edit, Trash2, MapPin, Globe, Building } from "lucide-react";
 import mockData from "@/lib/data";
 import { getStatusBadgeColor } from "@/lib/utils";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
+import { Separator } from "@/components/ui/separator";
 
 export default function TripLocationDetailPage() {
   const router = useRouter();
@@ -58,40 +59,66 @@ export default function TripLocationDetailPage() {
           <CardDescription>{location.description}</CardDescription>
         </CardHeader>
         <CardContent className="grid md:grid-cols-2 gap-8">
-            <Carousel className="w-full">
-                <CarouselContent>
-                    {location.images.map((img, index) => (
-                    <CarouselItem key={index}>
-                        <Image
-                            alt={`${location.locationName} image ${index + 1}`}
-                            className="aspect-video w-full rounded-md object-cover"
-                            height="400"
-                            src={img}
-                            width="600"
-                        />
-                    </CarouselItem>
-                    ))}
-                </CarouselContent>
-                <CarouselPrevious />
-                <CarouselNext />
-            </Carousel>
-          <div className="grid gap-4 text-sm">
+            <div className="grid gap-4">
+                <Carousel className="w-full">
+                    <CarouselContent>
+                        {location.images.map((img, index) => (
+                        <CarouselItem key={index}>
+                            <Image
+                                alt={`${location.locationName} image ${index + 1}`}
+                                className="aspect-video w-full rounded-md object-cover"
+                                height="400"
+                                src={img}
+                                width="600"
+                            />
+                        </CarouselItem>
+                        ))}
+                    </CarouselContent>
+                    <CarouselPrevious />
+                    <CarouselNext />
+                </Carousel>
+                <div>
+                    <h3 className="font-semibold text-lg mb-2">Address</h3>
+                    <div className="flex items-start gap-3 text-muted-foreground">
+                        <MapPin className="h-5 w-5 mt-1" />
+                        <p>{location.address}</p>
+                    </div>
+                </div>
+            </div>
+          <div className="grid gap-6 text-sm">
             <h3 className="font-semibold text-lg">Location Details</h3>
-            <div className="grid gap-3">
-              <div className="flex items-center gap-2">
-                <MapPin className="h-5 w-5 text-muted-foreground" />
-                <span>{location.address}</span>
-              </div>
+            <div className="grid grid-cols-2 gap-y-4 gap-x-2">
               <div className="flex items-center gap-2">
                 <Building className="h-5 w-5 text-muted-foreground" />
-                <span>{location.city}, {location.state}</span>
+                <div>
+                  <div className="font-semibold text-muted-foreground">City</div>
+                  <p>{location.city}</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                 <Building className="h-5 w-5 text-muted-foreground" />
+                 <div>
+                    <div className="font-semibold text-muted-foreground">State</div>
+                    <p>{location.state}</p>
+                 </div>
+              </div>
+               <div className="flex items-center gap-2">
+                 <Building className="h-5 w-5 text-muted-foreground" />
+                 <div>
+                    <div className="font-semibold text-muted-foreground">District</div>
+                    <p>{location.district}</p>
+                 </div>
               </div>
               <div className="flex items-center gap-2">
                 <Globe className="h-5 w-5 text-muted-foreground" />
-                <span>{location.country}</span>
+                 <div>
+                    <div className="font-semibold text-muted-foreground">Country</div>
+                    <p>{location.country}</p>
+                 </div>
               </div>
             </div>
-            <div className="grid grid-cols-2 gap-2 pt-4">
+            <Separator />
+            <div className="grid grid-cols-2 gap-4">
               <div>
                 <div className="font-semibold text-muted-foreground">Type</div>
                 <Badge variant="secondary" className="capitalize mt-1">{location.type}</Badge>
