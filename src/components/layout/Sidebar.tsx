@@ -124,7 +124,7 @@ export function AppSidebar() {
       <Sidebar>
         <SidebarHeader>
           <Link href="/dashboard" className="flex items-center justify-center gap-2">
-            <Image src="https://i.ibb.co/C3p7918S/logo.png" alt="Yes To Go Logo" width={50} height={50} />
+            <Image src="https://i.ibb.co/Q7gH0Dkd/IMG-8457.png" alt="Yes To Go Logo" width={60} height={60} />
           </Link>
         </SidebarHeader>
         <SidebarContent className="p-2 overflow-y-hidden">
