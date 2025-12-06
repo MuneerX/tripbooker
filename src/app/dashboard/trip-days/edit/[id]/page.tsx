@@ -82,10 +82,8 @@ export default function EditTripDayPage() {
   });
 
   const onSubmit = (data: TripDayEditFormValues) => {
-    console.log("Updated Trip Day:", data);
-    
-    // In a real app, you would save this to the database.
-    // For now, let's update the mock data.
+    const fromCreatePage = searchParams.get('from') === 'create';
+
     const dayIndex = mockData.tripDays.findIndex(d => d.id === id);
     if (dayIndex !== -1) {
       mockData.tripDays[dayIndex] = {
@@ -94,12 +92,33 @@ export default function EditTripDayPage() {
       };
     }
     
+    if (fromCreatePage) {
+        try {
+            const savedDays = sessionStorage.getItem('createdTripDays');
+            if (savedDays) {
+                let parsedDays: TripDay[] = JSON.parse(savedDays);
+                const dayToUpdateIndex = parsedDays.findIndex(d => d.id === id);
+                if (dayToUpdateIndex !== -1) {
+                    const existingDay = parsedDays[dayToUpdateIndex];
+                    parsedDays[dayToUpdateIndex] = {
+                        ...existingDay,
+                        ...data,
+                        createdAt: new Date(existingDay.createdAt),
+                        updatedAt: new Date(),
+                    };
+                    sessionStorage.setItem('createdTripDays', JSON.stringify(parsedDays));
+                }
+            }
+        } catch(e) {
+             console.error("Failed to update sessionStorage", e);
+        }
+    }
+    
     toast({
       title: "Success!",
       description: `Day ${data.dayNumber}: ${data.dayName} has been updated.`,
     });
 
-    const fromCreatePage = searchParams.get('from') === 'create';
     if (fromCreatePage) {
       router.push('/dashboard/trip-days/create');
     } else {

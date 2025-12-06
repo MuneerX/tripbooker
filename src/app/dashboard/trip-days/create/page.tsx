@@ -34,6 +34,31 @@ export default function CreateTripDayPage() {
   const { toast } = useToast();
   const [createdTripDays, setCreatedTripDays] = React.useState<TripDay[]>([]);
 
+  React.useEffect(() => {
+    try {
+      const savedDays = sessionStorage.getItem('createdTripDays');
+      if (savedDays) {
+        const parsedDays: TripDay[] = JSON.parse(savedDays).map((day: any) => ({
+          ...day,
+          createdAt: new Date(day.createdAt),
+          updatedAt: new Date(day.updatedAt),
+        }));
+        setCreatedTripDays(parsedDays);
+      }
+    } catch (error) {
+      console.error("Failed to parse trip days from sessionStorage", error);
+    }
+  }, []);
+
+  const updateCreatedDays = (days: TripDay[]) => {
+    setCreatedTripDays(days);
+    try {
+      sessionStorage.setItem('createdTripDays', JSON.stringify(days));
+    } catch (error) {
+      console.error("Failed to save trip days to sessionStorage", error);
+    }
+  };
+
   const form = useForm<TripDayFormValues>({
     resolver: zodResolver(tripDaySchema),
     defaultValues: {
@@ -47,29 +72,29 @@ export default function CreateTripDayPage() {
   });
 
   const onSubmit = (data: TripDayFormValues) => {
-    // In a real app, you'd save this to a database
-    // For now, we'll just add it to our local state
     const newTripDay: TripDay = {
       ...data,
-      id: `day_${Date.now()}`, // Use a more unique ID
+      id: `day_${Date.now()}`,
       activities: [],
       createdAt: new Date(),
       updatedAt: new Date(),
-      // Mocked fields that are not in the form
       departureLocation: "N/A",
       numberOfStays: 0,
     };
     
-    // Add to mockData so edit page can find it
-    mockData.tripDays.push(newTripDay);
-    setCreatedTripDays(prev => [...prev, newTripDay]);
+    const dayIndex = mockData.tripDays.findIndex(d => d.id === newTripDay.id);
+    if(dayIndex === -1) {
+        mockData.tripDays.push(newTripDay);
+    }
+
+    const newDaysList = [...createdTripDays, newTripDay];
+    updateCreatedDays(newDaysList);
     
     toast({
       title: "Trip Day Added!",
       description: `${data.dayName} has been added to the list.`,
     });
 
-    // Reset form for the next entry
     form.reset({
       ...form.getValues(),
       dayName: "",
@@ -80,8 +105,34 @@ export default function CreateTripDayPage() {
   };
 
   const handleEdit = (dayId: string) => {
+    const dayIndex = mockData.tripDays.findIndex(d => d.id === dayId);
+    if (dayIndex === -1) {
+        const dayToEdit = createdTripDays.find(d => d.id === dayId);
+        if(dayToEdit) mockData.tripDays.push(dayToEdit);
+    }
     router.push(`/dashboard/trip-days/edit/${dayId}?from=create`);
   };
+
+  const handleRemove = (dayId: string) => {
+    const newDaysList = createdTripDays.filter(d => d.id !== dayId);
+    updateCreatedDays(newDaysList);
+
+    const dayIndex = mockData.tripDays.findIndex(d => d.id === dayId);
+    if (dayIndex !== -1) {
+        mockData.tripDays.splice(dayIndex, 1);
+    }
+  };
+  
+  const handleSaveItinerary = () => {
+    toast({ title: "Success!", description: "Itinerary saved successfully."});
+    sessionStorage.removeItem('createdTripDays');
+    router.push('/dashboard/trip-days');
+  }
+
+  const handleCancel = () => {
+    sessionStorage.removeItem('createdTripDays');
+    router.back();
+  }
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -155,7 +206,7 @@ export default function CreateTripDayPage() {
               </div>
             ) : (
               createdTripDays.map((day, index) => (
-                <Card key={index} className="bg-muted/30">
+                <Card key={day.id} className="bg-muted/30">
                   <CardHeader className="flex flex-row items-start justify-between">
                     <div>
                       <CardTitle className="text-lg">Day {day.dayNumber}: {day.dayName}</CardTitle>
@@ -165,7 +216,7 @@ export default function CreateTripDayPage() {
                       <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => handleEdit(day.id)}>
                         <Edit className="h-4 w-4" />
                       </Button>
-                       <Button variant="destructive" size="icon" className="h-8 w-8" onClick={() => setCreatedTripDays(days => days.filter(d => d.id !== day.id))}>
+                       <Button variant="destructive" size="icon" className="h-8 w-8" onClick={() => handleRemove(day.id)}>
                         <Trash2 className="h-4 w-4" />
                       </Button>
                     </div>
@@ -180,11 +231,8 @@ export default function CreateTripDayPage() {
                 <>
                 <Separator className="my-6"/>
                 <div className="flex justify-end gap-2">
-                    <Button type="button" variant="outline" onClick={() => router.back()}>Cancel</Button>
-                    <Button onClick={() => {
-                         toast({ title: "Success!", description: "Itinerary saved successfully."});
-                         router.push('/dashboard/trip-days');
-                    }}>Save Itinerary</Button>
+                    <Button type="button" variant="outline" onClick={handleCancel}>Cancel</Button>
+                    <Button onClick={handleSaveItinerary}>Save Itinerary</Button>
                 </div>
                 </>
              )}
