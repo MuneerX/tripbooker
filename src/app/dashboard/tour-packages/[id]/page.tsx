@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import * as React from "react";
@@ -71,18 +72,24 @@ export default function TourPackageDetailPage() {
             <h1 className="flex-1 shrink-0 whitespace-nowrap text-xl font-semibold tracking-tight sm:grow-0">
                 {tourPackage.tourName}
             </h1>
-            <div className="inline-flex items-center rounded-md bg-muted p-1 text-muted-foreground">
+            <div className="inline-flex items-center rounded-md bg-secondary p-1 text-muted-foreground">
                 <Button 
-                    variant={status === 'active' ? 'secondary' : 'ghost'} 
+                    variant="ghost"
                     size="sm" 
-                    className="px-3 py-1 h-auto text-xs" 
+                    className={cn(
+                        "px-3 py-1 h-auto text-xs",
+                        status === 'active' ? "bg-green-500/10 text-green-700 shadow-sm hover:bg-green-500/20 hover:text-green-700" : "hover:bg-muted"
+                    )} 
                     onClick={() => handleStatusChange('active')}>
                     Active
                 </Button>
                 <Button 
-                    variant={status === 'inactive' ? 'secondary' : 'ghost'} 
+                    variant="ghost"
                     size="sm" 
-                    className="px-3 py-1 h-auto text-xs" 
+                    className={cn(
+                        "px-3 py-1 h-auto text-xs",
+                        status === 'inactive' ? "bg-red-500/10 text-red-700 shadow-sm hover:bg-red-500/20 hover:text-red-700" : "hover:bg-muted"
+                    )} 
                     onClick={() => handleStatusChange('inactive')}>
                     Inactive
                 </Button>
