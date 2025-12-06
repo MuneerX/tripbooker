@@ -36,6 +36,7 @@ const tourPackageSchema = z.object({
   days: z.coerce.number().int().min(1, "Must be at least 1 day"),
   nights: z.coerce.number().int().min(0, "Nights cannot be negative"),
   introductionDate: z.date(),
+  startDate: z.date(),
   maxPermittedBooking: z.coerce.number().int().min(1, "Must be at least 1"),
   itineraryId: z.string().min(1, "Itinerary is required"),
   status: z.enum(["active", "inactive"]),
@@ -76,6 +77,7 @@ export default function CreateTourPackagePage() {
       days: 1,
       nights: 0,
       introductionDate: new Date(),
+      startDate: new Date(),
       maxPermittedBooking: 10,
       itineraryId: "",
       status: "active",
@@ -160,13 +162,16 @@ export default function CreateTourPackagePage() {
                             </div>
                             <div className="grid grid-cols-2 gap-4">
                                 <FormField control={form.control} name="basePrice" render={({ field }) => ( <FormItem><FormLabel>Base Price (USD)</FormLabel><FormControl><Input type="number" placeholder="e.g., 1200" {...field} /></FormControl><FormMessage /></FormItem> )} />
-                                <FormField control={form.control} name="maxPermittedBooking" render={({ field }) => ( <FormItem><FormLabel>Max Guests</FormLabel><FormControl><Input type="number" {...field} /></FormControl><FormMessage /></FormItem> )} />
+                                <FormField control={form.control} name="maxPermittedBooking" render={({ field }) => ( <FormItem><FormLabel>Maximum Permitted Booking</FormLabel><FormControl><Input type="number" {...field} /></FormControl><FormMessage /></FormItem> )} />
                             </div>
                             <div className="grid grid-cols-2 gap-4">
                                 <FormField control={form.control} name="itineraryId" render={({ field }) => ( <FormItem><FormLabel>Itinerary</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Select itinerary" /></SelectTrigger></FormControl><SelectContent><SelectItem value="itin1">Himalayan Trek Itinerary</SelectItem><SelectItem value="itin2">Goa Beach Itinerary</SelectItem></SelectContent></Select><FormMessage /></FormItem>)} />
                                 <FormField control={form.control} name="status" render={({ field }) => ( <FormItem><FormLabel>Status</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Select status" /></SelectTrigger></FormControl><SelectContent><SelectItem value="active">Active</SelectItem><SelectItem value="inactive">Inactive</SelectItem></SelectContent></Select><FormMessage /></FormItem>)} />
                             </div>
-                            <FormField control={form.control} name="introductionDate" render={({ field }) => ( <FormItem className="flex flex-col"><FormLabel>Introduction Date</FormLabel><Popover><PopoverTrigger asChild><FormControl><Button variant={"outline"} className={cn("pl-3 text-left font-normal",!field.value && "text-muted-foreground")}>{field.value ? format(field.value, "PPP") : (<span>Pick a date</span>)}<CalendarIcon className="ml-auto h-4 w-4 opacity-50" /></Button></FormControl></PopoverTrigger><PopoverContent className="w-auto p-0" align="start"><Calendar mode="single" selected={field.value} onSelect={field.onChange} disabled={(date) => date > new Date() || date < new Date("1900-01-01")} initialFocus /></PopoverContent></Popover><FormMessage /></FormItem> )} />
+                             <div className="grid grid-cols-2 gap-4">
+                                <FormField control={form.control} name="introductionDate" render={({ field }) => ( <FormItem className="flex flex-col"><FormLabel>Introduction Date</FormLabel><Popover><PopoverTrigger asChild><FormControl><Button variant={"outline"} className={cn("pl-3 text-left font-normal",!field.value && "text-muted-foreground")}>{field.value ? format(field.value, "PPP") : (<span>Pick a date</span>)}<CalendarIcon className="ml-auto h-4 w-4 opacity-50" /></Button></FormControl></PopoverTrigger><PopoverContent className="w-auto p-0" align="start"><Calendar mode="single" selected={field.value} onSelect={field.onChange} disabled={(date) => date > new Date() || date < new Date("1900-01-01")} initialFocus /></PopoverContent></Popover><FormMessage /></FormItem> )} />
+                                <FormField control={form.control} name="startDate" render={({ field }) => ( <FormItem className="flex flex-col"><FormLabel>Start Date</FormLabel><Popover><PopoverTrigger asChild><FormControl><Button variant={"outline"} className={cn("pl-3 text-left font-normal",!field.value && "text-muted-foreground")}>{field.value ? format(field.value, "PPP") : (<span>Pick a date</span>)}<CalendarIcon className="ml-auto h-4 w-4 opacity-50" /></Button></FormControl></PopoverTrigger><PopoverContent className="w-auto p-0" align="start"><Calendar mode="single" selected={field.value} onSelect={field.onChange} initialFocus /></PopoverContent></Popover><FormMessage /></FormItem> )} />
+                             </div>
                             <FormItem>
                                 <FormLabel>Primary Image</FormLabel>
                                 <FormControl>
@@ -297,3 +302,5 @@ export default function CreateTourPackagePage() {
     </div>
   )
 }
+
+    
