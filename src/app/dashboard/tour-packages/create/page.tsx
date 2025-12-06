@@ -1,4 +1,5 @@
 
+
 "use client"
 
 import * as React from "react"
@@ -173,15 +174,16 @@ export default function CreateTourPackagePage() {
                                 <FormField control={form.control} name="startDate" render={({ field }) => ( <FormItem className="flex flex-col"><FormLabel>Start Date</FormLabel><Popover><PopoverTrigger asChild><FormControl><Button variant={"outline"} className={cn("pl-3 text-left font-normal",!field.value && "text-muted-foreground")}>{field.value ? format(field.value, "PPP") : (<span>Pick a date</span>)}<CalendarIcon className="ml-auto h-4 w-4 opacity-50" /></Button></FormControl></PopoverTrigger><PopoverContent className="w-auto p-0" align="start"><Calendar mode="single" selected={field.value} onSelect={field.onChange} initialFocus /></PopoverContent></Popover><FormMessage /></FormItem> )} />
                              </div>
                             <FormItem>
-                                <FormLabel>Primary Image</FormLabel>
+                                <FormLabel>Tour Gallery</FormLabel>
                                 <FormControl>
                                     <div className="flex items-center justify-center w-full">
-                                    <label htmlFor="image-upload" className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-lg cursor-pointer bg-muted/50 hover:bg-muted">
+                                    <label htmlFor="gallery-upload" className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-lg cursor-pointer bg-muted/50 hover:bg-muted">
                                         <div className="flex flex-col items-center justify-center pt-5 pb-6">
                                         <Upload className="w-8 h-8 mb-4 text-muted-foreground" />
-                                        <p className="mb-2 text-sm text-muted-foreground"><span className="font-semibold">Click to upload</span></p>
+                                        <p className="mb-2 text-sm text-muted-foreground"><span className="font-semibold">Click to upload</span> or drag and drop</p>
+                                        <p className="text-xs text-muted-foreground">SVG, PNG, JPG (Recommended 800x400px)</p>
                                         </div>
-                                        <Input id="image-upload" type="file" className="hidden" />
+                                        <Input id="gallery-upload" type="file" className="hidden" multiple />
                                     </label>
                                     </div> 
                                 </FormControl>
@@ -270,26 +272,6 @@ export default function CreateTourPackagePage() {
                             )}
                         </CardContent>
                     </Card>
-                    <Card>
-                        <CardHeader><CardTitle>Tour Gallery</CardTitle></CardHeader>
-                        <CardContent>
-                            <FormItem>
-                                <FormLabel>Upload Images</FormLabel>
-                                <FormControl>
-                                    <div className="flex items-center justify-center w-full">
-                                    <label htmlFor="gallery-upload" className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-lg cursor-pointer bg-muted/50 hover:bg-muted">
-                                        <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                                        <Upload className="w-8 h-8 mb-4 text-muted-foreground" />
-                                        <p className="mb-2 text-sm text-muted-foreground"><span className="font-semibold">Click to upload</span> or drag and drop</p>
-                                        <p className="text-xs text-muted-foreground">SVG, PNG, JPG (Recommended 800x400px)</p>
-                                        </div>
-                                        <Input id="gallery-upload" type="file" className="hidden" multiple />
-                                    </label>
-                                    </div> 
-                                </FormControl>
-                            </FormItem>
-                        </CardContent>
-                    </Card>
                 </div>
                 </div>
                 
@@ -302,5 +284,7 @@ export default function CreateTourPackagePage() {
     </div>
   )
 }
+
+    
 
     
