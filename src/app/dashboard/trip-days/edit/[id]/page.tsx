@@ -188,36 +188,29 @@ type ActivityFormModalProps = {
     onSave: (data: ActivityFormValues) => void;
 }
 
+const defaultActivityValues: ActivityFormValues = {
+  name: "",
+  type: "sightseeing",
+  time: "",
+  duration: "",
+  location: "",
+  price: 0,
+  priceIncluded: true,
+  bookingRequired: false,
+  description: "",
+};
+
 function ActivityFormModal({ children, activity, onSave }: ActivityFormModalProps) {
     const [isOpen, setIsOpen] = React.useState(false);
+    
     const activityForm = useForm<ActivityFormValues>({
         resolver: zodResolver(activitySchema),
-        defaultValues: activity || {
-            name: "",
-            type: "sightseeing",
-            time: "",
-            duration: "",
-            location: "",
-            price: 0,
-            priceIncluded: true,
-            bookingRequired: false,
-            description: "",
-        }
+        defaultValues: activity || defaultActivityValues
     });
 
     React.useEffect(() => {
         if (isOpen) {
-            activityForm.reset(activity || {
-                name: "",
-                type: "sightseeing",
-                time: "",
-                duration: "",
-                location: "",
-                price: 0,
-                priceIncluded: true,
-                bookingRequired: false,
-                description: "",
-            });
+            activityForm.reset(activity || defaultActivityValues);
         }
     }, [isOpen, activity, activityForm]);
 
