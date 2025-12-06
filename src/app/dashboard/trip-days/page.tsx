@@ -24,6 +24,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { useRouter } from "next/navigation";
+import { StatCard } from "@/components/dashboard/StatCard";
 
 export default function TripDaysPage() {
   const router = useRouter();
@@ -32,106 +33,127 @@ export default function TripDaysPage() {
   const filteredTripDays = mockData.tripDays.filter((day) =>
     day.dayName.toLowerCase().includes(searchTerm.toLowerCase())
   );
+  
+  const totalDays = mockData.tripDays.length;
+  const activeDays = mockData.tripDays.filter(d => d.status === 'active').length;
+  const inactiveDays = totalDays - activeDays;
+
+  const stats = [
+    { label: "Total Days", value: totalDays, icon: <CalendarDays className="h-4 w-4" /> },
+    { label: "Active", value: activeDays, icon: <div className="h-2.5 w-2.5 rounded-full bg-green-500" /> },
+    { label: "Inactive", value: inactiveDays, icon: <div className="h-2.5 w-2.5 rounded-full bg-red-500" /> },
+  ];
 
   return (
-    <Card>
-      <CardHeader>
-        <div className="flex items-center justify-between">
-          <div>
-            <CardTitle>Trip Days</CardTitle>
-            <CardDescription>Manage your trip days from here.</CardDescription>
-          </div>
-          <div className="flex items-center gap-2">
-            <Input
-              placeholder="Search by day name..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full md:w-64"
-            />
-            <Button asChild>
-              <Link href="/dashboard/trip-days/create">
-                <PlusCircle className="mr-2 h-4 w-4" /> Create Trip Day
-              </Link>
-            </Button>
-          </div>
+    <div className="flex flex-col gap-6">
+        <div className="grid gap-4 md:grid-cols-3">
+            {stats.map(stat => <StatCard key={stat.label} card={stat} />)}
         </div>
-      </CardHeader>
-      <CardContent>
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Day Name</TableHead>
-              <TableHead>Day Number</TableHead>
-              <TableHead className="hidden md:table-cell">Tour Package</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead>
-                <span className="sr-only">Actions</span>
-              </TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {filteredTripDays.length > 0 ? (
-              filteredTripDays.map((day: TripDay) => {
-                const tourPackage = mockData.tourPackages.find(p => p.id === day.tourPackageId);
-                return (
-                  <TableRow key={day.id}>
-                    <TableCell className="font-medium">{day.dayName}</TableCell>
-                    <TableCell>{day.dayNumber}</TableCell>
-                    <TableCell className="hidden md:table-cell">{tourPackage?.tourName || 'N/A'}</TableCell>
-                    <TableCell>
-                       <Badge variant="outline" className={cn("capitalize", getStatusBadgeColor(day.status))}>{day.status}</Badge>
-                    </TableCell>
-                    <TableCell>
-                       <AlertDialog>
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button aria-haspopup="true" size="icon" variant="ghost">
-                                <MoreHorizontal className="h-4 w-4" />
-                                <span className="sr-only">Toggle menu</span>
-                              </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                              <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                              <DropdownMenuItem onSelect={() => router.push(`/dashboard/trip-days/${day.id}`)}>
-                                <View className="mr-2 h-4 w-4" /> View
-                              </DropdownMenuItem>
-                              <DropdownMenuItem onSelect={() => router.push(`/dashboard/trip-days/edit/${day.id}`)}>
-                                <FilePenLine className="mr-2 h-4 w-4" /> Edit
-                              </DropdownMenuItem>
-                              <AlertDialogTrigger asChild>
-                                <DropdownMenuItem className="text-red-600 focus:text-red-600 focus:bg-red-50" onSelect={(e) => e.preventDefault()}>
-                                  <Trash2 className="mr-2 h-4 w-4" /> Delete
+        <Card>
+        <CardHeader>
+            <div className="flex items-center justify-between">
+            <div>
+                <CardTitle>Trip Days</CardTitle>
+                <CardDescription>Manage your trip days from here.</CardDescription>
+            </div>
+            <div className="flex items-center gap-2">
+                <Input
+                placeholder="Search by day name..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full md:w-64"
+                />
+                <Button asChild>
+                <Link href="/dashboard/trip-days/create">
+                    <PlusCircle className="mr-2 h-4 w-4" /> Create Trip Day
+                </Link>
+                </Button>
+            </div>
+            </div>
+        </CardHeader>
+        <CardContent>
+            <Table>
+            <TableHeader>
+                <TableRow>
+                <TableHead>Day Name</TableHead>
+                <TableHead className="hidden sm:table-cell">Day No.</TableHead>
+                <TableHead className="hidden md:table-cell">Tour Package</TableHead>
+                <TableHead className="hidden md:table-cell">Activities</TableHead>
+                <TableHead className="hidden lg:table-cell">Stays</TableHead>
+                <TableHead className="hidden lg:table-cell">Departs From</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead>
+                    <span className="sr-only">Actions</span>
+                </TableHead>
+                </TableRow>
+            </TableHeader>
+            <TableBody>
+                {filteredTripDays.length > 0 ? (
+                filteredTripDays.map((day: TripDay) => {
+                    const tourPackage = mockData.tourPackages.find(p => p.id === day.tourPackageId);
+                    return (
+                    <TableRow key={day.id}>
+                        <TableCell className="font-medium">{day.dayName}</TableCell>
+                        <TableCell className="hidden sm:table-cell">{day.dayNumber}</TableCell>
+                        <TableCell className="hidden md:table-cell">{tourPackage?.tourName || 'N/A'}</TableCell>
+                        <TableCell className="hidden md:table-cell">{day.activities.length}</TableCell>
+                        <TableCell className="hidden lg:table-cell">{day.numberOfStays}</TableCell>
+                        <TableCell className="hidden lg:table-cell">{day.departureLocation}</TableCell>
+                        <TableCell>
+                        <Badge variant="outline" className={cn("capitalize", getStatusBadgeColor(day.status))}>{day.status}</Badge>
+                        </TableCell>
+                        <TableCell>
+                        <AlertDialog>
+                            <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                <Button aria-haspopup="true" size="icon" variant="ghost">
+                                    <MoreHorizontal className="h-4 w-4" />
+                                    <span className="sr-only">Toggle menu</span>
+                                </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end">
+                                <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                                <DropdownMenuItem onSelect={() => router.push(`/dashboard/trip-days/${day.id}`)}>
+                                    <View className="mr-2 h-4 w-4" /> View
                                 </DropdownMenuItem>
-                              </AlertDialogTrigger>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
-                          <AlertDialogContent>
-                            <AlertDialogHeader>
-                              <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-                              <AlertDialogDescription>
-                                This action cannot be undone. This will permanently delete the trip day "{day.dayName}".
-                              </AlertDialogDescription>
-                            </AlertDialogHeader>
-                            <AlertDialogFooter>
-                              <AlertDialogCancel>Cancel</AlertDialogCancel>
-                              <AlertDialogAction className="bg-destructive hover:bg-destructive/90">Delete</AlertDialogAction>
-                            </AlertDialogFooter>
-                          </AlertDialogContent>
-                        </AlertDialog>
+                                <DropdownMenuItem onSelect={() => router.push(`/dashboard/trip-days/edit/${day.id}`)}>
+                                    <FilePenLine className="mr-2 h-4 w-4" /> Edit
+                                </DropdownMenuItem>
+                                <AlertDialogTrigger asChild>
+                                    <DropdownMenuItem className="text-red-600 focus:text-red-600 focus:bg-red-50" onSelect={(e) => e.preventDefault()}>
+                                    <Trash2 className="mr-2 h-4 w-4" /> Delete
+                                    </DropdownMenuItem>
+                                </AlertDialogTrigger>
+                                </DropdownMenuContent>
+                            </DropdownMenu>
+                            <AlertDialogContent>
+                                <AlertDialogHeader>
+                                <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                    This action cannot be undone. This will permanently delete the trip day "{day.dayName}".
+                                </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                <AlertDialogAction className="bg-destructive hover:bg-destructive/90">Delete</AlertDialogAction>
+                                </AlertDialogFooter>
+                            </AlertDialogContent>
+                            </AlertDialog>
+                        </TableCell>
+                    </TableRow>
+                    );
+                })
+                ) : (
+                <TableRow>
+                    <TableCell colSpan={8} className="h-24 text-center">
+                    No results found.
                     </TableCell>
-                  </TableRow>
-                );
-            })
-            ) : (
-              <TableRow>
-                <TableCell colSpan={5} className="h-24 text-center">
-                  No results found.
-                </TableCell>
-              </TableRow>
-            )}
-          </TableBody>
-        </Table>
-      </CardContent>
-    </Card>
+                </TableRow>
+                )}
+            </TableBody>
+            </Table>
+        </CardContent>
+        </Card>
+    </div>
   );
 }
