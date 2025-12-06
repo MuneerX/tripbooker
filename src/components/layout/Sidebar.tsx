@@ -7,9 +7,7 @@ import {
   PlusCircle,
   MapPin,
   CalendarDays,
-  Book,
-  Star,
-  Settings,
+  LogOut,
   MountainSnow,
   ChevronDown,
   LayoutGrid
@@ -30,6 +28,7 @@ import {
 } from "@/components/ui/collapsible"
 import type { NavItem } from '@/lib/types';
 import { cn } from '@/lib/utils';
+import { useRouter } from 'next/navigation';
 
 const navItems: NavItem[] = [
   { title: 'Dashboard', href: '/dashboard', icon: LayoutGrid, subItems:[] },
@@ -60,11 +59,9 @@ const navItems: NavItem[] = [
       { title: 'Create New', href: '/dashboard/trip-locations/create', icon: PlusCircle },
     ],
   },
-  { title: 'Bookings', href: '/dashboard/bookings', icon: Book, subItems:[] },
-  { title: 'Reviews', href: '/dashboard/reviews', icon: Star, subItems:[] },
 ];
 
-const settingsNav: NavItem = { title: 'Settings', href: '/dashboard/settings', icon: Settings, subItems:[] };
+const logoutNav: NavItem = { title: 'Logout', href: '/login', icon: LogOut, subItems:[] };
 
 function NavMenu({ items }: { items: NavItem[] }) {
   const pathname = usePathname();
@@ -115,6 +112,12 @@ function NavMenu({ items }: { items: NavItem[] }) {
 }
 
 export function AppSidebar() {
+  const router = useRouter();
+
+  const handleLogout = () => {
+    // In a real app, you would handle logout logic here (e.g., clearing session, calling Firebase signOut)
+    router.push(logoutNav.href);
+  };
   return (
       <Sidebar>
         <SidebarHeader>
@@ -131,11 +134,9 @@ export function AppSidebar() {
         <SidebarFooter>
           <SidebarMenu>
              <SidebarMenuItem>
-                <SidebarMenuButton asChild isActive={usePathname() === settingsNav.href}>
-                  <Link href={settingsNav.href}>
-                    <settingsNav.icon className="h-4 w-4" />
-                    <span>{settingsNav.title}</span>
-                  </Link>
+                <SidebarMenuButton onClick={handleLogout}>
+                  <logoutNav.icon className="h-4 w-4" />
+                  <span>{logoutNav.title}</span>
                 </SidebarMenuButton>
             </SidebarMenuItem>
           </SidebarMenu>
