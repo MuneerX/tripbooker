@@ -126,7 +126,7 @@ export default function LoginPage() {
       </div>
       <div className="hidden bg-muted lg:block">
         <Image
-          src="https://i.ibb.co/270VnPwG/bg.png"
+          src="https://i.ibb.co/n8f75zV/Gemini-Generated-Image-e79d8je79d8je79d.png"
           alt="Image"
           width="1920"
           height="1080"
