@@ -274,5 +274,3 @@ function ActivityFormModal({ children, activity, onSave }: ActivityFormModalProp
         </Dialog>
     )
 }
-
-    

@@ -51,7 +51,7 @@ export default function CreateTripDayPage() {
     // For now, we'll just add it to our local state
     const newTripDay: TripDay = {
       ...data,
-      id: `day_${createdTripDays.length + 1}`,
+      id: `day_${Date.now()}`, // Use a more unique ID
       activities: [],
       createdAt: new Date(),
       updatedAt: new Date(),
@@ -60,6 +60,8 @@ export default function CreateTripDayPage() {
       numberOfStays: 0,
     };
     
+    // Add to mockData so edit page can find it
+    mockData.tripDays.push(newTripDay);
     setCreatedTripDays(prev => [...prev, newTripDay]);
     
     toast({
