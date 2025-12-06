@@ -7,7 +7,7 @@ import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Edit, Trash2, Calendar, Users, Clock, Moon, Check, X, Info } from "lucide-react";
+import { ArrowLeft, Edit, Trash2, Calendar, Users, Clock, Moon, Check, X, Plus } from "lucide-react";
 import mockData from "@/lib/data";
 import { formatCurrency, getStatusBadgeColor } from "@/lib/utils";
 import { Separator } from "@/components/ui/separator";
@@ -160,7 +160,7 @@ export default function TourPackageDetailPage() {
 
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                                 <div className="space-y-4">
-                                    <h3 className="text-lg font-semibold flex items-center gap-2"><Info className="text-accent"/> Highlights</h3>
+                                    <h3 className="text-lg font-semibold flex items-center gap-2"><Plus className="text-accent"/> Highlights</h3>
                                     <ul className="space-y-2 text-muted-foreground">
                                         {tourPackage.highlights.map((h, i) => <li key={i} className="flex items-start gap-2"><span className="mt-1.5 h-1.5 w-1.5 rounded-full bg-accent" /><span>{h}</span></li>)}
                                     </ul>
@@ -188,7 +188,7 @@ export default function TourPackageDetailPage() {
                                     if (!content) return null;
                                     return (
                                         <div key={policyType} className="space-y-3">
-                                            <h3 className="text-lg font-semibold flex items-center gap-2"><Info /> {titleMap[policyType]}</h3>
+                                            <h3 className="text-lg font-semibold flex items-center gap-2"><Plus /> {titleMap[policyType]}</h3>
                                             <p className="text-sm text-muted-foreground leading-relaxed">{content}</p>
                                         </div>
                                     )
