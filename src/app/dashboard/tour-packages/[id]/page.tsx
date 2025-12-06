@@ -7,7 +7,7 @@ import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Edit, Trash2, Calendar, Users, Clock, Moon, Check, X, Plus } from "lucide-react";
+import { ArrowLeft, Edit, Trash2, Calendar, Users, Clock, Check, X, Plus, Info, Star } from "lucide-react";
 import mockData from "@/lib/data";
 import { formatCurrency, getStatusBadgeColor } from "@/lib/utils";
 import { Separator } from "@/components/ui/separator";
@@ -16,7 +16,6 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Star } from "lucide-react";
 
 export default function TourPackageDetailPage() {
   const router = useRouter();
@@ -188,7 +187,7 @@ export default function TourPackageDetailPage() {
                                     if (!content) return null;
                                     return (
                                         <div key={policyType} className="space-y-3">
-                                            <h3 className="text-lg font-semibold flex items-center gap-2"><Plus /> {titleMap[policyType]}</h3>
+                                            <h3 className="text-lg font-semibold flex items-center gap-2"><Info /> {titleMap[policyType]}</h3>
                                             <p className="text-sm text-muted-foreground leading-relaxed">{content}</p>
                                         </div>
                                     )
@@ -279,3 +278,5 @@ export default function TourPackageDetailPage() {
     </div>
   );
 }
+
+    
