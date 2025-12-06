@@ -1,4 +1,5 @@
 
+
 "use client"
 
 import * as React from "react"
@@ -56,7 +57,12 @@ const tourPackageSchema = z.object({
 });
 
 type TourPackageFormValues = z.infer<typeof tourPackageSchema>;
-type PayInPartFormValues = z.infer<typeof payInPartSchema>;
+// Use a different type for the temporary state to allow empty strings
+type PayInPartState = {
+  partName: string;
+  durationMonths: number | '';
+  price: number | '';
+};
 
 export default function CreateTourPackagePage() {
   const router = useRouter();
@@ -90,17 +96,22 @@ export default function CreateTourPackagePage() {
     name: "payInParts"
   });
 
-  const [payInPartData, setPayInPartData] = React.useState<PayInPartFormValues>({
+  const [payInPartData, setPayInPartData] = React.useState<PayInPartState>({
       partName: '',
-      durationMonths: 0,
-      price: 0
+      durationMonths: '',
+      price: ''
   });
 
   const handleAddPayInPart = () => {
+    const { partName, durationMonths, price } = payInPartData;
     // Basic validation before adding
-    if (payInPartData.partName && payInPartData.price > 0) {
-        append(payInPartData);
-        setPayInPartData({ partName: '', durationMonths: 0, price: 0 }); // Reset form
+    if (partName && price > 0) {
+        append({
+            partName,
+            durationMonths: Number(durationMonths) || 0,
+            price: Number(price)
+        });
+        setPayInPartData({ partName: '', durationMonths: '', price: '' }); // Reset form
     } else {
         toast({
             variant: "destructive",
@@ -131,7 +142,7 @@ export default function CreateTourPackagePage() {
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             {/* Left Column */}
-            <div className="lg:col-span-1 space-y-6">
+            <div className="space-y-6">
                 <Card>
                     <CardHeader><CardTitle>General Information</CardTitle></CardHeader>
                     <CardContent className="space-y-6">
@@ -189,8 +200,8 @@ export default function CreateTourPackagePage() {
                         <div className="space-y-4">
                             <div className="grid grid-cols-3 gap-2">
                                 <Input placeholder="Part Name" value={payInPartData.partName} onChange={(e) => setPayInPartData({...payInPartData, partName: e.target.value})} />
-                                <Input type="number" placeholder="Months" value={payInPartData.durationMonths} onChange={(e) => setPayInPartData({...payInPartData, durationMonths: parseInt(e.target.value) || 0})} />
-                                <Input type="number" placeholder="Price" value={payInPartData.price} onChange={(e) => setPayInPartData({...payInPartData, price: parseFloat(e.target.value) || 0})} />
+                                <Input type="number" placeholder="Months" value={payInPartData.durationMonths} onChange={(e) => setPayInPartData({...payInPartData, durationMonths: e.target.value === '' ? '' : parseInt(e.target.value) || 0})} />
+                                <Input type="number" placeholder="Price" value={payInPartData.price} onChange={(e) => setPayInPartData({...payInPartData, price: e.target.value === '' ? '' : parseFloat(e.target.value) || 0})} />
                             </div>
                             <Button type="button" onClick={handleAddPayInPart} className="w-full"><PlusCircle className="mr-2 h-4 w-4" /> Add Pay in Part</Button>
                            
@@ -216,7 +227,7 @@ export default function CreateTourPackagePage() {
             </div>
 
             {/* Right Column */}
-            <div className="lg:col-span-1 space-y-6">
+            <div className="space-y-6">
                 <Card>
                     <CardHeader><CardTitle>Tour Information</CardTitle></CardHeader>
                     <CardContent className="space-y-6">
