@@ -111,6 +111,17 @@ export default function LoginPage() {
               </Button>
             </form>
           </Form>
+           <div className="mt-4 text-center text-sm">
+            By continuing, you agree to our{" "}
+            <Link href="#" className="underline">
+              Terms of Service
+            </Link>{" "}
+            and{" "}
+            <Link href="#" className="underline">
+              Privacy Policy
+            </Link>
+            .
+          </div>
         </div>
       </div>
       <div className="hidden bg-muted lg:block">
@@ -119,7 +130,7 @@ export default function LoginPage() {
           alt="Image"
           width="1920"
           height="1080"
-          className="h-screen w-full object-cover dark:brightness-[0.2] dark:grayscale"
+          className="h-screen w-full object-cover"
         />
       </div>
     </div>
