@@ -189,8 +189,8 @@ export default function CreateTourPackagePage() {
                         <div className="space-y-4">
                             <div className="grid grid-cols-3 gap-2">
                                 <Input placeholder="Part Name" value={payInPartData.partName} onChange={(e) => setPayInPartData({...payInPartData, partName: e.target.value})} />
-                                <Input type="number" placeholder="Months" value={payInPartData.durationMonths} onChange={(e) => setPayInPartData({...payInPartData, durationMonths: parseInt(e.target.value)})} />
-                                <Input type="number" placeholder="Price" value={payInPartData.price} onChange={(e) => setPayInPartData({...payInPartData, price: parseFloat(e.target.value)})} />
+                                <Input type="number" placeholder="Months" value={payInPartData.durationMonths} onChange={(e) => setPayInPartData({...payInPartData, durationMonths: parseInt(e.target.value) || 0})} />
+                                <Input type="number" placeholder="Price" value={payInPartData.price} onChange={(e) => setPayInPartData({...payInPartData, price: parseFloat(e.target.value) || 0})} />
                             </div>
                             <Button type="button" onClick={handleAddPayInPart} className="w-full"><PlusCircle className="mr-2 h-4 w-4" /> Add Pay in Part</Button>
                            
