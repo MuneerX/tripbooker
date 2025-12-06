@@ -79,6 +79,10 @@ export default function CreateTripDayPage() {
     });
   };
 
+  const handleEdit = (dayId: string) => {
+    router.push(`/dashboard/trip-days/edit/${dayId}?from=create`);
+  };
+
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
       {/* Left Column: Form */}
@@ -158,7 +162,7 @@ export default function CreateTripDayPage() {
                       <CardDescription>Activities: {day.activities.length}</CardDescription>
                     </div>
                     <div className="flex items-center gap-2">
-                      <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => router.push(`/dashboard/trip-days/edit/${day.id}`)}>
+                      <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => handleEdit(day.id)}>
                         <Edit className="h-4 w-4" />
                       </Button>
                        <Button variant="destructive" size="icon" className="h-8 w-8" onClick={() => setCreatedTripDays(days => days.filter(d => d.id !== day.id))}>

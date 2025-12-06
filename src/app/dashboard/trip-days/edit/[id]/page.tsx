@@ -1,7 +1,8 @@
+
 "use client";
 
 import * as React from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useForm, useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -11,7 +12,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ArrowLeft, PlusCircle, Trash2, Edit } from "lucide-react";
+import { ArrowLeft, PlusCircle, Trash2 } from "lucide-react";
 import mockData from "@/lib/data";
 import { useToast } from "@/hooks/use-toast";
 import type { TripDay, Activity } from "@/lib/types";
@@ -55,6 +56,7 @@ type ActivityFormValues = z.infer<typeof activitySchema>;
 export default function EditTripDayPage() {
   const router = useRouter();
   const params = useParams();
+  const searchParams = useSearchParams();
   const { id } = params;
   const { toast } = useToast();
 
@@ -81,11 +83,28 @@ export default function EditTripDayPage() {
 
   const onSubmit = (data: TripDayEditFormValues) => {
     console.log("Updated Trip Day:", data);
+    
+    // In a real app, you would save this to the database.
+    // For now, let's update the mock data.
+    const dayIndex = mockData.tripDays.findIndex(d => d.id === id);
+    if (dayIndex !== -1) {
+      mockData.tripDays[dayIndex] = {
+        ...mockData.tripDays[dayIndex],
+        ...data,
+      };
+    }
+    
     toast({
       title: "Success!",
       description: `Day ${data.dayNumber}: ${data.dayName} has been updated.`,
     });
-    router.push('/dashboard/trip-days');
+
+    const fromCreatePage = searchParams.get('from') === 'create';
+    if (fromCreatePage) {
+      router.push('/dashboard/trip-days/create');
+    } else {
+      router.push('/dashboard/trip-days');
+    }
   };
   
   if (!tripDay) {
@@ -100,11 +119,16 @@ export default function EditTripDayPage() {
     );
   }
 
+  const getCancelRedirectUrl = () => {
+    const fromCreatePage = searchParams.get('from') === 'create';
+    return fromCreatePage ? '/dashboard/trip-days/create' : '/dashboard/trip-days';
+  };
+
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
         <div className="flex items-center gap-4">
-          <Button type="button" variant="outline" size="icon" className="h-7 w-7" onClick={() => router.back()}>
+          <Button type="button" variant="outline" size="icon" className="h-7 w-7" onClick={() => router.push(getCancelRedirectUrl())}>
             <ArrowLeft className="h-4 w-4" />
             <span className="sr-only">Back</span>
           </Button>
@@ -112,7 +136,7 @@ export default function EditTripDayPage() {
             Edit Day {tripDay.dayNumber}: {tripDay.dayName}
           </h1>
           <div className="flex items-center gap-2">
-            <Button type="button" variant="outline" onClick={() => router.push('/dashboard/trip-days')}>Cancel</Button>
+            <Button type="button" variant="outline" onClick={() => router.push(getCancelRedirectUrl())}>Cancel</Button>
             <Button type="submit">Save Changes</Button>
           </div>
         </div>
@@ -219,9 +243,9 @@ function ActivityFormModal({ children, activity, onSave }: ActivityFormModalProp
         setIsOpen(false);
     }
 
-    const onFormSubmit = (e: React.FormEvent) => {
+    const onFormSubmit = (e: React.MouseEvent<HTMLButtonElement>) => {
       e.preventDefault();
-      activityForm.handleSubmit(handleSave)(e);
+      activityForm.handleSubmit(handleSave)();
     }
 
     return (
@@ -229,7 +253,7 @@ function ActivityFormModal({ children, activity, onSave }: ActivityFormModalProp
             <DialogTrigger asChild>{children}</DialogTrigger>
             <DialogContent className="sm:max-w-[600px]">
                  <Form {...activityForm}>
-                    <form onSubmit={onFormSubmit}>
+                    <form onSubmit={(e) => e.preventDefault()}>
                         <DialogHeader>
                             <DialogTitle>{activity ? 'Edit' : 'Add'} Activity</DialogTitle>
                             <DialogDescription>Fill in the details for the activity.</DialogDescription>
@@ -264,7 +288,7 @@ function ActivityFormModal({ children, activity, onSave }: ActivityFormModalProp
 
                         <DialogFooter>
                             <DialogClose asChild><Button type="button" variant="outline">Cancel</Button></DialogClose>
-                            <Button onClick={onFormSubmit}>Save Activity</Button>
+                            <Button type="button" onClick={onFormSubmit}>Save Activity</Button>
                         </DialogFooter>
                     </form>
                 </Form>
