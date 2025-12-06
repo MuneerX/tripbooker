@@ -31,11 +31,11 @@ export type TourPackage = {
 export type Activity = {
   activityId: string;
   name: string;
-  type: 'trekking' | 'sightseeing' | 'meal' | 'transport' | 'accommodation' | 'adventure' | 'shopping';
+  type: 'trekking' | 'sightseeing' | 'meal' | 'transport' | 'accommodation' | 'adventure' | 'shopping' | 'leisure';
   time: string; // HH:MM AM/PM
   duration: string;
   location: string;
-  locationId: string;
+  locationId?: string;
   price: number;
   priceIncluded: boolean;
   bookingRequired: boolean;
@@ -47,7 +47,7 @@ export type TripDay = {
   dayName: string;
   dayNumber: number;
   description: string;
-  specialInstructions: string;
+  specialInstructions?: string;
   departureLocation: string;
   numberOfStays: number;
   tourPackageId: string;
@@ -120,3 +120,5 @@ export type NavItem = {
   icon: React.ComponentType<{ className?: string }>;
   subItems?: NavItem[];
 };
+
+    

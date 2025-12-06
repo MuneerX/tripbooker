@@ -1,4 +1,3 @@
-
 "use client";
 
 import * as React from "react";
@@ -15,8 +14,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { ArrowLeft, PlusCircle, Trash2 } from "lucide-react";
 import mockData from "@/lib/data";
 import { useToast } from "@/hooks/use-toast";
-import { Separator } from "@/components/ui/separator";
-import type { Activity, TripDay } from "@/lib/types";
+import type { TripDay } from "@/lib/types";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
   Dialog,
@@ -27,12 +25,12 @@ import {
   DialogTitle,
   DialogTrigger,
   DialogClose
-} from "@/components/ui/dialog"
+} from "@/components/ui/dialog";
 
 const activitySchema = z.object({
     activityId: z.string().optional(),
     name: z.string().min(1, "Activity name is required"),
-    type: z.enum(["trekking", "sightseeing", "meal", "transport", "accommodation", "adventure", "shopping"]),
+    type: z.enum(["trekking", "sightseeing", "meal", "transport", "accommodation", "adventure", "shopping", "leisure"]),
     time: z.string().regex(/^(0[1-9]|1[0-2]):[0-5][0-9] (AM|PM)$/, "Invalid time format (e.g., 09:00 AM)"),
     duration: z.string().min(1, "Duration is required"),
     location: z.string().min(1, "Location is required"),
@@ -60,9 +58,7 @@ export default function EditTripDayPage() {
   const { id } = params;
   const { toast } = useToast();
 
-  // This state is needed because mockData won't persist across navigation
-  // In a real app, this would come from a database.
-  const [tripDay, setTripDay] = React.useState<TripDay | undefined>(
+  const [tripDay] = React.useState<TripDay | undefined>(
     mockData.tripDays.find((day) => day.id === id)
   );
 
@@ -72,7 +68,7 @@ export default function EditTripDayPage() {
       dayName: tripDay.dayName,
       dayNumber: tripDay.dayNumber,
       description: tripDay.description,
-      specialInstructions: tripDay.specialInstructions,
+      specialInstructions: tripDay.specialInstructions || "",
       status: tripDay.status,
       activities: tripDay.activities,
     } : {},
@@ -85,7 +81,6 @@ export default function EditTripDayPage() {
 
   const onSubmit = (data: TripDayEditFormValues) => {
     console.log("Updated Trip Day:", data);
-    // Here you would update the data in your backend
     toast({
       title: "Success!",
       description: `Day ${data.dayNumber}: ${data.dayName} has been updated.`,
@@ -109,7 +104,7 @@ export default function EditTripDayPage() {
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
         <div className="flex items-center gap-4">
-          <Button variant="outline" size="icon" className="h-7 w-7" onClick={() => router.back()}>
+          <Button type="button" variant="outline" size="icon" className="h-7 w-7" onClick={() => router.back()}>
             <ArrowLeft className="h-4 w-4" />
             <span className="sr-only">Back</span>
           </Button>
@@ -210,10 +205,25 @@ function ActivityFormModal({ children, activity, onSave }: ActivityFormModalProp
         }
     });
 
+    React.useEffect(() => {
+        if (isOpen) {
+            activityForm.reset(activity || {
+                name: "",
+                type: "sightseeing",
+                time: "",
+                duration: "",
+                location: "",
+                price: 0,
+                priceIncluded: true,
+                bookingRequired: false,
+                description: "",
+            });
+        }
+    }, [isOpen, activity, activityForm]);
+
     const handleSave = (data: ActivityFormValues) => {
         onSave(data);
         setIsOpen(false);
-        activityForm.reset();
     }
 
     return (
@@ -230,7 +240,16 @@ function ActivityFormModal({ children, activity, onSave }: ActivityFormModalProp
                         <div className="grid gap-4 py-6">
                             <div className="grid md:grid-cols-2 gap-4">
                                 <FormField control={activityForm.control} name="name" render={({ field }) => ( <FormItem><FormLabel>Activity Name</FormLabel><FormControl><Input placeholder="e.g., Sunset Cruise" {...field} /></FormControl><FormMessage /></FormItem>)} />
-                                <FormField control={activityForm.control} name="type" render={({ field }) => ( <FormItem><FormLabel>Type</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Select type" /></SelectTrigger></FormControl><SelectContent><SelectItem value="trekking">Trekking</SelectItem><SelectItem value="sightseeing">Sightseeing</SelectItem><SelectItem value="meal">Meal</SelectItem><SelectItem value="transport">Transport</SelectItem><SelectItem value="accommodation">Accommodation</SelectItem><SelectItem value="adventure">Adventure</SelectItem><SelectItem value="shopping">Shopping</SelectItem></SelectContent></Select><FormMessage /></FormItem> )} />
+                                <FormField control={activityForm.control} name="type" render={({ field }) => ( <FormItem><FormLabel>Type</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Select type" /></SelectTrigger></FormControl><SelectContent>
+                                  <SelectItem value="trekking">Trekking</SelectItem>
+                                  <SelectItem value="sightseeing">Sightseeing</SelectItem>
+                                  <SelectItem value="meal">Meal</SelectItem>
+                                  <SelectItem value="transport">Transport</SelectItem>
+                                  <SelectItem value="accommodation">Accommodation</SelectItem>
+                                  <SelectItem value="adventure">Adventure</SelectItem>
+                                  <SelectItem value="shopping">Shopping</SelectItem>
+                                  <SelectItem value="leisure">Leisure</SelectItem>
+                                  </SelectContent></Select><FormMessage /></FormItem> )} />
                             </div>
                              <div className="grid md:grid-cols-2 gap-4">
                                 <FormField control={activityForm.control} name="time" render={({ field }) => ( <FormItem><FormLabel>Time</FormLabel><FormControl><Input placeholder="e.g., 05:00 PM" {...field} /></FormControl><FormMessage /></FormItem>)} />
