@@ -119,7 +119,7 @@ export default function LoginPage() {
           alt="Image"
           width="1920"
           height="1080"
-          className="h-full w-full object-cover dark:brightness-[0.2] dark:grayscale"
+          className="h-screen w-full object-cover dark:brightness-[0.2] dark:grayscale"
         />
       </div>
     </div>
