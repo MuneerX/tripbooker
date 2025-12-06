@@ -2,7 +2,7 @@
 "use client"
 
 import * as React from "react"
-import { useForm, useFieldArray } from "react-hook-form"
+import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import * as z from "zod"
 import { Button } from "@/components/ui/button"
@@ -156,7 +156,7 @@ export default function CreateTripDayPage() {
                       <CardDescription>Activities: {day.activities.length}</CardDescription>
                     </div>
                     <div className="flex items-center gap-2">
-                      <Button variant="outline" size="icon" className="h-8 w-8">
+                      <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => router.push(`/dashboard/trip-days/edit/${day.id}`)}>
                         <Edit className="h-4 w-4" />
                       </Button>
                        <Button variant="destructive" size="icon" className="h-8 w-8" onClick={() => setCreatedTripDays(days => days.filter(d => d.id !== day.id))}>
