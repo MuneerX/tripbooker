@@ -14,6 +14,7 @@ import type { TourPackage } from "@/lib/types";
 import { formatCurrency, getStatusBadgeColor, cn } from "@/lib/utils";
 import { StatCard } from "@/components/dashboard/StatCard";
 import { useRouter } from 'next/navigation';
+import { format } from 'date-fns';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -104,7 +105,7 @@ export default function TourPackagesPage() {
                     <TableCell className="font-medium">{pkg.tourName}</TableCell>
                     <TableCell className="hidden md:table-cell">{pkg.days}</TableCell>
                     <TableCell className="hidden md:table-cell">{formatCurrency(pkg.basePrice)}</TableCell>
-                    <TableCell className="hidden md:table-cell">{pkg.introductionDate.toLocaleDateString()}</TableCell>
+                    <TableCell className="hidden md:table-cell">{format(pkg.introductionDate, "dd/MM/yyyy")}</TableCell>
                     <TableCell className="hidden lg:table-cell">
                       <Badge variant="secondary" className="capitalize">{pkg.tourType}</Badge>
                     </TableCell>
