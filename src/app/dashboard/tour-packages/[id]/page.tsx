@@ -72,7 +72,7 @@ export default function TourPackageDetailPage() {
             <h1 className="flex-1 shrink-0 whitespace-nowrap text-xl font-semibold tracking-tight sm:grow-0">
                 {tourPackage.tourName}
             </h1>
-            <div className="inline-flex items-center rounded-md bg-secondary p-1 text-muted-foreground">
+            <div className="inline-flex items-center rounded-md bg-muted p-1 text-muted-foreground">
                 <Button 
                     variant="ghost"
                     size="sm" 
