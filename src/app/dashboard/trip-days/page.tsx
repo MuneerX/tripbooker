@@ -1,3 +1,4 @@
+
 "use client";
 
 import * as React from "react";
@@ -80,7 +81,7 @@ export default function TripDaysPage() {
                 <TableHead className="hidden md:table-cell">Tour Package</TableHead>
                 <TableHead className="hidden md:table-cell">Activities</TableHead>
                 <TableHead className="hidden lg:table-cell">Stays</TableHead>
-                <TableHead className="hidden lg:table-cell">Departs From</TableHead>
+                <TableHead className="hidden lg:table-cell">Flight Included</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead>
                     <span className="sr-only">Actions</span>
@@ -91,6 +92,7 @@ export default function TripDaysPage() {
                 {filteredTripDays.length > 0 ? (
                 filteredTripDays.map((day: TripDay) => {
                     const tourPackage = mockData.tourPackages.find(p => p.id === day.tourPackageId);
+                    const flightIncluded = tourPackage?.inclusions.some(inc => inc.toLowerCase().includes('flight'));
                     return (
                     <TableRow key={day.id}>
                         <TableCell className="font-medium">{day.dayName}</TableCell>
@@ -98,7 +100,7 @@ export default function TripDaysPage() {
                         <TableCell className="hidden md:table-cell">{tourPackage?.tourName || 'N/A'}</TableCell>
                         <TableCell className="hidden md:table-cell">{day.activities.length}</TableCell>
                         <TableCell className="hidden lg:table-cell">{day.numberOfStays}</TableCell>
-                        <TableCell className="hidden lg:table-cell">{day.departureLocation}</TableCell>
+                        <TableCell className="hidden lg:table-cell">{flightIncluded ? 'Yes' : 'No'}</TableCell>
                         <TableCell>
                         <Badge variant="outline" className={cn("capitalize", getStatusBadgeColor(day.status))}>{day.status}</Badge>
                         </TableCell>
