@@ -88,6 +88,7 @@ export default function TourPackagesPage() {
                 <TableHead>Tour Name</TableHead>
                 <TableHead className="hidden md:table-cell">Days</TableHead>
                 <TableHead className="hidden md:table-cell">Price</TableHead>
+                <TableHead className="hidden md:table-cell">Start Date</TableHead>
                 <TableHead className="hidden lg:table-cell">Type</TableHead>
                 <TableHead className="hidden lg:table-cell">Category</TableHead>
                 <TableHead>Status</TableHead>
@@ -103,6 +104,7 @@ export default function TourPackagesPage() {
                     <TableCell className="font-medium">{pkg.tourName}</TableCell>
                     <TableCell className="hidden md:table-cell">{pkg.days}</TableCell>
                     <TableCell className="hidden md:table-cell">{formatCurrency(pkg.basePrice)}</TableCell>
+                    <TableCell className="hidden md:table-cell">{pkg.introductionDate.toLocaleDateString()}</TableCell>
                     <TableCell className="hidden lg:table-cell">
                       <Badge variant="secondary" className="capitalize">{pkg.tourType}</Badge>
                     </TableCell>
