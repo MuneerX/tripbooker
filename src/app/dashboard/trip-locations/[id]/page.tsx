@@ -60,7 +60,7 @@ export default function TripLocationDetailPage() {
         </CardHeader>
         <CardContent className="grid md:grid-cols-2 gap-8">
             <div className="grid gap-4">
-                <Carousel className="w-full">
+                <Carousel className="w-full relative">
                     <CarouselContent>
                         {location.images.map((img, index) => (
                         <CarouselItem key={index}>
@@ -74,8 +74,8 @@ export default function TripLocationDetailPage() {
                         </CarouselItem>
                         ))}
                     </CarouselContent>
-                    <CarouselPrevious />
-                    <CarouselNext />
+                    <CarouselPrevious className="absolute left-2 top-1/2 -translate-y-1/2 z-10 bg-black/50 text-white hover:bg-black/70 hover:text-white border-none" />
+                    <CarouselNext className="absolute right-2 top-1/2 -translate-y-1/2 z-10 bg-black/50 text-white hover:bg-black/70 hover:text-white border-none" />
                 </Carousel>
                 <div>
                     <h3 className="font-semibold text-lg mb-2">Address</h3>
