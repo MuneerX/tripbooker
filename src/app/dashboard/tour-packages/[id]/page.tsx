@@ -1,5 +1,4 @@
 
-
 "use client";
 
 import * as React from "react";
@@ -8,7 +7,7 @@ import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Edit, Trash2, Calendar, Users, Clock, Check, X, Plus, Info, Star, CheckCircle, XCircle } from "lucide-react";
+import { ArrowLeft, Edit, Trash2, Calendar, Users, Clock, Check, X, Plus, Info, Star, CheckCircle, XCircle, ArrowUpRight } from "lucide-react";
 import mockData from "@/lib/data";
 import { formatCurrency, getStatusBadgeColor, cn } from "@/lib/utils";
 import { Separator } from "@/components/ui/separator";
@@ -17,6 +16,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import Link from "next/link";
 
 export default function TourPackageDetailPage() {
   const router = useRouter();
@@ -288,80 +288,48 @@ export default function TourPackageDetailPage() {
                         {tripDaysForPackage.length > 0 ? (
                           tripDaysForPackage.map((day) => (
                             <Card key={day.id} className="overflow-hidden">
-                              <CardHeader className="bg-muted/50">
-                                <CardTitle>
-                                  Day {day.dayNumber}: {day.dayName}
-                                </CardTitle>
-                              </CardHeader>
-                              <CardContent className="p-6 space-y-6">
+                              <CardHeader className="bg-muted/50 flex flex-row items-center justify-between">
                                 <div>
-                                  <h3 className="font-semibold mb-2">Daily Itinerary</h3>
-                                  <p className="text-muted-foreground">
-                                    {day.description}
-                                  </p>
+                                    <CardTitle>Day {day.dayNumber}: {day.dayName}</CardTitle>
+                                    <CardDescription>{day.activities.length} activities planned</CardDescription>
                                 </div>
-
-                                {day.specialInstructions && (
-                                  <div>
-                                    <h3 className="font-semibold mb-2">
-                                      Special Instructions
-                                    </h3>
-                                    <p className="text-muted-foreground">
-                                      {day.specialInstructions}
-                                    </p>
-                                  </div>
-                                )}
-
-                                {day.activities && day.activities.length > 0 && (
-                                  <div>
-                                    <h3 className="font-semibold mb-4">Activities</h3>
-                                    <div className="space-y-4">
-                                      {day.activities.map((activity, index) => (
-                                        <div
-                                          key={`${activity.activityId}-${index}`}
-                                          className="flex items-start gap-4 p-4 border rounded-lg"
-                                        >
-                                          <div className="bg-muted p-3 rounded-md mt-1">
-                                            <Clock className="h-5 w-5 text-muted-foreground" />
-                                          </div>
-                                          <div className="grid gap-1 flex-1">
-                                            <p className="font-semibold">
-                                              {activity.name}{" "}
-                                              <span className="text-xs font-normal text-muted-foreground capitalize">
-                                                ({activity.type})
-                                              </span>
-                                            </p>
-                                            <p className="text-sm text-muted-foreground">
-                                              {activity.description}
-                                            </p>
-                                            <div className="flex items-center text-sm text-muted-foreground gap-4 mt-1">
-                                              <span>Time: {activity.time}</span>
-                                              <span>Duration: {activity.duration}</span>
-                                              <span>Location: {activity.location}</span>
-                                            </div>
-                                            <div className="flex items-center text-sm gap-4 mt-2">
-                                              <div className="flex items-center gap-1">
-                                                {activity.priceIncluded ? (
-                                                  <CheckCircle className="h-4 w-4 text-green-500" />
-                                                ) : (
-                                                  <XCircle className="h-4 w-4 text-red-500" />
-                                                )}
-                                                <span>Price Included</span>
-                                              </div>
-                                              <div className="flex items-center gap-1">
-                                                {activity.bookingRequired ? (
-                                                  <CheckCircle className="h-4 w-4 text-green-500" />
-                                                ) : (
-                                                  <XCircle className="h-4 w-4 text-red-500" />
-                                                )}
-                                                <span>Booking Required</span>
-                                              </div>
-                                            </div>
-                                          </div>
-                                        </div>
-                                      ))}
+                                <Button asChild size="sm" variant="outline" className="ml-auto gap-1">
+                                    <Link href={`/dashboard/trip-days/${day.id}`}>
+                                        View All Activities
+                                        <ArrowUpRight className="h-4 w-4" />
+                                    </Link>
+                                </Button>
+                              </CardHeader>
+                              <CardContent className="p-6 space-y-4">
+                                {day.activities.slice(0, 2).map((activity, index) => (
+                                    <div
+                                    key={`${activity.activityId}-${index}`}
+                                    className="flex items-start gap-4 p-4 border rounded-lg"
+                                    >
+                                    <div className="bg-muted p-3 rounded-md mt-1">
+                                        <Clock className="h-5 w-5 text-muted-foreground" />
                                     </div>
-                                  </div>
+                                    <div className="grid gap-1 flex-1">
+                                        <p className="font-semibold">
+                                        {activity.name}{" "}
+                                        <span className="text-xs font-normal text-muted-foreground capitalize">
+                                            ({activity.type})
+                                        </span>
+                                        </p>
+                                        <p className="text-sm text-muted-foreground">
+                                        {activity.description}
+                                        </p>
+                                        <div className="flex items-center text-sm text-muted-foreground gap-4 mt-1">
+                                        <span>Time: {activity.time}</span>
+                                        <span>Duration: {activity.duration}</span>
+                                        </div>
+                                    </div>
+                                    </div>
+                                ))}
+                                {day.activities.length > 2 && (
+                                    <div className="text-center text-sm text-muted-foreground">
+                                        + {day.activities.length - 2} more activities...
+                                    </div>
                                 )}
                               </CardContent>
                             </Card>
@@ -407,3 +375,5 @@ export default function TourPackageDetailPage() {
     </div>
   );
 }
+
+    
