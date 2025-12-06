@@ -239,29 +239,47 @@ export default function TourPackageDetailPage() {
 
                     <TabsContent value="booking" className="p-6">
                             <Table>
-                            <TableHeader>
+                              <TableHeader>
                                 <TableRow>
-                                <TableHead>Customer</TableHead>
-                                <TableHead>Status</TableHead>
-                                <TableHead>Travel Date</TableHead>
-                                <TableHead className="text-right">Amount</TableHead>
+                                  <TableHead>Booking ID</TableHead>
+                                  <TableHead>Customer</TableHead>
+                                  <TableHead>Reservation Date</TableHead>
+                                  <TableHead>Transaction ID</TableHead>
+                                  <TableHead>Payment Type</TableHead>
+                                  <TableHead>Amount</TableHead>
+                                  <TableHead>Referral Code</TableHead>
+                                  <TableHead>Status</TableHead>
                                 </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                                {bookingsForPackage.length > 0 ? bookingsForPackage.map((booking) => (
-                                <TableRow key={booking.id}>
-                                    <TableCell>
+                              </TableHeader>
+                              <TableBody>
+                                {bookingsForPackage.length > 0 ? (
+                                  bookingsForPackage.map((booking) => (
+                                    <TableRow key={booking.id}>
+                                      <TableCell className="font-mono text-xs">{booking.id}</TableCell>
+                                      <TableCell>
                                         <div className="font-medium">{booking.customerName}</div>
-                                        <div className="text-sm text-muted-foreground">{booking.customerEmail}</div>
+                                        <div className="text-sm text-muted-foreground hidden md:inline">{booking.customerEmail}</div>
+                                      </TableCell>
+                                      <TableCell>{format(booking.reservationDate, "PPP")}</TableCell>
+                                      <TableCell className="font-mono text-xs">{booking.transactionId}</TableCell>
+                                      <TableCell className="capitalize">{booking.paymentType}</TableCell>
+                                      <TableCell>{formatCurrency(booking.totalAmount)}</TableCell>
+                                      <TableCell>{booking.referralCode || 'N/A'}</TableCell>
+                                      <TableCell>
+                                        <Badge variant="outline" className={getStatusBadgeColor(booking.status)}>
+                                          {booking.status}
+                                        </Badge>
+                                      </TableCell>
+                                    </TableRow>
+                                  ))
+                                ) : (
+                                  <TableRow>
+                                    <TableCell colSpan={8} className="h-24 text-center">
+                                      No bookings found for this package.
                                     </TableCell>
-                                    <TableCell>
-                                        <Badge variant="outline" className={getStatusBadgeColor(booking.status)}>{booking.status}</Badge>
-                                    </TableCell>
-                                    <TableCell>{format(booking.travelDate, "PPP")}</TableCell>
-                                    <TableCell className="text-right">{formatCurrency(booking.paidAmount)}</TableCell>
-                                </TableRow>
-                                )) : <TableRow><TableCell colSpan={4} className="text-center h-24">No bookings found.</TableCell></TableRow>}
-                            </TableBody>
+                                  </TableRow>
+                                )}
+                              </TableBody>
                             </Table>
                     </TabsContent>
 
