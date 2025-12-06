@@ -1,3 +1,4 @@
+
 "use client";
 
 import { Bell, Menu, Search, User } from 'lucide-react';
@@ -32,7 +33,7 @@ export function AppHeader() {
       </div>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button variant="ghost" size="icon" className="relative h-9 w-9">
+          <Button variant="outline" size="icon" className="relative h-9 w-9">
             <Bell className="h-5 w-5" />
             <Badge className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full p-0 text-[10px]" variant="destructive">3</Badge>
             <span className="sr-only">Toggle notifications</span>
