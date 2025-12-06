@@ -15,7 +15,6 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { Eye, EyeOff } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import Image from 'next/image';
-import { useTheme } from 'next-themes';
 
 const loginSchema = z.object({
   email: z.string().email({ message: "Invalid email address." }),
@@ -29,7 +28,6 @@ export default function LoginPage() {
   const router = useRouter();
   const { toast } = useToast();
   const [showPassword, setShowPassword] = useState(false);
-  const { theme } = useTheme();
 
   const form = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
@@ -51,88 +49,90 @@ export default function LoginPage() {
     router.push('/dashboard');
   };
 
-  const logoUrl = theme === 'dark' 
-    ? "https://i.ibb.co/7xpjJbKh/logoy2go-white.png" 
-    : "https://i.ibb.co/VpQvKQ2X/logoy2go.png";
-
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-primary/10 via-background to-accent/10 p-4">
-      <Card className="w-full max-w-md shadow-2xl">
-        <CardHeader className="text-center">
-          <div className="mx-auto mb-4 flex items-center justify-center">
-             <Image src={logoUrl} alt="Yes To Go Logo" width={150} height={150} />
-          </div>
-          <CardTitle className="text-3xl font-bold">Yes To Go Admin</CardTitle>
-          <CardDescription>Welcome back! Please sign in to continue.</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-              <FormField
-                control={form.control}
-                name="email"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Email</FormLabel>
-                    <FormControl>
-                      <Input placeholder="admin@yestogo.com" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="password"
-                render={({ field }) => (
-                  <FormItem>
-                    <div className="flex items-center justify-between">
-                      <FormLabel>Password</FormLabel>
-                      <a href="#" className="text-sm font-medium text-primary hover:underline">
-                        Forgot password?
-                      </a>
-                    </div>
-                    <FormControl>
-                      <div className="relative">
-                        <Input type={showPassword ? 'text' : 'password'} placeholder="••••••••" {...field} />
-                        <button
-                          type="button"
-                          onClick={() => setShowPassword(!showPassword)}
-                          className="absolute inset-y-0 right-0 flex items-center pr-3 text-muted-foreground"
-                          aria-label={showPassword ? 'Hide password' : 'Show password'}
-                        >
-                          {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
-                        </button>
+    <div className="relative flex min-h-screen flex-col items-center justify-center bg-background">
+       <Image
+        src="https://i.ibb.co/270VnPwG/bg.png"
+        alt="Background"
+        layout="fill"
+        objectFit="cover"
+        className="absolute inset-0 z-0 opacity-30"
+      />
+      <div className="w-full max-w-md p-4 md:p-0 z-10">
+        <Card className="shadow-2xl">
+          <CardHeader className="text-center">
+            <CardTitle className="text-3xl font-bold">Yes To Go Admin</CardTitle>
+            <CardDescription>Welcome back! Please sign in to continue.</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Form {...form}>
+              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                <FormField
+                  control={form.control}
+                  name="email"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Email</FormLabel>
+                      <FormControl>
+                        <Input placeholder="admin@yestogo.com" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="password"
+                  render={({ field }) => (
+                    <FormItem>
+                      <div className="flex items-center justify-between">
+                        <FormLabel>Password</FormLabel>
+                        <a href="#" className="text-sm font-medium text-primary hover:underline">
+                          Forgot password?
+                        </a>
                       </div>
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="rememberMe"
-                render={({ field }) => (
-                  <FormItem className="flex flex-row items-start space-x-3 space-y-0">
-                    <FormControl>
-                      <Checkbox
-                        checked={field.value}
-                        onCheckedChange={field.onChange}
-                      />
-                    </FormControl>
-                    <div className="space-y-1 leading-none">
-                      <Label>Remember me</Label>
-                    </div>
-                  </FormItem>
-                )}
-              />
-              <Button type="submit" className="w-full text-lg font-semibold" size="lg">
-                Login
-              </Button>
-            </form>
-          </Form>
-        </CardContent>
-      </Card>
+                      <FormControl>
+                        <div className="relative">
+                          <Input type={showPassword ? 'text' : 'password'} placeholder="••••••••" {...field} />
+                          <button
+                            type="button"
+                            onClick={() => setShowPassword(!showPassword)}
+                            className="absolute inset-y-0 right-0 flex items-center pr-3 text-muted-foreground"
+                            aria-label={showPassword ? 'Hide password' : 'Show password'}
+                          >
+                            {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                          </button>
+                        </div>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="rememberMe"
+                  render={({ field }) => (
+                    <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                      <FormControl>
+                        <Checkbox
+                          checked={field.value}
+                          onCheckedChange={field.onChange}
+                        />
+                      </FormControl>
+                      <div className="space-y-1 leading-none">
+                        <Label>Remember me</Label>
+                      </div>
+                    </FormItem>
+                  )}
+                />
+                <Button type="submit" className="w-full text-lg font-semibold" size="lg">
+                  Login
+                </Button>
+              </form>
+            </Form>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 }
