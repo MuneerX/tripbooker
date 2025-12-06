@@ -11,8 +11,9 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import { Eye, EyeOff, MountainSnow } from 'lucide-react';
+import { Eye, EyeOff } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import Image from 'next/image';
 
 const loginSchema = z.object({
   email: z.string().email({ message: "Invalid email address." }),
@@ -52,9 +53,9 @@ export default function LoginPage() {
       <Card className="w-full max-w-md shadow-2xl">
         <CardHeader className="text-center">
           <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-primary text-primary-foreground">
-            <MountainSnow className="h-8 w-8" />
+             <Image src="https://i.ibb.co/C3p7918S/logo.png" alt="Yes To Go Logo" width={40} height={40} />
           </div>
-          <CardTitle className="text-3xl font-bold">TourVista Admin</CardTitle>
+          <CardTitle className="text-3xl font-bold">Yes To Go Admin</CardTitle>
           <CardDescription>Welcome back! Please sign in to continue.</CardDescription>
         </CardHeader>
         <CardContent>
@@ -67,7 +68,7 @@ export default function LoginPage() {
                   <FormItem>
                     <FormLabel>Email</FormLabel>
                     <FormControl>
-                      <Input placeholder="admin@tourvista.com" {...field} />
+                      <Input placeholder="admin@yestogo.com" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>

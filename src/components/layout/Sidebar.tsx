@@ -1,3 +1,4 @@
+
 "use client";
 
 import Link from 'next/link';
@@ -29,6 +30,7 @@ import {
 import type { NavItem } from '@/lib/types';
 import { cn } from '@/lib/utils';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 
 const navItems: NavItem[] = [
   { title: 'Dashboard', href: '/dashboard', icon: LayoutGrid, subItems:[] },
@@ -122,13 +124,11 @@ export function AppSidebar() {
       <Sidebar>
         <SidebarHeader>
           <Link href="/dashboard" className="flex items-center gap-2">
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-                <MountainSnow className="h-6 w-6" />
-            </div>
-            <span className="text-lg font-semibold text-sidebar-foreground">TourVista</span>
+            <Image src="https://i.ibb.co/C3p7918S/logo.png" alt="Yes To Go Logo" width={40} height={40} />
+            <span className="text-lg font-semibold text-sidebar-foreground">Yes To Go</span>
           </Link>
         </SidebarHeader>
-        <SidebarContent className="p-2">
+        <SidebarContent className="p-2 overflow-y-hidden">
           <NavMenu items={navItems} />
         </SidebarContent>
         <SidebarFooter>

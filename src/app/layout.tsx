@@ -3,8 +3,8 @@ import './globals.css';
 import { Toaster } from "@/components/ui/toaster";
 
 export const metadata: Metadata = {
-  title: 'TourVista Admin',
-  description: 'Admin Dashboard for TourVista',
+  title: 'Yes To Go Admin',
+  description: 'Admin Dashboard for Yes To Go',
 };
 
 export default function RootLayout({
