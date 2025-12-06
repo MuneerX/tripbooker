@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import { Bell, Menu, Search, User } from 'lucide-react';
@@ -28,7 +29,7 @@ export function AppHeader() {
         <Input
           type="search"
           placeholder="Search..."
-          className="w-full rounded-lg bg-background pl-8 md:w-[200px] lg:w-[336px]"
+          className="h-9 w-full rounded-lg bg-background pl-8 md:w-[200px] lg:w-[336px]"
         />
       </div>
       <DropdownMenu>
