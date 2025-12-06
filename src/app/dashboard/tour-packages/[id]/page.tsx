@@ -9,7 +9,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Badge } from "@/components/ui/badge";
 import { ArrowLeft, Edit, Trash2, Calendar, Users, Clock, Check, X, Plus, Info, Star } from "lucide-react";
 import mockData from "@/lib/data";
-import { formatCurrency, getStatusBadgeColor } from "@/lib/utils";
+import { formatCurrency, getStatusBadgeColor, cn } from "@/lib/utils";
 import { Separator } from "@/components/ui/separator";
 import { format } from "date-fns";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -23,6 +23,7 @@ export default function TourPackageDetailPage() {
   const { id } = params;
 
   const tourPackage = mockData.tourPackages.find((pkg) => pkg.id === id);
+  const [status, setStatus] = React.useState(tourPackage?.status);
 
   if (!tourPackage) {
     return (
@@ -35,6 +36,18 @@ export default function TourPackageDetailPage() {
       </div>
     );
   }
+
+  const handleStatusChange = (newStatus: "active" | "inactive") => {
+    if (tourPackage) {
+      // Update local state
+      setStatus(newStatus);
+      // Update mock data
+      const packageIndex = mockData.tourPackages.findIndex(p => p.id === tourPackage.id);
+      if (packageIndex !== -1) {
+        mockData.tourPackages[packageIndex].status = newStatus;
+      }
+    }
+  };
 
   const detailItems = [
     { icon: <Clock />, label: "Duration", value: `${tourPackage.days} Days / ${tourPackage.nights} Nights` },
@@ -58,7 +71,22 @@ export default function TourPackageDetailPage() {
             <h1 className="flex-1 shrink-0 whitespace-nowrap text-xl font-semibold tracking-tight sm:grow-0">
                 {tourPackage.tourName}
             </h1>
-            <Badge variant="outline" className={getStatusBadgeColor(tourPackage.status)}>{tourPackage.status}</Badge>
+            <div className="inline-flex items-center rounded-md bg-muted p-1 text-muted-foreground">
+                <Button 
+                    variant={status === 'active' ? 'secondary' : 'ghost'} 
+                    size="sm" 
+                    className="px-3 py-1 h-auto text-xs" 
+                    onClick={() => handleStatusChange('active')}>
+                    Active
+                </Button>
+                <Button 
+                    variant={status === 'inactive' ? 'secondary' : 'ghost'} 
+                    size="sm" 
+                    className="px-3 py-1 h-auto text-xs" 
+                    onClick={() => handleStatusChange('inactive')}>
+                    Inactive
+                </Button>
+            </div>
             <div className="ml-auto flex items-center gap-2">
                 <Button variant="outline" size="sm">
                     <Trash2 className="mr-2 h-4 w-4" />
@@ -278,5 +306,3 @@ export default function TourPackageDetailPage() {
     </div>
   );
 }
-
-    
