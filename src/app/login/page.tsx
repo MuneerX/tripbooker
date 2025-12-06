@@ -52,8 +52,8 @@ export default function LoginPage() {
     <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-primary/10 via-background to-accent/10 p-4">
       <Card className="w-full max-w-md shadow-2xl">
         <CardHeader className="text-center">
-          <div className="mx-auto mb-4 flex h-20 w-20 items-center justify-center rounded-full bg-primary text-primary-foreground">
-             <Image src="https://i.ibb.co/Q7gH0Dkd/IMG-8457.png" alt="Yes To Go Logo" width={60} height={60} />
+          <div className="mx-auto mb-4 flex h-24 w-24 items-center justify-center rounded-full bg-primary text-primary-foreground">
+             <Image src="https://i.ibb.co/VpQvKQ2X/logoy2go.png" alt="Yes To Go Logo" width={90} height={90} />
           </div>
           <CardTitle className="text-3xl font-bold">Yes To Go Admin</CardTitle>
           <CardDescription>Welcome back! Please sign in to continue.</CardDescription>
