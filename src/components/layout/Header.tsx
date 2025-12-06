@@ -11,6 +11,7 @@ import Link from 'next/link';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Breadcrumbs } from './Breadcrumbs';
+import { ThemeToggle } from '@/components/ThemeToggle';
 
 export function AppHeader() {
   const { toggleSidebar } = useSidebar();
@@ -63,6 +64,8 @@ export function AppHeader() {
           <DropdownMenuSeparator />
           <DropdownMenuItem asChild><Link href="#">Profile</Link></DropdownMenuItem>
           <DropdownMenuItem asChild><Link href="/dashboard/settings">Settings</Link></DropdownMenuItem>
+          <DropdownMenuSeparator />
+          <ThemeToggle />
           <DropdownMenuSeparator />
           <DropdownMenuItem>Logout</DropdownMenuItem>
         </DropdownMenuContent>
