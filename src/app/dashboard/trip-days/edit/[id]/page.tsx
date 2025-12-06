@@ -158,9 +158,9 @@ export default function EditTripDayPage() {
                                 activity={activity} 
                                 onSave={(editedActivity) => update(index, editedActivity)}
                              >
-                                <Button variant="outline" size="sm">Edit</Button>
+                                <Button type="button" variant="outline" size="sm">Edit</Button>
                             </ActivityFormModal>
-                            <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive h-8 w-8" onClick={() => remove(index)}>
+                            <Button type="button" variant="ghost" size="icon" className="text-destructive hover:text-destructive h-8 w-8" onClick={() => remove(index)}>
                                 <Trash2 className="h-4 w-4" />
                             </Button>
                         </div>
