@@ -36,6 +36,7 @@ export type Activity = {
   duration: string;
   location: string;
   locationId: string;
+  price: number;
   priceIncluded: boolean;
   bookingRequired: boolean;
   description: string;
