@@ -152,7 +152,7 @@ export default function CreateTourPackagePage() {
                             <FormField control={form.control} name="itineraryId" render={({ field }) => ( <FormItem><FormLabel>Itinerary</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Select itinerary" /></SelectTrigger></FormControl><SelectContent><SelectItem value="itin1">Himalayan Trek Itinerary</SelectItem><SelectItem value="itin2">Goa Beach Itinerary</SelectItem></SelectContent></Select><FormMessage /></FormItem>)} />
                             <FormField control={form.control} name="status" render={({ field }) => ( <FormItem><FormLabel>Status</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Select status" /></SelectTrigger></FormControl><SelectContent><SelectItem value="active">Active</SelectItem><SelectItem value="inactive">Inactive</SelectItem></SelectContent></Select><FormMessage /></FormItem>)} />
                          </div>
-                         <FormField control={form.control} name="introductionDate" render={({ field }) => ( <FormItem className="flex flex-col"><FormLabel>Introduction Date</FormLabel><Popover><PopoverTrigger asChild><FormControl><Button variant={"outline"} className={cn("pl-3 text-left font-normal",!field.value && "text-muted-foreground")}><{field.value ? format(field.value, "PPP") : (<span>Pick a date</span>)}<CalendarIcon className="ml-auto h-4 w-4 opacity-50" /></Button></FormControl></PopoverTrigger><PopoverContent className="w-auto p-0" align="start"><Calendar mode="single" selected={field.value} onSelect={field.onChange} disabled={(date) => date > new Date() || date < new Date("1900-01-01")} initialFocus /></PopoverContent></Popover><FormMessage /></FormItem> )} />
+                         <FormField control={form.control} name="introductionDate" render={({ field }) => ( <FormItem className="flex flex-col"><FormLabel>Introduction Date</FormLabel><Popover><PopoverTrigger asChild><FormControl><Button variant={"outline"} className={cn("pl-3 text-left font-normal",!field.value && "text-muted-foreground")}>{field.value ? format(field.value, "PPP") : (<span>Pick a date</span>)}<CalendarIcon className="ml-auto h-4 w-4 opacity-50" /></Button></FormControl></PopoverTrigger><PopoverContent className="w-auto p-0" align="start"><Calendar mode="single" selected={field.value} onSelect={field.onChange} disabled={(date) => date > new Date() || date < new Date("1900-01-01")} initialFocus /></PopoverContent></Popover><FormMessage /></FormItem> )} />
                          <FormItem>
                             <FormLabel>Primary Image</FormLabel>
                              <FormControl>
@@ -282,5 +282,3 @@ export default function CreateTourPackagePage() {
     </Form>
   )
 }
-
-    
