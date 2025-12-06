@@ -6,7 +6,7 @@ import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import * as z from "zod"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
@@ -63,12 +63,11 @@ export default function CreateTripLocationPage() {
   };
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Create New Trip Location</CardTitle>
-        <CardDescription>Add a new location to be used in trip itineraries.</CardDescription>
-      </CardHeader>
-      <CardContent>
+    <div className="space-y-6">
+        <div>
+            <h1 className="text-2xl font-bold tracking-tight">Create New Trip Location</h1>
+            <p className="text-muted-foreground">Add a new location to be used in trip itineraries.</p>
+        </div>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
@@ -223,7 +222,8 @@ export default function CreateTripLocationPage() {
             </div>
           </form>
         </Form>
-      </CardContent>
-    </Card>
+    </div>
   )
 }
+
+    
