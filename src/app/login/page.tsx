@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState } from 'react';
@@ -14,6 +15,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { Eye, EyeOff } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import Image from 'next/image';
+import { useTheme } from 'next-themes';
 
 const loginSchema = z.object({
   email: z.string().email({ message: "Invalid email address." }),
@@ -27,6 +29,7 @@ export default function LoginPage() {
   const router = useRouter();
   const { toast } = useToast();
   const [showPassword, setShowPassword] = useState(false);
+  const { theme } = useTheme();
 
   const form = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
@@ -48,12 +51,16 @@ export default function LoginPage() {
     router.push('/dashboard');
   };
 
+  const logoUrl = theme === 'dark' 
+    ? "https://i.ibb.co/7xpjJbKh/logoy2go-white.png" 
+    : "https://i.ibb.co/VpQvKQ2X/logoy2go.png";
+
   return (
     <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-primary/10 via-background to-accent/10 p-4">
       <Card className="w-full max-w-md shadow-2xl">
         <CardHeader className="text-center">
-          <div className="mx-auto mb-4 flex h-24 w-24 items-center justify-center rounded-full bg-primary text-primary-foreground">
-             <Image src="https://i.ibb.co/VpQvKQ2X/logoy2go.png" alt="Yes To Go Logo" width={90} height={90} />
+          <div className="mx-auto mb-4 flex items-center justify-center">
+             <Image src={logoUrl} alt="Yes To Go Logo" width={150} height={150} />
           </div>
           <CardTitle className="text-3xl font-bold">Yes To Go Admin</CardTitle>
           <CardDescription>Welcome back! Please sign in to continue.</CardDescription>

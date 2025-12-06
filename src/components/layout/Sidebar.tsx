@@ -31,6 +31,7 @@ import type { NavItem } from '@/lib/types';
 import { cn } from '@/lib/utils';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
+import { useTheme } from 'next-themes';
 
 const navItems: NavItem[] = [
   { title: 'Dashboard', href: '/dashboard', icon: LayoutGrid, subItems:[] },
@@ -115,19 +116,25 @@ function NavMenu({ items }: { items: NavItem[] }) {
 
 export function AppSidebar() {
   const router = useRouter();
+  const { theme } = useTheme();
 
   const handleLogout = () => {
     // In a real app, you would handle logout logic here (e.g., clearing session, calling Firebase signOut)
     router.push(logoutNav.href);
   };
+  
+  const logoUrl = theme === 'dark' 
+    ? "https://i.ibb.co/7xpjJbKh/logoy2go-white.png" 
+    : "https://i.ibb.co/VpQvKQ2X/logoy2go.png";
+
   return (
       <Sidebar>
         <SidebarHeader>
           <Link href="/dashboard" className="flex items-center justify-center gap-2 py-2">
-            <Image src="https://i.ibb.co/VpQvKQ2X/logoy2go.png" alt="Yes To Go Logo" width={150} height={150} />
+            <Image src={logoUrl} alt="Yes To Go Logo" width={150} height={150} />
           </Link>
         </SidebarHeader>
-        <SidebarContent className="p-2 overflow-y-hidden">
+        <SidebarContent className="p-2">
           <NavMenu items={navItems} />
         </SidebarContent>
         <SidebarFooter>
