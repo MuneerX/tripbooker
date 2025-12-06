@@ -159,9 +159,9 @@ export default function TourPackageDetailPage() {
 
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                                 <div className="space-y-4">
-                                    <h3 className="text-lg font-semibold flex items-center gap-2"><Check className="text-green-500"/> Highlights</h3>
+                                    <h3 className="text-lg font-semibold flex items-center gap-2"><Star className="text-accent"/> Highlights</h3>
                                     <ul className="space-y-2 text-muted-foreground">
-                                        {tourPackage.highlights.map((h, i) => <li key={i} className="flex items-start gap-2"><span className="mt-1.5 h-1.5 w-1.5 rounded-full bg-primary" /><span>{h}</span></li>)}
+                                        {tourPackage.highlights.map((h, i) => <li key={i} className="flex items-start gap-2"><span className="mt-1.5 h-1.5 w-1.5 rounded-full bg-accent" /><span>{h}</span></li>)}
                                     </ul>
                                 </div>
                                 <div className="space-y-4">
