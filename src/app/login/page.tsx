@@ -7,15 +7,13 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Checkbox } from '@/components/ui/checkbox';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Eye, EyeOff } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import Image from 'next/image';
 import Link from 'next/link';
+import { useTheme } from 'next-themes';
 
 const loginSchema = z.object({
   email: z.string().email({ message: "Invalid email address." }),
@@ -29,6 +27,11 @@ export default function LoginPage() {
   const router = useRouter();
   const { toast } = useToast();
   const [showPassword, setShowPassword] = useState(false);
+  const { theme } = useTheme();
+
+  const logoUrl = theme === 'dark' 
+    ? "https://i.ibb.co/7xpjJbKh/logoy2go-white.png" 
+    : "https://i.ibb.co/VpQvKQ2X/logoy2go.png";
 
   const form = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
@@ -54,9 +57,12 @@ export default function LoginPage() {
     <div className="w-full lg:grid lg:min-h-screen lg:grid-cols-2">
       <div className="flex items-center justify-center py-12">
         <div className="mx-auto grid w-[350px] gap-6">
-          <div className="grid gap-2 text-center">
-            <h1 className="text-3xl font-bold">Login</h1>
-            <p className="text-balance text-muted-foreground">
+          <div className="grid gap-4 text-center">
+            <div className="flex justify-center">
+              <Image src={logoUrl} alt="Yes To Go Logo" width={150} height={40} />
+            </div>
+            <h1 className="text-2xl font-bold">Welcome Back!</h1>
+            <p className="text-muted-foreground">
               Enter your email below to login to your account
             </p>
           </div>
