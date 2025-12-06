@@ -1,3 +1,46 @@
 {
-  "placeholderImages": []
+  "placeholderImages": [
+    {
+      "id": "everest-trek",
+      "description": "A view of a mountain range with a clear blue sky.",
+      "imageUrl": "https://images.unsplash.com/photo-1612539473441-dfc1cefd5e1e?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxMHx8bW91bnRhaW4lMjBsYW5kc2NhcGV8ZW58MHx8fHwxNzY0OTE1MTQ2fDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "mountain landscape"
+    },
+    {
+      "id": "everest-featured",
+      "description": "A wide-angle shot of a majestic mountain peak.",
+      "imageUrl": "https://images.unsplash.com/photo-1559208722-abb22e0e918e?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw2fHxtb3VudGFpbiUyMHBlYWt8ZW58MHx8fHwxNzY0OTU1NTM1fDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "mountain peak"
+    },
+    {
+      "id": "goa-beach",
+      "description": "A sunny beach with golden sand and blue water.",
+      "imageUrl": "https://images.unsplash.com/photo-1620752685007-98c850478a48?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw3fHxiZWFjaCUyMHNjZW5lfGVufDB8fHx8MTc2NDkyMDEyNXww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "beach scene"
+    },
+    {
+      "id": "rajasthan-cultural",
+      "description": "A colorful shot of an ancient Indian fort.",
+      "imageUrl": "https://images.unsplash.com/photo-1652019126778-c0937662c884?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxMHx8aW5kaWFuJTIwZm9ydHxlbnwwfHx8fDE3NjUwMTA0OTh8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "indian fort"
+    },
+    {
+      "id": "rajasthan-featured",
+      "description": "A wide-angle shot of a palace on a lake.",
+      "imageUrl": "https://images.unsplash.com/photo-1470177705574-f425888edce0?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw3fHxwYWxhY2UlMjBsYWtlfGVufDB8fHx8MTc2NTAxMDQ5OXww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "palace lake"
+    },
+    {
+      "id": "himalayan-base-camp",
+      "description": "A base camp in a snowy mountain environment.",
+      "imageUrl": "https://images.unsplash.com/photo-1671540343458-c38623c50364?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwyfHxtb3VudGFpbiUyMGNhbXB8ZW58MHx8fHwxNzY1MDEwNDk4fDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "mountain camp"
+    },
+    {
+      "id": "goa-beach-location",
+      "description": "People enjoying on a tropical beach.",
+      "imageUrl": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwzfHx0cm9waWNhbCUyMGJlYWNofGVufDB8fHx8MTc2NTAxMDQ5OHww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "tropical beach"
+    }
+  ]
 }
