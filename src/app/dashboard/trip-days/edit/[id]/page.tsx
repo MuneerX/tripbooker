@@ -221,7 +221,7 @@ function ActivityFormModal({ children, activity, onSave }: ActivityFormModalProp
 
     const onFormSubmit = (e: React.FormEvent) => {
       e.preventDefault();
-      activityForm.handleSubmit(handleSave)();
+      activityForm.handleSubmit(handleSave)(e);
     }
 
     return (
@@ -264,7 +264,7 @@ function ActivityFormModal({ children, activity, onSave }: ActivityFormModalProp
 
                         <DialogFooter>
                             <DialogClose asChild><Button type="button" variant="outline">Cancel</Button></DialogClose>
-                            <Button type="submit">Save Activity</Button>
+                            <Button onClick={onFormSubmit}>Save Activity</Button>
                         </DialogFooter>
                     </form>
                 </Form>
