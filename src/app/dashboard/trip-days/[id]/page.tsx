@@ -72,8 +72,8 @@ export default function TripDayDetailPage() {
           <div>
             <h3 className="font-semibold mb-4">Activities</h3>
             <div className="grid gap-4">
-              {tripDay.activities.map(activity => (
-                <div key={activity.activityId} className="flex items-start gap-4 p-4 border rounded-lg">
+              {tripDay.activities.map((activity, index) => (
+                <div key={`${activity.activityId}-${index}`} className="flex items-start gap-4 p-4 border rounded-lg">
                    <div className="bg-muted p-3 rounded-md">
                         <Clock className="h-5 w-5 text-muted-foreground" />
                    </div>
