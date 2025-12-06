@@ -123,9 +123,8 @@ export function AppSidebar() {
   return (
       <Sidebar>
         <SidebarHeader>
-          <Link href="/dashboard" className="flex items-center gap-2">
-            <Image src="https://i.ibb.co/C3p7918S/logo.png" alt="Yes To Go Logo" width={40} height={40} />
-            <span className="text-lg font-semibold text-sidebar-foreground">Yes To Go</span>
+          <Link href="/dashboard" className="flex items-center justify-center gap-2">
+            <Image src="https://i.ibb.co/C3p7918S/logo.png" alt="Yes To Go Logo" width={50} height={50} />
           </Link>
         </SidebarHeader>
         <SidebarContent className="p-2 overflow-y-hidden">
