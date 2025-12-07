@@ -47,7 +47,7 @@ export default function TourPackagesPage() {
   }, []);
 
   const filteredPackages = allPackages.filter((pkg) =>
-    pkg.tourName.toLowerCase().includes(searchTerm.toLowerCase())
+    pkg.tourName?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const totalPages = Math.ceil(filteredPackages.length / rowsPerPage);
