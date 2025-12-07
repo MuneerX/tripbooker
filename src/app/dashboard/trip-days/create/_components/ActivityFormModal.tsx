@@ -25,7 +25,7 @@ import {
 export const activitySchema = z.object({
     id: z.string().optional(),
     title: z.string().min(1, "Activity title is required"),
-    activity_type: z.enum(["food", "explore"]),
+    activity_type: z.enum(["food", "explore", "stay"]),
     activity_time: z.string().regex(/^(0[0-9]|1[0-9]|2[0-3]):[0-5][0-9]$/, "Invalid time format (e.g., 09:00 or 17:30)"),
     duration_minutes: z.coerce.number().int().min(0, "Duration must be a positive number"),
     description: z.string().min(1, "Description is required"),
@@ -98,6 +98,7 @@ export function ActivityFormModal({ children, activity, onSave }: ActivityFormMo
                                 <FormField control={activityForm.control} name="activity_type" render={({ field }) => ( <FormItem><FormLabel>Type</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Select type" /></SelectTrigger></FormControl><SelectContent>
                                   <SelectItem value="food">Food</SelectItem>
                                   <SelectItem value="explore">Explore</SelectItem>
+                                  <SelectItem value="stay">Stay</SelectItem>
                                   </SelectContent></Select><FormMessage /></FormItem> )} />
                             </div>
                              <div className="grid md:grid-cols-2 gap-4">
