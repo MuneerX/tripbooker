@@ -138,7 +138,7 @@ export default function TripDayDetailPage() {
                         <p className="font-semibold">{activity.title} <span className="text-xs font-normal text-muted-foreground capitalize">({activity.activity_type})</span></p>
                         <p className="text-sm text-muted-foreground">{activity.description}</p>
                         <div className="flex items-center text-sm text-muted-foreground gap-4 mt-1">
-                          <span>Time: {activity.activity_time}</span>
+                          <span>Time: {activity.activity_time ? activity.activity_time.substring(0, 5) : 'N/A'}</span>
                           <span>Duration: {activity.duration_minutes} mins</span>
                         </div>
                         <div className="flex items-center text-sm gap-4 mt-2">
@@ -151,10 +151,10 @@ export default function TripDayDetailPage() {
                             <span>Booking Required</span>
                           </div>
                         </div>
-                        {activity.additional_cost && activity.additional_cost > 0 && (
+                        {activity.additional_cost && Number(activity.additional_cost) > 0 && (
                             <div className="flex items-center text-sm gap-2 mt-2 text-amber-600">
                                 <DollarSign className="h-4 w-4" />
-                                <span>Additional Cost: {formatCurrency(activity.additional_cost)}</span>
+                                <span>Additional Cost: {formatCurrency(Number(activity.additional_cost))}</span>
                             </div>
                         )}
                         {activity.special_instructions && (
