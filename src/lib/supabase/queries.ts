@@ -589,17 +589,79 @@ export async function createTripLocationWithImages(formData: FormData) {
 
 
 /**
- * Updates an existing trip location.
+ * Updates an existing trip location and handles image uploads/deletions.
  */
-export async function updateTripLocation(id: string, locationData: Partial<Omit<TripLocation, 'id' | 'created_at' | 'updated_at'>>) {
+export async function updateTripLocation(id: string, formData: FormData) {
     const supabase = createAdminClient();
+
+    const getPathFromUrl = (url: string): string | null => {
+        if (!url) return null;
+        try {
+            const urlObject = new URL(url);
+            const pathSegments = urlObject.pathname.split('/');
+            const bucketNameIndex = pathSegments.findIndex(segment => segment === 'images');
+            if (bucketNameIndex === -1 || bucketNameIndex + 1 >= pathSegments.length) {
+                console.warn('Could not determine storage path from URL:', url);
+                return null;
+            }
+            const filePath = pathSegments.slice(bucketNameIndex + 1).join('/');
+            return decodeURIComponent(filePath);
+        } catch (e) {
+            console.error('Invalid URL for image deletion:', url, e);
+            return null;
+        }
+    };
+
+    const originalImageUrls: string[] = JSON.parse(formData.get('original_image_urls') as string || '[]');
+    const keptImageUrls: string[] = JSON.parse(formData.get('image_urls') as string || '[]');
+    const newImageFiles = formData.getAll('new_image_files').filter(f => f instanceof File && f.size > 0) as File[];
     
-    const payload = {
-        ...locationData,
+    const pathsToDelete: string[] = [];
+    originalImageUrls.forEach(originalUrl => {
+        if (!keptImageUrls.includes(originalUrl)) {
+            const path = getPathFromUrl(originalUrl);
+            if (path) pathsToDelete.push(path);
+        }
+    });
+
+    if (pathsToDelete.length > 0) {
+        const { error: deleteError } = await supabase.storage.from('images').remove(pathsToDelete);
+        if (deleteError) {
+            console.error("Failed to delete images from storage:", deleteError.message);
+        }
+    }
+
+    const uploadedImageUrls: string[] = [];
+    if (newImageFiles.length > 0) {
+      for (const file of newImageFiles) {
+        const filePath = `images/locations/${Date.now()}-${file.name}`;
+        const { error: uploadError } = await supabase.storage.from('images').upload(filePath, file);
+        if (uploadError) throw new Error(`Failed to upload ${file.name}: ${uploadError.message}`);
+        const { data: { publicUrl } } = supabase.storage.from('images').getPublicUrl(filePath);
+        uploadedImageUrls.push(publicUrl);
+      }
+    }
+
+    const finalImageUrls = [...keptImageUrls, ...uploadedImageUrls];
+
+    const updateData = {
+        name: formData.get('name') as string,
+        place_type: formData.get('place_type') as string,
+        city: formData.get('city') as string,
+        country: formData.get('country') as string,
+        latitude: Number(formData.get('latitude')) || null,
+        longitude: Number(formData.get('longitude')) || null,
+        state: formData.get('state') as string,
+        district: formData.get('district') as string,
+        code: formData.get('code') as string,
+        description: formData.get('description') as string,
+        address: formData.get('address') as string,
+        is_active: formData.get('is_active') === 'true',
+        image_urls: finalImageUrls,
         updated_at: new Date().toISOString(),
     };
 
-    const { data, error } = await supabase.from('places').update(payload).eq('id', id).select().single();
+    const { data, error } = await supabase.from('places').update(updateData).eq('id', id).select().single();
 
     if (error) {
         console.error(`Error updating trip location ${id}:`, error);
@@ -622,5 +684,3 @@ export async function deleteTripLocation(id: string) {
     }
     return { success: true };
 }
-
-    

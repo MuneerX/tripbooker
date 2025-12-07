@@ -12,10 +12,15 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
-import { MapPin, Upload, ArrowLeft } from "lucide-react";
+import { MapPin, Upload, ArrowLeft, File as FileIcon, X } from "lucide-react";
 import { getTripLocationById, updateTripLocation } from "@/lib/supabase/queries";
 import type { TripLocation } from "@/lib/types";
 import { Switch } from "@/components/ui/switch";
+import Image from "next/image";
+
+const MAX_FILE_SIZE = 2 * 1024 * 1024; // 2MB
+const ACCEPTED_IMAGE_TYPES = ["image/jpeg", "image/jpg", "image/png", "image/webp"];
+
 
 const tripLocationSchema = z.object({
   name: z.string().min(1, "Location name is required"),
@@ -30,6 +35,11 @@ const tripLocationSchema = z.object({
   description: z.string().min(1, "Description is required"),
   address: z.string().min(1, "Address is required"),
   is_active: z.boolean().default(true),
+  image_urls: z.array(z.string()).optional(),
+  new_image_files: z.any()
+    .optional()
+    .refine((files) => !files || Array.from(files).every((file: any) => file.size <= MAX_FILE_SIZE), `Max file size is 2MB.`)
+    .refine((files) => !files || Array.from(files).every((file: any) => ACCEPTED_IMAGE_TYPES.includes(file.type)), ".jpg, .jpeg, .png and .webp files are accepted."),
 });
 
 type TripLocationFormValues = z.infer<typeof tripLocationSchema>;
@@ -41,6 +51,7 @@ export default function EditTripLocationPage() {
   const { toast } = useToast();
   const [loading, setLoading] = React.useState(true);
   const [isSubmitting, setIsSubmitting] = React.useState(false);
+  const [originalLocation, setOriginalLocation] = React.useState<TripLocation | null>(null);
 
   const form = useForm<TripLocationFormValues>({
     resolver: zodResolver(tripLocationSchema),
@@ -53,19 +64,21 @@ export default function EditTripLocationPage() {
         setLoading(true);
         const loc = await getTripLocationById(id);
         if (loc) {
+          setOriginalLocation(loc);
           form.reset({
             name: loc.name,
-            place_type: loc.place_type,
-            city: loc.city,
-            country: loc.country,
+            place_type: loc.place_type || 'destination',
+            city: loc.city || '',
+            country: loc.country || 'India',
             latitude: loc.latitude,
             longitude: loc.longitude,
-            state: loc.state,
-            district: loc.district,
-            code: loc.code,
-            description: loc.description,
-            address: loc.address,
-            is_active: loc.is_active,
+            state: loc.state || '',
+            district: loc.district || '',
+            code: loc.code || '',
+            description: loc.description || '',
+            address: loc.address || '',
+            is_active: loc.is_active || false,
+            image_urls: loc.image_urls || [],
           });
         } else {
           toast({ variant: "destructive", title: "Error", description: "Location not found." });
@@ -77,10 +90,60 @@ export default function EditTripLocationPage() {
     }
   }, [id, router, toast, form]);
 
+  const newImageFiles = form.watch("new_image_files");
+  const existingImageUrls = form.watch("image_urls") || [];
+
+  const handleRemoveExistingImage = (urlToRemove: string) => {
+    const updatedUrls = existingImageUrls.filter(url => url !== urlToRemove);
+    form.setValue("image_urls", updatedUrls, { shouldValidate: true });
+  };
+  
+  const handleRemoveNewImage = (indexToRemove: number) => {
+    const currentFiles = form.getValues("new_image_files");
+    if (!currentFiles) return;
+    const newFiles = Array.from(currentFiles).filter((_, index) => index !== indexToRemove);
+    const dataTransfer = new DataTransfer();
+    newFiles.forEach(file => dataTransfer.items.add(file as File));
+    form.setValue("new_image_files", dataTransfer.files, { shouldValidate: true });
+  };
+  
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>, field: any) => {
+    const filesToAdd = Array.from(e.target.files || []);
+    if (filesToAdd.length === 0) return;
+    const currentFiles = Array.from(form.getValues("new_image_files") || []);
+    const combinedFiles = [...currentFiles, ...filesToAdd];
+    const dataTransfer = new DataTransfer();
+    combinedFiles.forEach(file => dataTransfer.items.add(file as File));
+    field.onChange(dataTransfer.files);
+  };
+
+
   const onSubmit = async (data: TripLocationFormValues) => {
     setIsSubmitting(true);
+    const formData = new FormData();
+
+    if (originalLocation?.image_urls) {
+        formData.append('original_image_urls', JSON.stringify(originalLocation.image_urls));
+    }
+    
+    Object.entries(data).forEach(([key, value]) => {
+      if (key === 'new_image_files' || key === 'image_urls') {
+        // Handled separately
+      } else if (value !== undefined && value !== null) {
+        formData.append(key, String(value));
+      }
+    });
+
+    if (data.new_image_files) {
+        Array.from(data.new_image_files).forEach((file: any) => {
+            formData.append('new_image_files', file);
+        });
+    }
+
+    formData.append('image_urls', JSON.stringify(data.image_urls || []));
+    
     try {
-      await updateTripLocation(id, data);
+      await updateTripLocation(id, formData);
       toast({
         title: "Success!",
         description: "Trip location has been updated.",
@@ -152,26 +215,75 @@ export default function EditTripLocationPage() {
             <div className="space-y-6">
               <Card>
                 <CardHeader>
-                  <CardTitle>Place Information</CardTitle>
+                  <CardTitle>Place Information & Media</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-6">
                   <FormField control={form.control} name="description" render={({ field }) => (<FormItem><FormLabel>Place Description</FormLabel><FormControl><Textarea placeholder="A brief description of the location." {...field} rows={5} /></FormControl><FormMessage /></FormItem>)} />
                   <FormField control={form.control} name="address" render={({ field }) => (<FormItem><FormLabel>Address</FormLabel><FormControl><Textarea placeholder="Full address of the location." {...field} rows={3} /></FormControl><FormMessage /></FormItem>)} />
-                  <FormItem>
-                    <FormLabel>Upload Images</FormLabel>
-                    <FormControl>
-                      <div className="flex items-center justify-center w-full">
-                        <label htmlFor="dropzone-file" className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-lg cursor-pointer bg-muted/50 hover:bg-muted">
-                          <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                            <Upload className="w-8 h-8 mb-4 text-muted-foreground" />
-                            <p className="mb-2 text-sm text-muted-foreground"><span className="font-semibold">Click to upload</span> or drag and drop</p>
-                            <p className="text-xs text-muted-foreground">SVG, PNG, JPG or GIF (MAX. 800x400px)</p>
-                          </div>
-                          <Input id="dropzone-file" type="file" className="hidden" multiple />
-                        </label>
-                      </div>
-                    </FormControl>
-                  </FormItem>
+                  
+                  <FormField
+                    control={form.control}
+                    name="new_image_files"
+                    render={({ field }) => (
+                    <FormItem>
+                        <FormLabel>Location Images</FormLabel>
+                        <div className="space-y-4">
+                            {/* Existing Images */}
+                            {existingImageUrls.length > 0 && (
+                                <div>
+                                    <h4 className="text-sm font-medium mb-2 text-muted-foreground">Current Images:</h4>
+                                    <div className="grid grid-cols-3 gap-2">
+                                    {existingImageUrls.map((url, index) => (
+                                        <div key={index} className="relative group">
+                                            <Image src={url} alt={`Existing image ${index + 1}`} width={150} height={100} className="rounded-md object-cover" />
+                                            <Button type="button" variant="destructive" size="icon" className="absolute top-1 right-1 h-6 w-6 opacity-0 group-hover:opacity-100" onClick={() => handleRemoveExistingImage(url)}>
+                                                <X className="h-4 w-4" />
+                                            </Button>
+                                        </div>
+                                    ))}
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* New Image Upload */}
+                            <FormControl>
+                                <div className="flex items-center justify-center w-full">
+                                    <label htmlFor="image-files" className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-lg cursor-pointer bg-muted/50 hover:bg-muted">
+                                        <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                                        <Upload className="w-8 h-8 mb-4 text-muted-foreground" />
+                                        <p className="mb-2 text-sm text-muted-foreground"><span className="font-semibold">Click to upload</span> or drag and drop</p>
+                                        <p className="text-xs text-muted-foreground">Add new images (MAX. 2MB each)</p>
+                                        </div>
+                                        <Input id="image-files" type="file" className="hidden" multiple onChange={(e) => handleFileChange(e, field)} />
+                                    </label>
+                                </div> 
+                            </FormControl>
+                            <FormMessage />
+
+                            {/* New Images Preview */}
+                            {newImageFiles && newImageFiles.length > 0 && (
+                                <div className="mt-4 space-y-2">
+                                    <h4 className="text-sm font-medium">New Files to Upload:</h4>
+                                    <div className="grid gap-2 text-sm">
+                                        {Array.from(newImageFiles).map((file: any, index: number) => (
+                                            <div key={index} className="flex items-center justify-between p-2 bg-muted rounded-md">
+                                                <div className="flex items-center gap-2">
+                                                    <FileIcon className="h-4 w-4 text-muted-foreground" />
+                                                    <span className="font-medium truncate max-w-xs">{file.name}</span>
+                                                </div>
+                                                <Button type="button" variant="ghost" size="icon" className="h-6 w-6 text-destructive" onClick={() => handleRemoveNewImage(index)}>
+                                                    <X className="h-4 w-4" />
+                                                </Button>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                    </FormItem>
+                    )}
+                />
+
                    <FormField
                         control={form.control}
                         name="is_active"
