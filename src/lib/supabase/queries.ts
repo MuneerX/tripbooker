@@ -178,13 +178,20 @@ export async function updateTourPackage(id: string, formData: FormData) {
 
   // Helper to extract file path from URL
   const getPathFromUrl = (url: string) => {
+    if (!url) return '';
     try {
       const urlObject = new URL(url);
-      // Path is like /storage/v1/object/public/images/images/1765087694994-IMG_8457.PNG
-      // We need to remove the start of the path to get the bucket path
-      const bucketPath = 'images/';
+      const bucketPath = '/storage/v1/object/public/';
       const pathIndex = urlObject.pathname.indexOf(bucketPath);
-      return pathIndex > -1 ? urlObject.pathname.substring(pathIndex) : '';
+      if (pathIndex > -1) {
+        // Return the path after the bucket name, e.g., "images/my-image.png"
+        // The pathname would be /storage/v1/object/public/images/images/my-image.png
+        // We need to find the second "images"
+        const parts = urlObject.pathname.split('/images/');
+        // The path we want is the last part.
+        return `images/${parts.slice(1).join('/images/')}`;
+      }
+      return '';
     } catch (e) {
       console.error('Invalid URL for image deletion:', url);
       return '';
@@ -198,12 +205,16 @@ export async function updateTourPackage(id: string, formData: FormData) {
   const existingFeaturedUrl = formData.get('existing_featured_image_url') as string || '';
 
   const galleryImagesToDelete = originalImageUrls.filter((url: string) => !existingImageUrls.includes(url));
-  const featuredImageToDelete = (originalFeaturedUrl && originalFeaturedUrl !== existingFeaturedUrl) ? originalFeaturedUrl : null;
+  const featuredImageToDelete = (originalFeaturedUrl && originalFeaturedUrl !== existingFeaturedUrl && !formData.has('new_featured_image_file')) ? originalFeaturedUrl : null;
   
   const allImagesToDelete = [...galleryImagesToDelete];
-  if (featuredImageToDelete) {
+  // If a new featured image is uploaded, the old one should be deleted.
+  if (originalFeaturedUrl && formData.has('new_featured_image_file')) {
+    allImagesToDelete.push(originalFeaturedUrl);
+  } else if(featuredImageToDelete) {
     allImagesToDelete.push(featuredImageToDelete);
   }
+
 
   if (allImagesToDelete.length > 0) {
     const pathsToDelete = allImagesToDelete.map(getPathFromUrl).filter(Boolean);
@@ -220,7 +231,7 @@ export async function updateTourPackage(id: string, formData: FormData) {
 
   // 2. Handle Image Uploads (if any new ones are provided)
   const newImageFiles = formData.getAll('image_files') as File[];
-  const newFeaturedImageFile = formData.get('featured_image_file') as File | null;
+  const newFeaturedImageFile = formData.get('new_featured_image_file') as File | null;
   
   const newImageUrls: string[] = [];
   let newFeaturedImageUrl: string | undefined = undefined;
@@ -291,3 +302,4 @@ export async function updateTourPackage(id: string, formData: FormData) {
 
   return data;
 }
+
