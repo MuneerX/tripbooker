@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -28,6 +28,11 @@ export default function LoginPage() {
   const { toast } = useToast();
   const [showPassword, setShowPassword] = useState(false);
   const { theme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const logoUrl = theme === 'dark' 
     ? "https://i.ibb.co/7xpjJbKh/logoy2go-white.png" 
@@ -57,7 +62,7 @@ export default function LoginPage() {
     <div className="w-full lg:grid lg:min-h-screen lg:grid-cols-2">
       <div className="relative flex items-center justify-center py-12">
         <div className="absolute left-6 top-6">
-            <Image src={logoUrl} alt="Yes To Go Logo" width={120} height={32} />
+            {mounted && <Image src={logoUrl} alt="Yes To Go Logo" width={120} height={32} />}
         </div>
         <div className="mx-auto grid w-[350px] gap-6">
           <div className="grid gap-4 text-center">
