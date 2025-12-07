@@ -25,7 +25,7 @@ import {
 export const activitySchema = z.object({
     id: z.string().optional(),
     title: z.string().min(1, "Activity title is required"),
-    activity_type: z.enum(["trekking", "sightseeing", "meal", "transport", "accommodation", "adventure", "shopping", "leisure"]),
+    activity_type: z.enum(["food", "explore"]),
     activity_time: z.string().regex(/^(0[0-9]|1[0-9]|2[0-3]):[0-5][0-9]$/, "Invalid time format (e.g., 09:00 or 17:30)"),
     duration_minutes: z.coerce.number().int().min(0, "Duration must be a positive number"),
     description: z.string().min(1, "Description is required"),
@@ -47,7 +47,7 @@ type ActivityFormModalProps = {
 
 const defaultActivityValues: ActivityFormValues = {
   title: "",
-  activity_type: "sightseeing",
+  activity_type: "explore",
   activity_time: "",
   duration_minutes: 60,
   description: "",
@@ -96,14 +96,8 @@ export function ActivityFormModal({ children, activity, onSave }: ActivityFormMo
                             <div className="grid md:grid-cols-2 gap-4">
                                 <FormField control={activityForm.control} name="title" render={({ field }) => ( <FormItem><FormLabel>Activity Title</FormLabel><FormControl><Input placeholder="e.g., Sunset Cruise" {...field} /></FormControl><FormMessage /></FormItem>)} />
                                 <FormField control={activityForm.control} name="activity_type" render={({ field }) => ( <FormItem><FormLabel>Type</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Select type" /></SelectTrigger></FormControl><SelectContent>
-                                  <SelectItem value="trekking">Trekking</SelectItem>
-                                  <SelectItem value="sightseeing">Sightseeing</SelectItem>
-                                  <SelectItem value="meal">Meal</SelectItem>
-                                  <SelectItem value="transport">Transport</SelectItem>
-                                  <SelectItem value="accommodation">Accommodation</SelectItem>
-                                  <SelectItem value="adventure">Adventure</SelectItem>
-                                  <SelectItem value="shopping">Shopping</SelectItem>
-                                  <SelectItem value="leisure">Leisure</SelectItem>
+                                  <SelectItem value="food">Food</SelectItem>
+                                  <SelectItem value="explore">Explore</SelectItem>
                                   </SelectContent></Select><FormMessage /></FormItem> )} />
                             </div>
                              <div className="grid md:grid-cols-2 gap-4">
