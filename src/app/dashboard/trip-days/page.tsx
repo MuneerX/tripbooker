@@ -20,6 +20,7 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
+  AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { StatCard } from "@/components/dashboard/StatCard";
 import { getTripDays, deleteTripDay } from "@/lib/supabase/queries";
