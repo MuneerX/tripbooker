@@ -68,6 +68,7 @@ export function ActivityFormModal({ children, activity, onSave }: ActivityFormMo
     React.useEffect(() => {
         if (isOpen) {
             let valuesToSet = activity || defaultActivityValues;
+            // Trim seconds from time if they exist
             if (activity?.activity_time && activity.activity_time.length > 5) {
                 valuesToSet = {
                     ...activity,
@@ -83,17 +84,12 @@ export function ActivityFormModal({ children, activity, onSave }: ActivityFormMo
         setIsOpen(false);
     }
 
-    const onFormSubmit = (e: React.MouseEvent<HTMLButtonElement>) => {
-      e.preventDefault();
-      activityForm.handleSubmit(handleSave)();
-    }
-
     return (
          <Dialog open={isOpen} onOpenChange={setIsOpen}>
             <DialogTrigger asChild>{children}</DialogTrigger>
             <DialogContent className="sm:max-w-[600px]">
                  <Form {...activityForm}>
-                    <form onSubmit={(e) => e.preventDefault()}>
+                    <form onSubmit={activityForm.handleSubmit(handleSave)}>
                         <DialogHeader>
                             <DialogTitle>{activity ? 'Edit' : 'Add'} Activity</DialogTitle>
                             <DialogDescription>Fill in the details for the activity.</DialogDescription>
@@ -124,7 +120,7 @@ export function ActivityFormModal({ children, activity, onSave }: ActivityFormMo
 
                         <DialogFooter>
                             <DialogClose asChild><Button type="button" variant="outline">Cancel</Button></DialogClose>
-                            <Button type="button" onClick={onFormSubmit}>Save Activity</Button>
+                            <Button type="submit">Save Activity</Button>
                         </DialogFooter>
                     </form>
                 </Form>

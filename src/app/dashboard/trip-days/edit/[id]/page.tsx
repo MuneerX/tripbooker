@@ -11,10 +11,11 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { ArrowLeft, PlusCircle, Trash2 } from "lucide-react";
+import { ArrowLeft, PlusCircle, Trash2, DollarSign, CheckCircle, XCircle, AlertTriangle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { getTripDayById, updateTripDay } from "@/lib/supabase/queries";
 import { ActivityFormModal, activitySchema } from "@/app/dashboard/trip-days/create/_components/ActivityFormModal";
+import { formatCurrency } from "@/lib/utils";
 
 
 const tripDayEditSchema = z.object({
@@ -66,7 +67,10 @@ export default function EditTripDayPage() {
             accommodation_type: day.accommodation_type || '',
             accommodation_name: day.accommodation_name || '',
             meals_included: day.meals_included || [],
-            activities: day.activities || []
+            activities: (day.activities || []).map(act => ({
+              ...act,
+              activity_time: act.activity_time ? act.activity_time.substring(0, 5) : '',
+            }))
           });
         } else {
           toast({ variant: "destructive", title: "Error", description: "Trip Day not found." });
@@ -161,12 +165,39 @@ export default function EditTripDayPage() {
               fields.map((activity, index) => (
                 <Card key={activity.id || `new-${index}`} className="bg-muted/30 p-4">
                     <div className="flex justify-between items-start">
-                        <div className="grid gap-1">
-                            <p className="font-semibold">{activity.title} <span className="text-xs font-normal text-muted-foreground capitalize">({activity.activity_type})</span></p>
-                            <p className="text-sm text-muted-foreground">{activity.activity_time} &bull; {activity.duration_minutes} mins</p>
-                            <p className="text-sm text-muted-foreground mt-2">{activity.description}</p>
+                        <div className="grid gap-2 flex-1">
+                            <div className="flex justify-between">
+                                <p className="font-semibold">{activity.title} <span className="text-xs font-normal text-muted-foreground capitalize">({activity.activity_type})</span></p>
+                                <p className="text-sm text-muted-foreground">{activity.activity_time ? activity.activity_time.substring(0,5) : ''} &bull; {activity.duration_minutes} mins</p>
+                            </div>
+                            <p className="text-sm text-muted-foreground">{activity.description}</p>
+                            
+                            {activity.special_instructions && (
+                                <div className="flex items-start text-sm gap-2 mt-2 text-sky-600">
+                                    <AlertTriangle className="h-4 w-4 mt-0.5" />
+                                    <span>{activity.special_instructions}</span>
+                                </div>
+                            )}
+
+                            <div className="flex items-center text-sm gap-4 mt-2">
+                                <div className="flex items-center gap-1.5">
+                                    {activity.cost_included ? <CheckCircle className="h-4 w-4 text-green-500" /> : <XCircle className="h-4 w-4 text-red-500" />}
+                                    <span className="text-muted-foreground">Cost Included</span>
+                                </div>
+                                <div className="flex items-center gap-1.5">
+                                    {activity.booking_required ? <CheckCircle className="h-4 w-4 text-green-500" /> : <XCircle className="h-4 w-4 text-red-500" />}
+                                    <span className="text-muted-foreground">Booking Required</span>
+                                </div>
+                                {activity.additional_cost && activity.additional_cost > 0 && (
+                                    <div className="flex items-center gap-1.5 text-amber-600">
+                                        <DollarSign className="h-4 w-4" />
+                                        <span className="text-muted-foreground">Extra: {formatCurrency(activity.additional_cost)}</span>
+                                    </div>
+                                )}
+                            </div>
                         </div>
-                        <div className="flex items-center gap-2">
+
+                        <div className="flex items-center gap-2 pl-4">
                              <ActivityFormModal 
                                 activity={activity} 
                                 onSave={(editedActivity) => update(index, editedActivity)}
