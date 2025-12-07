@@ -2,7 +2,7 @@
 
 "use server"
 
-import { createClient as createServerClient } from '@supabase/ssr'
+import { createServerClient } from '@supabase/ssr'
 import { createClient as createBrowserClient } from './client'
 import { cookies } from 'next/headers'
 
@@ -121,7 +121,7 @@ export async function uploadTourImages(formData: FormData) {
 
   // Upload gallery images
   for (const file of imageFiles) {
-    const filePath = `tour_images/${Date.now()}-${file.name}`;
+    const filePath = `images/${Date.now()}-${file.name}`;
     const { error: uploadError } = await supabase.storage.from('images').upload(filePath, file);
 
     if (uploadError) {
@@ -135,7 +135,7 @@ export async function uploadTourImages(formData: FormData) {
 
   // Upload featured image if it exists
   if (featuredImageFile) {
-    const filePath = `tour_images/featured/${Date.now()}-${featuredImageFile.name}`;
+    const filePath = `images/featured/${Date.now()}-${featuredImageFile.name}`;
     const { error: uploadError } = await supabase.storage.from('images').upload(filePath, featuredImageFile);
 
     if (uploadError) {
