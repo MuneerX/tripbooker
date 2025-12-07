@@ -17,7 +17,7 @@ import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import Link from "next/link";
-import { getTourPackageById, getTripDaysForPackage, deleteTourPackage } from "@/lib/supabase/queries";
+import { getTourPackageById, getTripDaysForPackage, deleteTourPackage, updateTourPackageStatus } from "@/lib/supabase/queries";
 import type { TourPackage, Booking, TripDay, Review, Activity } from "@/lib/types";
 import mockData from "@/lib/data"; // Still needed for bookings, reviews
 import {
@@ -41,7 +41,6 @@ export default function TourPackageDetailPage() {
   const { toast } = useToast();
 
   const [tourPackage, setTourPackage] = React.useState<TourPackage | null>(null);
-  const [status, setStatus] = React.useState<boolean | undefined>();
   
   // NOTE: Bookings and reviews are still from mock data.
   const [bookingsForPackage, setBookingsForPackage] = React.useState<Booking[]>([]);
@@ -55,8 +54,6 @@ export default function TourPackageDetailPage() {
         setTourPackage(pkg);
 
         if (pkg) {
-          setStatus(pkg.is_active);
-          
           const tripDays = await getTripDaysForPackage(pkg.id);
           setTripDaysForPackage(tripDays);
 
@@ -97,10 +94,22 @@ export default function TourPackageDetailPage() {
     );
   }
 
-  const handleStatusChange = (newStatus: boolean) => {
-    // In a real app, you would call a function to update this in Supabase
-    setStatus(newStatus);
-    console.log(`TODO: Update package ${tourPackage.id} status to ${newStatus}`);
+  const handleStatusChange = async (newStatus: boolean) => {
+    if (!tourPackage) return;
+    try {
+        await updateTourPackageStatus(tourPackage.id, newStatus);
+        setTourPackage(prev => prev ? { ...prev, is_active: newStatus } : null);
+        toast({
+            title: "Status Updated",
+            description: `Package is now ${newStatus ? 'active' : 'inactive'}.`,
+        });
+    } catch (error: any) {
+        toast({
+            variant: "destructive",
+            title: "Error updating status",
+            description: error.message || "An unexpected error occurred.",
+        });
+    }
   };
 
   const detailItems = [
@@ -128,7 +137,7 @@ export default function TourPackageDetailPage() {
                     size="sm" 
                     className={cn(
                         "px-3 py-1 h-auto text-xs",
-                        status === true ? "bg-green-500/10 text-green-700 shadow-sm hover:bg-green-500/20 hover:text-green-700" : "hover:bg-muted"
+                        tourPackage.is_active === true ? "bg-green-500/10 text-green-700 shadow-sm hover:bg-green-500/20 hover:text-green-700" : "hover:bg-muted"
                     )} 
                     onClick={() => handleStatusChange(true)}>
                     Active
@@ -138,7 +147,7 @@ export default function TourPackageDetailPage() {
                     size="sm" 
                     className={cn(
                         "px-3 py-1 h-auto text-xs",
-                        status === false ? "bg-red-500/10 text-red-700 shadow-sm hover:bg-red-500/20 hover:text-red-700" : "hover:bg-muted"
+                        tourPackage.is_active === false ? "bg-red-500/10 text-red-700 shadow-sm hover:bg-red-500/20 hover:text-red-700" : "hover:bg-muted"
                     )} 
                     onClick={() => handleStatusChange(false)}>
                     Inactive

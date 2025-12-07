@@ -358,6 +358,27 @@ export async function deleteTourPackage(pkg: TourPackage) {
 }
 
 
+/**
+ * Updates only the status of a tour package.
+ */
+export async function updateTourPackageStatus(id: string, is_active: boolean) {
+    const supabase = createAdminClient();
+    const { data, error } = await supabase
+        .from('tour_packages')
+        .update({ is_active, updated_at: new Date().toISOString() })
+        .eq('id', id)
+        .select()
+        .single();
+    
+    if (error) {
+        console.error('Error updating tour package status:', error);
+        throw new Error(error.message);
+    }
+
+    return data;
+}
+
+
 // --- Trip Day Functions ---
 
 /**
