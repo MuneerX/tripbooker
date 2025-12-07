@@ -33,12 +33,15 @@ export default function TourPackagesPage() {
   const [searchTerm, setSearchTerm] = React.useState("");
   const [currentPage, setCurrentPage] = React.useState(1);
   const [allPackages, setAllPackages] = React.useState<TourPackage[]>([]);
+  const [loading, setLoading] = React.useState(true);
   const rowsPerPage = 10;
 
   React.useEffect(() => {
     const fetchPackages = async () => {
+      setLoading(true);
       const packages = await getTourPackages();
       setAllPackages(packages);
+      setLoading(false);
     };
     fetchPackages();
   }, []);
@@ -109,7 +112,13 @@ export default function TourPackagesPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {paginatedPackages.length > 0 ? (
+              {loading ? (
+                <TableRow>
+                  <TableCell colSpan={8} className="h-24 text-center">
+                    Loading tour packages...
+                  </TableCell>
+                </TableRow>
+              ) : paginatedPackages.length > 0 ? (
                 paginatedPackages.map((pkg: TourPackage) => (
                   <TableRow key={pkg.id}>
                     <TableCell className="font-medium">{pkg.tourName}</TableCell>

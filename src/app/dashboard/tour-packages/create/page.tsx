@@ -22,6 +22,7 @@ import { useToast } from "@/hooks/use-toast"
 import { Switch } from "@/components/ui/switch"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { formatCurrency } from "@/lib/utils"
+import { createTourPackage } from "@/lib/supabase/queries"
 
 const payInPartSchema = z.object({
   partName: z.string().min(1, "Part name is required"),
@@ -37,7 +38,7 @@ const tourPackageSchema = z.object({
   days: z.coerce.number().int().min(1, "Must be at least 1 day"),
   nights: z.coerce.number().int().min(0, "Nights cannot be negative"),
   introductionDate: z.date(),
-  startDate: z.date(),
+  withdrawalDate: z.date(),
   maxPermittedBooking: z.coerce.number().int().min(1, "Must be at least 1"),
   itineraryId: z.string().min(1, "Itinerary is required"),
   status: z.enum(["active", "inactive"]),
@@ -54,9 +55,13 @@ const tourPackageSchema = z.object({
   termsAndConditions: z.string().optional(),
   
   isFeatured: z.boolean().default(false),
+  
+  imageUrl: z.string().url().optional().or(z.literal('')),
+  featuredImageUrl: z.string().url().optional().or(z.literal('')),
 });
 
 type TourPackageFormValues = z.infer<typeof tourPackageSchema>;
+
 // Use a different type for the temporary state to allow empty strings
 type PayInPartState = {
   partName: string;
@@ -78,9 +83,9 @@ export default function CreateTourPackagePage() {
       days: 1,
       nights: 0,
       introductionDate: new Date(),
-      startDate: new Date(),
+      withdrawalDate: new Date(),
       maxPermittedBooking: 10,
-      itineraryId: "",
+      itineraryId: "itin_default",
       status: "active",
       enablePayInParts: false,
       payInParts: [],
@@ -88,7 +93,12 @@ export default function CreateTourPackagePage() {
       highlights: "",
       inclusions: "",
       exclusions: "",
+      bookingPolicies: "",
+      cancellationPolicies: "",
+      termsAndConditions: "",
       isFeatured: false,
+      imageUrl: "https://picsum.photos/seed/default/600/400",
+      featuredImageUrl: "",
     },
   });
 
@@ -122,7 +132,7 @@ export default function CreateTourPackagePage() {
     }
   };
 
-  const onSubmit = (data: TourPackageFormValues) => {
+  const onSubmit = async (data: TourPackageFormValues) => {
     // Convert comma-separated strings to arrays
     const formattedData = {
         ...data,
@@ -130,12 +140,21 @@ export default function CreateTourPackagePage() {
         inclusions: data.inclusions.split(',').map(s => s.trim()),
         exclusions: data.exclusions.split(',').map(s => s.trim()),
     };
-    console.log(formattedData);
-    toast({
-      title: "Success!",
-      description: "New tour package has been created.",
-    });
-    router.push('/dashboard/tour-packages');
+
+    try {
+      await createTourPackage(formattedData);
+      toast({
+        title: "Success!",
+        description: "New tour package has been created.",
+      });
+      router.push('/dashboard/tour-packages');
+    } catch (error) {
+       toast({
+        variant: "destructive",
+        title: "Uh oh! Something went wrong.",
+        description: "Could not create the tour package.",
+      });
+    }
   };
 
   return (
@@ -166,26 +185,17 @@ export default function CreateTourPackagePage() {
                                 <FormField control={form.control} name="maxPermittedBooking" render={({ field }) => ( <FormItem><FormLabel>Maximum Permitted Booking</FormLabel><FormControl><Input type="number" {...field} /></FormControl><FormMessage /></FormItem> )} />
                             </div>
                             <div className="grid grid-cols-2 gap-4">
-                                <FormField control={form.control} name="itineraryId" render={({ field }) => ( <FormItem><FormLabel>Itinerary</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Select itinerary" /></SelectTrigger></FormControl><SelectContent><SelectItem value="itin1">Himalayan Trek Itinerary</SelectItem><SelectItem value="itin2">Goa Beach Itinerary</SelectItem></SelectContent></Select><FormMessage /></FormItem>)} />
+                                <FormField control={form.control} name="itineraryId" render={({ field }) => ( <FormItem><FormLabel>Itinerary</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Select itinerary" /></SelectTrigger></FormControl><SelectContent><SelectItem value="itin_default">Default Itinerary</SelectItem><SelectItem value="itin1">Himalayan Trek Itinerary</SelectItem><SelectItem value="itin2">Goa Beach Itinerary</SelectItem></SelectContent></Select><FormMessage /></FormItem>)} />
                                 <FormField control={form.control} name="status" render={({ field }) => ( <FormItem><FormLabel>Status</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Select status" /></SelectTrigger></FormControl><SelectContent><SelectItem value="active">Active</SelectItem><SelectItem value="inactive">Inactive</SelectItem></SelectContent></Select><FormMessage /></FormItem>)} />
                             </div>
                              <div className="grid grid-cols-2 gap-4">
                                 <FormField control={form.control} name="introductionDate" render={({ field }) => ( <FormItem className="flex flex-col"><FormLabel>Introduction Date</FormLabel><Popover><PopoverTrigger asChild><FormControl><Button variant={"outline"} className={cn("pl-3 text-left font-normal",!field.value && "text-muted-foreground")}>{field.value ? format(field.value, "PPP") : (<span>Pick a date</span>)}<CalendarIcon className="ml-auto h-4 w-4 opacity-50" /></Button></FormControl></PopoverTrigger><PopoverContent className="w-auto p-0" align="start"><Calendar mode="single" selected={field.value} onSelect={field.onChange} disabled={(date) => date > new Date() || date < new Date("1900-01-01")} initialFocus /></PopoverContent></Popover><FormMessage /></FormItem> )} />
-                                <FormField control={form.control} name="startDate" render={({ field }) => ( <FormItem className="flex flex-col"><FormLabel>Start Date</FormLabel><Popover><PopoverTrigger asChild><FormControl><Button variant={"outline"} className={cn("pl-3 text-left font-normal",!field.value && "text-muted-foreground")}>{field.value ? format(field.value, "PPP") : (<span>Pick a date</span>)}<CalendarIcon className="ml-auto h-4 w-4 opacity-50" /></Button></FormControl></PopoverTrigger><PopoverContent className="w-auto p-0" align="start"><Calendar mode="single" selected={field.value} onSelect={field.onChange} initialFocus /></PopoverContent></Popover><FormMessage /></FormItem> )} />
+                                <FormField control={form.control} name="withdrawalDate" render={({ field }) => ( <FormItem className="flex flex-col"><FormLabel>Withdrawal Date</FormLabel><Popover><PopoverTrigger asChild><FormControl><Button variant={"outline"} className={cn("pl-3 text-left font-normal",!field.value && "text-muted-foreground")}>{field.value ? format(field.value, "PPP") : (<span>Pick a date</span>)}<CalendarIcon className="ml-auto h-4 w-4 opacity-50" /></Button></FormControl></PopoverTrigger><PopoverContent className="w-auto p-0" align="start"><Calendar mode="single" selected={field.value} onSelect={field.onChange} initialFocus /></PopoverContent></Popover><FormMessage /></FormItem> )} />
                              </div>
                             <FormItem>
-                                <FormLabel>Tour Gallery</FormLabel>
+                                <FormLabel>Tour Gallery Image URL</FormLabel>
                                 <FormControl>
-                                    <div className="flex items-center justify-center w-full">
-                                    <label htmlFor="gallery-upload" className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-lg cursor-pointer bg-muted/50 hover:bg-muted">
-                                        <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                                        <Upload className="w-8 h-8 mb-4 text-muted-foreground" />
-                                        <p className="mb-2 text-sm text-muted-foreground"><span className="font-semibold">Click to upload</span> or drag and drop</p>
-                                        <p className="text-xs text-muted-foreground">SVG, PNG, JPG (Recommended 800x400px)</p>
-                                        </div>
-                                        <Input id="gallery-upload" type="file" className="hidden" multiple />
-                                    </label>
-                                    </div> 
+                                    <Input placeholder="https://example.com/image.png" {...form.register('imageUrl')} />
                                 </FormControl>
                             </FormItem>
                         </CardContent>
@@ -256,17 +266,9 @@ export default function CreateTourPackagePage() {
                             <FormField control={form.control} name="isFeatured" render={({ field }) => ( <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4"><div className="space-y-0.5"><FormLabel className="text-base">Featured Package</FormLabel><FormDescription>Display this package prominently on the homepage.</FormDescription></div><FormControl><Switch checked={field.value} onCheckedChange={field.onChange} /></FormControl></FormItem>)} />
                             {form.watch('isFeatured') && (
                                 <FormItem>
-                                    <FormLabel>Featured Image</FormLabel>
+                                    <FormLabel>Featured Image URL</FormLabel>
                                     <FormControl>
-                                        <div className="flex items-center justify-center w-full">
-                                        <label htmlFor="featured-image-upload" className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-lg cursor-pointer bg-muted/50 hover:bg-muted">
-                                            <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                                            <Upload className="w-8 h-8 mb-4 text-muted-foreground" />
-                                            <p className="mb-2 text-sm text-muted-foreground"><span className="font-semibold">Click to upload featured image</span></p>
-                                            </div>
-                                            <Input id="featured-image-upload" type="file" className="hidden" />
-                                        </label>
-                                        </div> 
+                                       <Input placeholder="https://example.com/featured-image.png" {...form.register('featuredImageUrl')} />
                                     </FormControl>
                                 </FormItem>
                             )}
@@ -277,14 +279,12 @@ export default function CreateTourPackagePage() {
                 
                 <div className="flex justify-end gap-2">
                     <Button type="button" variant="outline" onClick={() => router.back()}>Cancel</Button>
-                    <Button type="submit">Create Package</Button>
+                    <Button type="submit" disabled={form.formState.isSubmitting}>
+                        {form.formState.isSubmitting ? "Creating..." : "Create Package"}
+                    </Button>
                 </div>
             </form>
         </Form>
     </div>
   )
 }
-
-    
-
-    

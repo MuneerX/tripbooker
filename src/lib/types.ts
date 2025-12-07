@@ -1,3 +1,4 @@
+
 import type { Timestamp } from 'firebase/firestore';
 
 export type TourPackage = {
@@ -9,7 +10,7 @@ export type TourPackage = {
   days: number;
   nights: number;
   introductionDate: Date;
-  withdrawalDate: Date;
+  withdrawalDate: Date | string; // Allow string for form values
   maxPermittedBooking: number;
   itineraryId: string;
   imageUrl: string;

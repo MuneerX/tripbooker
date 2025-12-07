@@ -2,40 +2,61 @@
 "use server"
 
 import { supabase } from './client'
-import mockData from '@/lib/data'
-import { TourPackage } from '@/lib/types'
+import type { TourPackage } from '@/lib/types'
 
 /**
- * Fetches all tour packages.
- * In a real application, this would fetch from Supabase.
- * For now, it returns mock data.
+ * Fetches all tour packages from Supabase.
  */
 export async function getTourPackages(): Promise<TourPackage[]> {
-  // TODO: Replace with actual Supabase query
-  // const { data, error } = await supabase.from('tour_packages').select('*')
-  // if (error) {
-  //   console.error('Error fetching tour packages:', error)
-  //   return []
-  // }
-  // return data as TourPackage[]
+  const { data, error } = await supabase.from('tour_packages').select('*')
   
-  // Returning mock data for now
-  return Promise.resolve(mockData.tourPackages);
+  if (error) {
+    console.error('Error fetching tour packages:', error)
+    return []
+  }
+  
+  // Supabase returns dates as strings, so we need to convert them.
+  return data.map(pkg => ({
+    ...pkg,
+    introductionDate: new Date(pkg.introductionDate),
+    withdrawalDate: new Date(pkg.withdrawalDate),
+    createdAt: new Date(pkg.createdAt),
+    updatedAt: new Date(pkg.updatedAt),
+  })) as TourPackage[];
 }
 
 /**
- * Fetches a single tour package by its ID.
+ * Fetches a single tour package by its ID from Supabase.
  */
 export async function getTourPackageById(id: string): Promise<TourPackage | null> {
-    // TODO: Replace with actual Supabase query
-    // const { data, error } = await supabase.from('tour_packages').select('*').eq('id', id).single()
-    // if (error) {
-    //   console.error(`Error fetching tour package ${id}:`, error)
-    //   return null
-    // }
-    // return data as TourPackage | null
-    
-    // Returning mock data for now
-    const pkg = mockData.tourPackages.find(p => p.id === id) || null;
-    return Promise.resolve(pkg);
+    const { data, error } = await supabase.from('tour_packages').select('*').eq('id', id).single()
+
+    if (error) {
+      console.error(`Error fetching tour package ${id}:`, error)
+      return null
+    }
+
+    if (!data) return null;
+
+    return {
+        ...data,
+        introductionDate: new Date(data.introductionDate),
+        withdrawalDate: new Date(data.withdrawalDate),
+        createdAt: new Date(data.createdAt),
+        updatedAt: new Date(data.updatedAt),
+    } as TourPackage;
+}
+
+/**
+ * Creates a new tour package in Supabase.
+ */
+export async function createTourPackage(pkg: Omit<TourPackage, 'id' | 'createdAt' | 'updatedAt'>) {
+  const { data, error } = await supabase.from('tour_packages').insert([pkg]).select().single();
+
+  if (error) {
+    console.error('Error creating tour package:', error);
+    throw new Error(error.message);
+  }
+
+  return data;
 }
