@@ -68,7 +68,7 @@ export default function TripLocationsPage() {
   };
 
   const filteredLocations = allLocations.filter((location) =>
-    location.locationName.toLowerCase().includes(searchTerm.toLowerCase())
+    location.locationName && location.locationName.toLowerCase().includes(searchTerm.toLowerCase())
   );
   
   const totalLocations = allLocations.length;
