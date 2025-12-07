@@ -772,3 +772,6 @@ export async function deleteTripLocation(id: string) {
     }
     return { success: true };
 }
+
+
+    
