@@ -15,10 +15,11 @@ import { useRouter } from "next/navigation"
 import { useToast } from "@/hooks/use-toast"
 import { MapPin, Upload } from "lucide-react"
 import { createTripLocation } from "@/lib/supabase/queries"
+import { Switch } from "@/components/ui/switch"
 
 const tripLocationSchema = z.object({
-  locationName: z.string().min(1, "Location name is required"),
-  type: z.enum(["city", "landmark", "nature", "heritage", "beach", "mountain"]),
+  name: z.string().min(1, "Location name is required"),
+  place_type: z.string().min(1, "Place type is required"),
   city: z.string().min(1, "City is required"),
   country: z.string().min(1, "Country is required"),
   latitude: z.coerce.number().optional().nullable(),
@@ -28,8 +29,7 @@ const tripLocationSchema = z.object({
   code: z.string().min(1, "Location code is required"),
   description: z.string().min(1, "Description is required"),
   address: z.string().min(1, "Address is required"),
-  // images: z.any().optional(), // File upload handling is complex and not fully implemented here
-  status: z.enum(["active", "inactive"]),
+  is_active: z.boolean().default(true),
 });
 
 type TripLocationFormValues = z.infer<typeof tripLocationSchema>;
@@ -42,16 +42,16 @@ export default function CreateTripLocationPage() {
   const form = useForm<TripLocationFormValues>({
     resolver: zodResolver(tripLocationSchema),
     defaultValues: {
-      locationName: "",
-      type: "city",
+      name: "",
+      place_type: "destination",
       city: "",
-      country: "",
+      country: "India",
       state: "",
       district: "",
       code: "",
       description: "",
       address: "",
-      status: "active",
+      is_active: true,
       latitude: null,
       longitude: null,
     },
@@ -60,7 +60,8 @@ export default function CreateTripLocationPage() {
   const onSubmit = async (data: TripLocationFormValues) => {
     setIsSubmitting(true);
     try {
-      await createTripLocation({ ...data, images: [] }); // Sending empty array for images for now
+      // NOTE: image_urls are not handled in this form for now.
+      await createTripLocation({ ...data, image_urls: [] });
       toast({
         title: "Success!",
         description: "New trip location has been created.",
@@ -96,7 +97,7 @@ export default function CreateTripLocationPage() {
                     <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <FormField
                             control={form.control}
-                            name="locationName"
+                            name="name"
                             render={({ field }) => (
                             <FormItem>
                                 <FormLabel>Location Name</FormLabel>
@@ -109,25 +110,13 @@ export default function CreateTripLocationPage() {
                         />
                         <FormField
                             control={form.control}
-                            name="type"
+                            name="place_type"
                             render={({ field }) => (
                                 <FormItem>
                                 <FormLabel>Location Type</FormLabel>
-                                <Select onValueChange={field.onChange} defaultValue={field.value}>
-                                    <FormControl>
-                                    <SelectTrigger>
-                                        <SelectValue placeholder="Select a type" />
-                                    </SelectTrigger>
-                                    </FormControl>
-                                    <SelectContent>
-                                    <SelectItem value="city">City</SelectItem>
-                                    <SelectItem value="landmark">Landmark</SelectItem>
-                                    <SelectItem value="nature">Nature</SelectItem>
-                                    <SelectItem value="heritage">Heritage</SelectItem>
-                                    <SelectItem value="beach">Beach</SelectItem>
-                                    <SelectItem value="mountain">Mountain</SelectItem>
-                                    </SelectContent>
-                                </Select>
+                                 <FormControl>
+                                    <Input placeholder="e.g., destination" {...field} />
+                                </FormControl>
                                 <FormMessage />
                                 </FormItem>
                             )}
@@ -208,22 +197,18 @@ export default function CreateTripLocationPage() {
                             </FormItem>
                             <FormField
                                 control={form.control}
-                                name="status"
+                                name="is_active"
                                 render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel>Status</FormLabel>
-                                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                                    <div className="space-y-0.5">
+                                        <FormLabel>Active Status</FormLabel>
+                                    </div>
                                     <FormControl>
-                                        <SelectTrigger>
-                                        <SelectValue placeholder="Select status" />
-                                        </SelectTrigger>
+                                        <Switch
+                                            checked={field.value}
+                                            onCheckedChange={field.onChange}
+                                        />
                                     </FormControl>
-                                    <SelectContent>
-                                        <SelectItem value="active">Active</SelectItem>
-                                        <SelectItem value="inactive">Inactive</SelectItem>
-                                    </SelectContent>
-                                    </Select>
-                                    <FormMessage />
                                 </FormItem>
                                 )}
                             />
@@ -243,5 +228,3 @@ export default function CreateTripLocationPage() {
     </div>
   )
 }
-
-    

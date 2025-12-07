@@ -66,21 +66,21 @@ export type TripDay = {
 
 export type TripLocation = {
   id: string;
-  locationName: string;
+  name: string;
+  code: string | null;
+  address: string | null;
+  city: string | null;
+  district: string | null;
+  state: string | null;
+  country: string | null;
   latitude: number | null;
   longitude: number | null;
-  type: 'city' | 'landmark' | 'nature' | 'heritage' | 'beach' | 'mountain';
-  country: string;
-  state: string;
-  district: string;
-  city: string;
-  code: string;
-  description: string;
-  address: string;
-  images: string[];
-  status: 'active' | 'inactive';
-  created_at: string;
-  updated_at: string;
+  description: string | null;
+  image_urls: string[] | null;
+  place_type: string | null;
+  is_active: boolean | null;
+  created_at: string | null;
+  updated_at: string | null;
 };
 
 export type Booking = {

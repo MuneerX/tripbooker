@@ -509,10 +509,7 @@ export async function getTripLocations(): Promise<TripLocation[]> {
     console.error('Error fetching trip locations:', error);
     return [];
   }
-  return data.map(item => ({
-    ...item,
-    locationName: item.location_name
-  })) as TripLocation[];
+  return data as TripLocation[];
 }
 
 /**
@@ -528,30 +525,16 @@ export async function getTripLocationById(id: string): Promise<TripLocation | nu
   }
   if (!data) return null;
 
-  return { ...data, locationName: data.location_name } as TripLocation;
+  return data as TripLocation;
 }
 
 /**
  * Creates a new trip location.
  */
-export async function createTripLocation(locationData: Omit<TripLocation, 'id' | 'created_at' | 'updated_at'>) {
+export async function createTripLocation(locationData: Partial<Omit<TripLocation, 'id' | 'created_at' | 'updated_at'>>) {
     const supabase = createAdminClient();
-    const payload = {
-        location_name: locationData.locationName,
-        type: locationData.type,
-        city: locationData.city,
-        country: locationData.country,
-        latitude: locationData.latitude,
-        longitude: locationData.longitude,
-        state: locationData.state,
-        district: locationData.district,
-        code: locationData.code,
-        description: locationData.description,
-        address: locationData.address,
-        images: locationData.images || [],
-        status: locationData.status,
-    };
-    const { data, error } = await supabase.from('places').insert([payload]).select().single();
+    
+    const { data, error } = await supabase.from('places').insert([locationData]).select().single();
 
     if (error) {
         console.error('Error creating trip location:', error);
@@ -565,20 +548,9 @@ export async function createTripLocation(locationData: Omit<TripLocation, 'id' |
  */
 export async function updateTripLocation(id: string, locationData: Partial<Omit<TripLocation, 'id' | 'created_at' | 'updated_at'>>) {
     const supabase = createAdminClient();
-     const payload = {
-        location_name: locationData.locationName,
-        type: locationData.type,
-        city: locationData.city,
-        country: locationData.country,
-        latitude: locationData.latitude,
-        longitude: locationData.longitude,
-        state: locationData.state,
-        district: locationData.district,
-        code: locationData.code,
-        description: locationData.description,
-        address: locationData.address,
-        images: locationData.images,
-        status: locationData.status,
+    
+    const payload = {
+        ...locationData,
         updated_at: new Date().toISOString(),
     };
 

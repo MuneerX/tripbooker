@@ -58,7 +58,7 @@ export default function TripLocationDetailPage() {
       await deleteTripLocation(location.id);
       toast({
         title: "Success",
-        description: `Location "${location.locationName}" has been deleted.`,
+        description: `Location "${location.name}" has been deleted.`,
       });
       router.push('/dashboard/trip-locations');
       router.refresh();
@@ -96,9 +96,9 @@ export default function TripLocationDetailPage() {
             <span className="sr-only">Back</span>
           </Button>
           <h1 className="flex-1 shrink-0 whitespace-nowrap text-xl font-semibold tracking-tight sm:grow-0">
-            {location.locationName}
+            {location.name}
           </h1>
-          <Badge variant="outline" className={getStatusBadgeColor(location.status)}>{location.status}</Badge>
+          <Badge variant="outline" className={getStatusBadgeColor(location.is_active ? 'active' : 'inactive')}>{location.is_active ? 'Active' : 'Inactive'}</Badge>
           <div className="ml-auto flex items-center gap-2">
             <AlertDialogTrigger asChild>
                 <Button variant="outline" size="sm">
@@ -114,17 +114,17 @@ export default function TripLocationDetailPage() {
         </div>
         <Card>
           <CardHeader>
-            <CardTitle>{location.locationName}</CardTitle>
+            <CardTitle>{location.name}</CardTitle>
             <CardDescription>{location.description}</CardDescription>
           </CardHeader>
           <CardContent className="grid md:grid-cols-2 gap-8">
               <div className="grid gap-4">
                   <Carousel className="w-full relative">
                       <CarouselContent>
-                          {location.images && location.images.length > 0 ? location.images.map((img, index) => (
+                          {location.image_urls && location.image_urls.length > 0 ? location.image_urls.map((img, index) => (
                           <CarouselItem key={index}>
                               <Image
-                                  alt={`${location.locationName} image ${index + 1}`}
+                                  alt={`${location.name} image ${index + 1}`}
                                   className="aspect-video w-full rounded-md object-cover"
                                   height="400"
                                   src={img}
@@ -186,7 +186,7 @@ export default function TripLocationDetailPage() {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <div className="font-semibold text-muted-foreground">Type</div>
-                  <Badge variant="secondary" className="capitalize mt-1">{location.type}</Badge>
+                  <Badge variant="secondary" className="capitalize mt-1">{location.place_type}</Badge>
                 </div>
                 <div>
                   <div className="font-semibold text-muted-foreground">Code</div>
@@ -208,7 +208,7 @@ export default function TripLocationDetailPage() {
             <AlertDialogHeader>
                 <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
                 <AlertDialogDescription>
-                This action cannot be undone. This will permanently delete the location "{location.locationName}".
+                This action cannot be undone. This will permanently delete the location "{location.name}".
                 </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>

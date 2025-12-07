@@ -68,11 +68,11 @@ export default function TripLocationsPage() {
   };
 
   const filteredLocations = allLocations.filter((location) =>
-    location.locationName && location.locationName.toLowerCase().includes(searchTerm.toLowerCase())
+    location.name && location.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
   
   const totalLocations = allLocations.length;
-  const activeLocations = allLocations.filter(l => l.status === 'active').length;
+  const activeLocations = allLocations.filter(l => l.is_active).length;
   const inactiveLocations = totalLocations - activeLocations;
 
   const stats = [
@@ -136,22 +136,22 @@ export default function TripLocationsPage() {
                     <TableRow key={location.id}>
                     <TableCell className="hidden sm:table-cell">
                         <Image
-                        alt={location.locationName}
+                        alt={location.name}
                         className="aspect-square rounded-md object-cover"
                         height="64"
-                        src={location.images?.[0] || "https://picsum.photos/seed/placeholder/64/64"}
+                        src={location.image_urls?.[0] || "https://picsum.photos/seed/placeholder/64/64"}
                         width="64"
                         />
                     </TableCell>
-                    <TableCell className="font-medium">{location.locationName}</TableCell>
+                    <TableCell className="font-medium">{location.name}</TableCell>
                     <TableCell>
-                        <Badge variant="secondary" className="capitalize">{location.type}</Badge>
+                        <Badge variant="secondary" className="capitalize">{location.place_type}</Badge>
                     </TableCell>
                     <TableCell className="hidden md:table-cell">{location.city}</TableCell>
                     <TableCell className="hidden md:table-cell">{location.state}</TableCell>
                     <TableCell className="hidden md:table-cell">{location.district}</TableCell>
                     <TableCell>
-                        <Badge variant="outline" className={cn("capitalize", getStatusBadgeColor(location.status))}>{location.status}</Badge>
+                        <Badge variant="outline" className={cn("capitalize", getStatusBadgeColor(location.is_active ? 'active' : 'inactive'))}>{location.is_active ? 'Active' : 'Inactive'}</Badge>
                     </TableCell>
                     <TableCell>
                         <AlertDialog>
@@ -181,12 +181,12 @@ export default function TripLocationsPage() {
                             <AlertDialogHeader>
                             <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
                             <AlertDialogDescription>
-                                This action cannot be undone. This will permanently delete the location "{location.locationName}".
+                                This action cannot be undone. This will permanently delete the location "{location.name}".
                             </AlertDialogDescription>
                             </AlertDialogHeader>
                             <AlertDialogFooter>
                               <AlertDialogCancel>Cancel</AlertDialogCancel>
-                              <AlertDialogAction onClick={() => handleDelete(location.id, location.locationName)} className="bg-destructive hover:bg-destructive/90">
+                              <AlertDialogAction onClick={() => handleDelete(location.id, location.name)} className="bg-destructive hover:bg-destructive/90">
                                 {deletingId === location.id ? "Deleting..." : "Delete"}
                               </AlertDialogAction>
                             </AlertDialogFooter>

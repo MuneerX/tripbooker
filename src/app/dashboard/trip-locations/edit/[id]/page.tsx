@@ -11,15 +11,15 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { MapPin, Upload, ArrowLeft } from "lucide-react";
 import { getTripLocationById, updateTripLocation } from "@/lib/supabase/queries";
 import type { TripLocation } from "@/lib/types";
+import { Switch } from "@/components/ui/switch";
 
 const tripLocationSchema = z.object({
-  locationName: z.string().min(1, "Location name is required"),
-  type: z.enum(["city", "landmark", "nature", "heritage", "beach", "mountain"]),
+  name: z.string().min(1, "Location name is required"),
+  place_type: z.string().min(1, "Place type is required"),
   city: z.string().min(1, "City is required"),
   country: z.string().min(1, "Country is required"),
   latitude: z.coerce.number().optional().nullable(),
@@ -29,8 +29,7 @@ const tripLocationSchema = z.object({
   code: z.string().min(1, "Location code is required"),
   description: z.string().min(1, "Description is required"),
   address: z.string().min(1, "Address is required"),
-  // images: z.any().optional(), // File upload handling is complex
-  status: z.enum(["active", "inactive"]),
+  is_active: z.boolean().default(true),
 });
 
 type TripLocationFormValues = z.infer<typeof tripLocationSchema>;
@@ -55,8 +54,8 @@ export default function EditTripLocationPage() {
         const loc = await getTripLocationById(id);
         if (loc) {
           form.reset({
-            locationName: loc.locationName,
-            type: loc.type,
+            name: loc.name,
+            place_type: loc.place_type,
             city: loc.city,
             country: loc.country,
             latitude: loc.latitude,
@@ -66,7 +65,7 @@ export default function EditTripLocationPage() {
             code: loc.code,
             description: loc.description,
             address: loc.address,
-            status: loc.status,
+            is_active: loc.is_active,
           });
         } else {
           toast({ variant: "destructive", title: "Error", description: "Location not found." });
@@ -103,7 +102,7 @@ export default function EditTripLocationPage() {
     return <div className="flex justify-center items-center h-full">Loading...</div>;
   }
   
-  const originalLocationName = form.getValues('locationName');
+  const originalLocationName = form.getValues('name');
 
   return (
     <div className="space-y-6">
@@ -133,8 +132,8 @@ export default function EditTripLocationPage() {
                   <CardTitle>General Information</CardTitle>
                 </CardHeader>
                 <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <FormField control={form.control} name="locationName" render={({ field }) => (<FormItem><FormLabel>Location Name</FormLabel><FormControl><Input placeholder="e.g., Eiffel Tower" {...field} /></FormControl><FormMessage /></FormItem>)} />
-                  <FormField control={form.control} name="type" render={({ field }) => (<FormItem><FormLabel>Location Type</FormLabel><Select onValueChange={field.onChange} value={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Select a type" /></SelectTrigger></FormControl><SelectContent><SelectItem value="city">City</SelectItem><SelectItem value="landmark">Landmark</SelectItem><SelectItem value="nature">Nature</SelectItem><SelectItem value="heritage">Heritage</SelectItem><SelectItem value="beach">Beach</SelectItem><SelectItem value="mountain">Mountain</SelectItem></SelectContent></Select><FormMessage /></FormItem>)} />
+                  <FormField control={form.control} name="name" render={({ field }) => (<FormItem><FormLabel>Location Name</FormLabel><FormControl><Input placeholder="e.g., Eiffel Tower" {...field} /></FormControl><FormMessage /></FormItem>)} />
+                  <FormField control={form.control} name="place_type" render={({ field }) => (<FormItem><FormLabel>Location Type</FormLabel><FormControl><Input placeholder="e.g., destination" {...field} /></FormControl><FormMessage /></FormItem>)} />
                   <FormField control={form.control} name="city" render={({ field }) => (<FormItem><FormLabel>City</FormLabel><FormControl><Input placeholder="e.g., Paris" {...field} /></FormControl><FormMessage /></FormItem>)} />
                   <FormField control={form.control} name="state" render={({ field }) => (<FormItem><FormLabel>State</FormLabel><FormControl><Input placeholder="e.g., Île-de-France" {...field} /></FormControl><FormMessage /></FormItem>)} />
                   <FormField control={form.control} name="district" render={({ field }) => (<FormItem><FormLabel>District</FormLabel><FormControl><Input placeholder="e.g., Paris" {...field} /></FormControl><FormMessage /></FormItem>)} />
@@ -173,7 +172,23 @@ export default function EditTripLocationPage() {
                       </div>
                     </FormControl>
                   </FormItem>
-                  <FormField control={form.control} name="status" render={({ field }) => (<FormItem><FormLabel>Status</FormLabel><Select onValueChange={field.onChange} value={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Select status" /></SelectTrigger></FormControl><SelectContent><SelectItem value="active">Active</SelectItem><SelectItem value="inactive">Inactive</SelectItem></SelectContent></Select><FormMessage /></FormItem>)} />
+                   <FormField
+                        control={form.control}
+                        name="is_active"
+                        render={({ field }) => (
+                        <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                            <div className="space-y-0.5">
+                                <FormLabel>Active Status</FormLabel>
+                            </div>
+                            <FormControl>
+                                <Switch
+                                    checked={field.value}
+                                    onCheckedChange={field.onChange}
+                                />
+                            </FormControl>
+                        </FormItem>
+                        )}
+                    />
                 </CardContent>
               </Card>
             </div>
