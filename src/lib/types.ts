@@ -34,7 +34,7 @@ export type Activity = {
   activity_time?: string | null; // time without time zone
   title: string;
   description?: string | null;
-  activity_type?: 'trekking' | 'sightseeing' | 'meal' | 'transport' | 'accommodation' | 'adventure' | 'shopping' | 'leisure' | null;
+  activity_type?: 'TREKKING' | 'SIGHTSEEING' | 'MEAL' | 'TRANSPORT' | 'ACCOMMODATION' | 'ADVENTURE' | 'SHOPPING' | 'LEISURE' | null;
   place_id?: string | null;
   duration_minutes?: number | null;
   travel_duration_minutes?: number | null;
@@ -44,14 +44,6 @@ export type Activity = {
   special_instructions?: string | null;
   created_at?: string;
   updated_at?: string;
-  // Fields from old schema for compatibility during transition
-  name?: string; // Will be mapped to title
-  time?: string;
-  duration?: string;
-  location?: string;
-  price?: number;
-  price_included?: boolean;
-  type?: 'trekking' | 'sightseeing' | 'meal' | 'transport' | 'accommodation' | 'adventure' | 'shopping' | 'leisure';
 };
 
 export type TripDay = {
@@ -64,6 +56,7 @@ export type TripDay = {
   accommodation_type?: string;
   accommodation_name?: string;
   meals_included?: string[];
+  special_instructions?: string;
   activities: Activity[];
   created_at: string;
   updated_at: string;
