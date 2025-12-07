@@ -10,7 +10,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
-import type { TripDay, TourPackage } from "@/lib/types";
+import type { TripDay } from "@/lib/types";
 import { getStatusBadgeColor, cn } from "@/lib/utils";
 import {
   AlertDialog,
@@ -25,24 +25,26 @@ import {
 } from "@/components/ui/alert-dialog";
 import { useRouter } from "next/navigation";
 import { StatCard } from "@/components/dashboard/StatCard";
-import { getTripDays, getTourPackages, deleteTripDay } from "@/lib/supabase/queries";
+import { getTripDays, deleteTripDay } from "@/lib/supabase/queries";
 import { useToast } from "@/hooks/use-toast";
 
-type TripDayWithPackage = TripDay & { tour_package: { name: string } | null };
+type TripDayWithPackageAndCount = TripDay & { 
+  tour_package: { name: string } | null;
+  activities_count: number;
+};
 
 export default function TripDaysPage() {
   const router = useRouter();
   const { toast } = useToast();
   const [searchTerm, setSearchTerm] = React.useState("");
-  const [allTripDays, setAllTripDays] = React.useState<TripDayWithPackage[]>([]);
+  const [allTripDays, setAllTripDays] = React.useState<TripDayWithPackageAndCount[]>([]);
   const [loading, setLoading] = React.useState(true);
 
   React.useEffect(() => {
     const fetchTripDays = async () => {
       setLoading(true);
       const days = await getTripDays();
-      console.log('Fetched Trip Days:', days);
-      setAllTripDays(days as TripDayWithPackage[]);
+      setAllTripDays(days as TripDayWithPackageAndCount[]);
       setLoading(false);
     };
     fetchTripDays();
@@ -127,13 +129,13 @@ export default function TripDaysPage() {
                     <TableCell colSpan={6} className="h-24 text-center">Loading...</TableCell>
                   </TableRow>
                 ) : filteredTripDays.length > 0 ? (
-                filteredTripDays.map((day: TripDayWithPackage) => {
+                filteredTripDays.map((day) => {
                     return (
                     <TableRow key={day.id}>
                         <TableCell className="font-medium">{day.day_name}</TableCell>
                         <TableCell className="hidden sm:table-cell">{day.day_number}</TableCell>
                         <TableCell className="hidden md:table-cell">{day.tour_package?.name || 'N/A'}</TableCell>
-                        <TableCell className="hidden md:table-cell">{day.activities?.length || 0}</TableCell>
+                        <TableCell className="hidden md:table-cell">{day.activities_count || 0}</TableCell>
                         <TableCell>
                           <Badge variant="outline" className={cn("capitalize", getStatusBadgeColor(day.status))}>{day.status}</Badge>
                         </TableCell>

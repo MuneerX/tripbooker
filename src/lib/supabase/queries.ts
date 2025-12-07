@@ -186,26 +186,24 @@ export async function updateTourPackage(id: string, formData: FormData) {
     if (!url) return null;
     try {
         const urlObject = new URL(url);
-        // The path starts after '/public/'. Supabase URLs are like:
-        // .../storage/v1/object/public/images/images/17163...
         const pathSegment = '/storage/v1/object/public/';
         const pathname = urlObject.pathname;
         const pathStartIndex = pathname.indexOf(pathSegment);
         if (pathStartIndex === -1) return null;
 
-        // Extract path after '/public/' which includes the bucket name.
         const bucketAndPath = pathname.substring(pathStartIndex + pathSegment.length);
-        
-        // The first part is the bucket name, the rest is the file path.
         const pathParts = bucketAndPath.split('/');
-        const filePath = pathParts.slice(1).join('/'); // Remove bucket name from path
+        const bucketName = pathParts.shift(); // The first part is the bucket name
+        if (!bucketName) return null;
         
+        const filePath = pathParts.join('/');
         return decodeURIComponent(filePath);
     } catch (e) {
         console.error('Invalid URL for image deletion:', url, e);
         return null;
     }
   };
+
 
   // --- 1. GATHER DATA FROM FORM ---
   const isFeatured = formData.get('is_featured') === 'true';
@@ -230,21 +228,24 @@ export async function updateTourPackage(id: string, formData: FormData) {
   });
 
   // Determine if the original featured image should be deleted.
-  if (originalFeaturedUrl) {
-      const isReplaced = !!newFeaturedFile;
-      const isDeselected = !isFeatured;
-      const isRemovedManually = !isReplaced && isFeatured && !formData.get('featured_image_url');
+    if (originalFeaturedUrl) {
+        const isReplaced = !!newFeaturedFile;
+        const isDeselected = !isFeatured;
+        const isRemovedManually = !isReplaced && isFeatured && !formData.get('featured_image_url');
 
-      if (isReplaced || isDeselected || isRemovedManually) {
-          const path = getPathFromUrl(originalFeaturedUrl);
-          if (path) pathsToDelete.push(path);
-      }
-  }
+        if (isReplaced || isDeselected || isRemovedManually) {
+            const path = getPathFromUrl(originalFeaturedUrl);
+            if (path) pathsToDelete.push(path);
+        }
+    }
+
 
   if (pathsToDelete.length > 0) {
+      console.log('Deleting paths:', pathsToDelete);
       const { error: deleteError } = await supabase.storage.from('images').remove(pathsToDelete);
       if (deleteError) {
           console.error("Failed to delete some images from storage:", deleteError.message);
+          // We don't throw here, just log the error, so the rest of the update can proceed.
       }
   }
 
@@ -252,12 +253,14 @@ export async function updateTourPackage(id: string, formData: FormData) {
   const uploadedImageUrls: string[] = [];
   let uploadedFeaturedImageUrl: string | undefined = undefined;
 
-  for (const file of newGalleryFiles) {
-    const filePath = `images/${Date.now()}-${file.name}`;
-    const { error: uploadError } = await supabase.storage.from('images').upload(filePath, file);
-    if (uploadError) throw new Error(`Failed to upload ${file.name}: ${uploadError.message}`);
-    const { data: { publicUrl } } = supabase.storage.from('images').getPublicUrl(filePath);
-    uploadedImageUrls.push(publicUrl);
+  if (newGalleryFiles && newGalleryFiles.length > 0 && newGalleryFiles[0].size > 0) {
+    for (const file of newGalleryFiles) {
+      const filePath = `images/${Date.now()}-${file.name}`;
+      const { error: uploadError } = await supabase.storage.from('images').upload(filePath, file);
+      if (uploadError) throw new Error(`Failed to upload ${file.name}: ${uploadError.message}`);
+      const { data: { publicUrl } } = supabase.storage.from('images').getPublicUrl(filePath);
+      uploadedImageUrls.push(publicUrl);
+    }
   }
 
   if (newFeaturedFile) {
@@ -270,11 +273,15 @@ export async function updateTourPackage(id: string, formData: FormData) {
 
   // --- 4. CONSTRUCT FINAL UPDATE OBJECT ---
   const finalImageUrls = [...keptImageUrls, ...uploadedImageUrls];
-  let finalFeaturedImageUrl = uploadedFeaturedImageUrl || formData.get('featured_image_url') as string | null;
+  let finalFeaturedImageUrl: string | null | undefined = uploadedFeaturedImageUrl;
+    if (!uploadedFeaturedImageUrl) {
+        finalFeaturedImageUrl = formData.get('featured_image_url') as string | null;
+    }
 
-  if (!isFeatured) {
-    finalFeaturedImageUrl = null;
-  }
+    if (!isFeatured) {
+        finalFeaturedImageUrl = null;
+    }
+
 
   const updateData = {
     name: formData.get('name') as string,
@@ -318,12 +325,16 @@ export async function updateTourPackage(id: string, formData: FormData) {
 /**
  * Fetches all trip days and their related tour package name.
  */
-export async function getTripDays(): Promise<TripDay[]> {
+export async function getTripDays(): Promise<any[]> {
     const supabase = createBrowserClient();
     const { data, error } = await supabase
         .from('trip_days')
         .select(`
-            *,
+            id,
+            day_name,
+            day_number,
+            status,
+            activities:activities(count),
             tour_package:tour_packages(name)
         `)
         .order('tour_package_id')
@@ -333,7 +344,13 @@ export async function getTripDays(): Promise<TripDay[]> {
         console.error('Error fetching trip days:', error);
         return [];
     }
-    return data as TripDay[];
+    
+    // The query now returns activities as an array with a single object: [{ count: N }]
+    // We need to transform this to a simple number.
+    return data.map(day => ({
+        ...day,
+        activities_count: day.activities[0]?.count || 0
+    }));
 }
 
 /**
@@ -343,7 +360,10 @@ export async function getTripDayById(id: string): Promise<TripDay | null> {
     const supabase = createBrowserClient();
     const { data, error } = await supabase
         .from('trip_days')
-        .select('*')
+        .select(`
+            *,
+            tour_package:tour_packages(name)
+        `)
         .eq('id', id)
         .single();
     
