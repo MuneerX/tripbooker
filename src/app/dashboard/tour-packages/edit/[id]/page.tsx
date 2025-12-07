@@ -42,7 +42,7 @@ const tourPackageSchema = z.object({
   is_active: z.boolean().default(true),
   
   image_urls: z.array(z.string()).optional(),
-  featured_image_url: z.string().optional(),
+  featured_image_url: z.string().optional().nullable(),
   
   new_image_files: z.any()
     .optional()
@@ -67,6 +67,8 @@ export default function EditTourPackagePage() {
     defaultValues: {},
   });
 
+  const isFeatured = form.watch('is_featured');
+  
   React.useEffect(() => {
     if (id) {
       const fetchPackage = async () => {
@@ -88,6 +90,13 @@ export default function EditTourPackagePage() {
       fetchPackage();
     }
   }, [id, router, toast, form]);
+
+  React.useEffect(() => {
+    if (!isFeatured) {
+        form.setValue('featured_image_url', null);
+        form.setValue('new_featured_image_file', null);
+    }
+  }, [isFeatured, form]);
   
   const newImageFiles = form.watch("new_image_files");
   const newFeaturedImageFile = form.watch("new_featured_image_file");
@@ -148,8 +157,8 @@ export default function EditTourPackagePage() {
     }
 
     // Append remaining existing image urls
-    formData.append('existing_image_urls', JSON.stringify(data.image_urls || []));
-    formData.append('existing_featured_image_url', data.featured_image_url || '');
+    formData.append('image_urls', JSON.stringify(data.image_urls || []));
+    formData.append('featured_image_url', data.featured_image_url || '');
 
     try {
       await updateTourPackage(id, formData);

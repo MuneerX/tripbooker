@@ -190,132 +190,122 @@ export async function uploadTourImages(formData: FormData) {
 export async function updateTourPackage(id: string, formData: FormData) {
   const supabase = createAdminClient();
 
-  // Helper to extract file path from URL
   const getPathFromUrl = (url: string) => {
-    if (!url) return '';
-    try {
-      const urlObject = new URL(url);
-      const pathSegment = '/storage/v1/object/public/';
-      const pathname = urlObject.pathname;
-      const pathStartIndex = pathname.indexOf(pathSegment);
-      if (pathStartIndex !== -1) {
-        return decodeURIComponent(pathname.substring(pathStartIndex + pathSegment.length));
+      if (!url) return null;
+      try {
+          const urlObject = new URL(url);
+          const pathSegment = '/storage/v1/object/public/';
+          const pathname = urlObject.pathname;
+          const pathStartIndex = pathname.indexOf(pathSegment);
+          if (pathStartIndex !== -1) {
+              return decodeURIComponent(pathname.substring(pathStartIndex + pathSegment.length));
+          }
+          return null;
+      } catch (e) {
+          console.error('Invalid URL for image deletion:', url);
+          return null;
       }
-      return '';
-    } catch (e) {
-      console.error('Invalid URL for image deletion:', url);
-      return '';
-    }
   };
 
   const isFeatured = formData.get('is_featured') === 'true';
+  const originalImageUrls: string[] = JSON.parse(formData.get('original_image_urls') as string || '[]');
+  const newImageUrls: string[] = JSON.parse(formData.get('image_urls') as string || '[]');
+  const originalFeaturedUrl = formData.get('original_featured_image_url') as string;
 
-  // 1. Handle image deletions
-  const originalImageUrls = JSON.parse(formData.get('original_image_urls') as string || '[]');
-  const existingImageUrls = JSON.parse(formData.get('existing_image_urls') as string || '[]');
-  const originalFeaturedUrl = formData.get('original_featured_image_url') as string || '';
+  // 1. Handle Deletions
+  const galleryImagesToDelete = originalImageUrls
+      .filter(url => !newImageUrls.includes(url))
+      .map(getPathFromUrl)
+      .filter((path): path is string => !!path);
+
+  let featuredImageToDelete: string | null = null;
+  const newFeaturedUrl = formData.get('featured_image_url') as string;
+
+  if (originalFeaturedUrl && originalFeaturedUrl !== newFeaturedUrl) {
+    featuredImageToDelete = getPathFromUrl(originalFeaturedUrl);
+  }
   
-  const galleryImagesToDelete = originalImageUrls.filter((url: string) => !existingImageUrls.includes(url));
-  
-  const newFeaturedImageFile = formData.get('new_featured_image_file') as File | null;
-  const featuredImageWasRemovedManually = originalFeaturedUrl && !formData.has('existing_featured_image_url');
-  const featuredImageIsBeingReplaced = originalFeaturedUrl && newFeaturedImageFile && newFeaturedImageFile.size > 0;
-  const isNowNotFeatured = !isFeatured && originalFeaturedUrl;
+  // If no longer featured, delete the original image.
+  if (!isFeatured && originalFeaturedUrl) {
+    featuredImageToDelete = getPathFromUrl(originalFeaturedUrl);
+  }
 
-  const allPathsToDelete: string[] = galleryImagesToDelete.map(getPathFromUrl).filter(Boolean);
-
-  if (featuredImageWasRemovedManually || featuredImageIsBeingReplaced || isNowNotFeatured) {
-      const featuredPath = getPathFromUrl(originalFeaturedUrl);
-      if(featuredPath) allPathsToDelete.push(featuredPath);
+  const allPathsToDelete = [...galleryImagesToDelete];
+  if (featuredImageToDelete) {
+      allPathsToDelete.push(featuredImageToDelete);
   }
 
   if (allPathsToDelete.length > 0) {
-    const { error: deleteError } = await supabase.storage.from('images').remove(allPathsToDelete);
-    if (deleteError) {
-        console.error("Failed to delete images from storage:", deleteError.message);
-        // We can choose to either throw an error or just log it and continue.
-        // For now, we'll log and continue to allow text updates to succeed.
-    }
+      const { error: deleteError } = await supabase.storage.from('images').remove(allPathsToDelete);
+      if (deleteError) {
+          console.error("Failed to delete images from storage:", deleteError.message);
+      }
   }
 
-  // 2. Handle Image Uploads
-  const newGalleryFiles = formData.getAll('new_image_files') as File[];
+  // 2. Handle Uploads
+  const uploadedImageUrls: string[] = [];
+  let uploadedFeaturedImageUrl: string | undefined = undefined;
+
+  const newGalleryFiles = formData.getAll('new_image_files').filter(f => f instanceof File && f.size > 0) as File[];
   const newFeaturedFile = formData.get('new_featured_image_file') as File | null;
 
-  const newImageUrls: string[] = [];
-  let newFeaturedImageUrl: string | undefined = undefined;
-
-  // Upload new gallery images - with a check for valid files
-  const validNewGalleryFiles = newGalleryFiles.filter(file => file instanceof File && file.size > 0);
-  if (validNewGalleryFiles.length > 0) {
-    for (const file of validNewGalleryFiles) {
+  for (const file of newGalleryFiles) {
       const filePath = `images/${Date.now()}-${file.name}`;
       const { error: uploadError } = await supabase.storage.from('images').upload(filePath, file);
       if (uploadError) throw new Error(`Failed to upload ${file.name}: ${uploadError.message}`);
       const { data: { publicUrl } } = supabase.storage.from('images').getPublicUrl(filePath);
-      newImageUrls.push(publicUrl);
-    }
+      uploadedImageUrls.push(publicUrl);
   }
 
-  // Upload new featured image
   if (newFeaturedFile && newFeaturedFile.size > 0) {
-    const filePath = `images/featured/${Date.now()}-${newFeaturedFile.name}`;
-    const { error: uploadError } = await supabase.storage.from('images').upload(filePath, newFeaturedFile);
-    if (uploadError) throw new Error(`Failed to upload featured image: ${uploadError.message}`);
-    const { data: { publicUrl } } = supabase.storage.from('images').getPublicUrl(filePath);
-    newFeaturedImageUrl = publicUrl;
+      const filePath = `images/featured/${Date.now()}-${newFeaturedFile.name}`;
+      const { error: uploadError } = await supabase.storage.from('images').upload(filePath, newFeaturedFile);
+      if (uploadError) throw new Error(`Failed to upload featured image: ${uploadError.message}`);
+      const { data: { publicUrl } } = supabase.storage.from('images').getPublicUrl(filePath);
+      uploadedFeaturedImageUrl = publicUrl;
   }
-  
+
   // 3. Construct the update object
-  const finalImageUrls = [...existingImageUrls, ...newImageUrls];
-  let finalFeaturedImageUrl = newFeaturedImageUrl ?? (formData.get('existing_featured_image_url') as string || '');
+  const finalImageUrls = [...newImageUrls, ...uploadedImageUrls];
+  let finalFeaturedImageUrl = uploadedFeaturedImageUrl || newFeaturedUrl || null;
   
-  // If no longer featured, ensure the URL is null
   if (!isFeatured) {
-    finalFeaturedImageUrl = '';
+    finalFeaturedImageUrl = null;
   }
-  
-  const updateData: { [key: string]: any } = {
-    name: formData.get('name') as string,
-    package_type: formData.get('package_type') as TourPackage['package_type'],
-    category: formData.get('category') as TourPackage['category'],
-    base_price: Number(formData.get('base_price')),
-    days: Number(formData.get('days')),
-    nights: Number(formData.get('nights')),
-    max_guests: Number(formData.get('max_guests')),
-    description: formData.get('description') as string,
-    inclusion: formData.get('inclusion') as string,
-    exclusion: formData.get('exclusion') as string,
-    booking_policy: formData.get('booking_policy') as string,
-    cancellation_policy: formData.get('cancellation_policy') as string,
-    terms_and_conditions: formData.get('terms_and_conditions') as string,
-    is_featured: isFeatured,
-    is_active: formData.get('is_active') === 'true',
-    image_urls: finalImageUrls,
-    featured_image_url: finalFeaturedImageUrl || null,
-    updated_at: new Date().toISOString(),
+
+  const updateData = {
+      name: formData.get('name') as string,
+      package_type: formData.get('package_type') as TourPackage['package_type'],
+      category: formData.get('category') as TourPackage['category'],
+      base_price: Number(formData.get('base_price')),
+      days: Number(formData.get('days')),
+      nights: Number(formData.get('nights')),
+      max_guests: Number(formData.get('max_guests')),
+      description: formData.get('description') as string,
+      inclusion: formData.get('inclusion') as string,
+      exclusion: formData.get('exclusion') as string,
+      booking_policy: formData.get('booking_policy') as string,
+      cancellation_policy: formData.get('cancellation_policy') as string,
+      terms_and_conditions: formData.get('terms_and_conditions') as string,
+      is_featured: isFeatured,
+      is_active: formData.get('is_active') === 'true',
+      image_urls: finalImageUrls,
+      featured_image_url: finalFeaturedImageUrl,
+      updated_at: new Date().toISOString(),
   };
-  
-   // Remove undefined keys so they don't overwrite existing values with null
-   Object.keys(updateData).forEach(key => {
-     if (updateData[key] === undefined) {
-       delete updateData[key];
-     }
-   });
 
   // 4. Update the database record
   const { data, error } = await supabase
-    .from('tour_packages')
-    .update(updateData)
-    .eq('id', id)
-    .select()
-    .single();
+      .from('tour_packages')
+      .update(updateData)
+      .eq('id', id)
+      .select()
+      .single();
 
   if (error) {
-    console.error('Error updating tour package:', error);
-    throw new Error(error.message);
+      console.error('Error updating tour package:', error);
+      throw new Error(error.message);
   }
 
   return data;
 }
-
