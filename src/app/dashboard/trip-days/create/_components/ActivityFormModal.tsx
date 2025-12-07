@@ -26,7 +26,7 @@ export const activitySchema = z.object({
     id: z.string().optional(),
     title: z.string().min(1, "Activity title is required"),
     activity_type: z.enum(["food", "explore", "stay"]),
-    activity_time: z.string().regex(/^(0[0-9]|1[0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]$/, "Invalid time format (e.g., 09:00:00 or 17:30:00)"),
+    activity_time: z.string().regex(/^(0[0-9]|1[0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]$/, "Invalid time format (e.g., 09:00:00)"),
     duration_minutes: z.coerce.number().int().min(0, "Duration must be a positive number"),
     description: z.string().min(1, "Description is required"),
     additional_cost: z.coerce.number().min(0).default(0),
