@@ -83,13 +83,26 @@ export default function CreateTourPackagePage() {
     const currentFiles = form.getValues("image_files");
     const newFiles = Array.from(currentFiles).filter((_, index) => index !== indexToRemove);
     
-    // You might need a more sophisticated way to update the FileList
-    // For now, let's create a new DataTransfer object
     const dataTransfer = new DataTransfer();
     newFiles.forEach(file => dataTransfer.items.add(file as File));
 
     form.setValue("image_files", dataTransfer.files, { shouldValidate: true });
   };
+  
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>, field: any) => {
+    const newFiles = Array.from(e.target.files || []);
+    if (newFiles.length === 0) return;
+
+    const currentFiles = Array.from(form.getValues("image_files") || []);
+    
+    const combinedFiles = [...currentFiles, ...newFiles];
+
+    const dataTransfer = new DataTransfer();
+    combinedFiles.forEach(file => dataTransfer.items.add(file as File));
+    
+    field.onChange(dataTransfer.files);
+  };
+
 
   const onSubmit = async (data: TourPackageFormValues) => {
     const formData = new FormData();
@@ -170,7 +183,7 @@ export default function CreateTourPackagePage() {
                                                 <p className="text-xs text-muted-foreground">PNG, JPG, or WEBP (MAX. 2MB each)</p>
                                                 </div>
                                                 <Input id="image-files" type="file" className="hidden" multiple
-                                                    onChange={(e) => field.onChange(e.target.files)}
+                                                    onChange={(e) => handleFileChange(e, field)}
                                                 />
                                             </label>
                                         </div> 
