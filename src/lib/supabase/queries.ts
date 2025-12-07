@@ -1,8 +1,10 @@
 
+
 "use server"
 
-import { createClient as createServerClient } from './server'
+import { createClient as createServerClient } from '@supabase/ssr'
 import { createClient as createBrowserClient } from './client'
+import { cookies } from 'next/headers'
 
 import type { TourPackage } from '@/lib/types'
 
@@ -52,11 +54,27 @@ export async function getTourPackageById(id: string): Promise<TourPackage | null
     } as TourPackage;
 }
 
+// Function to create a Supabase client with admin privileges (service_role)
+function createAdminClient() {
+  const cookieStore = cookies();
+  return createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!,
+    {
+      cookies: {
+        get(name: string) {
+          return cookieStore.get(name)?.value
+        },
+      },
+    }
+  );
+}
+
 /**
- * Creates a new tour package in Supabase.
+ * Creates a new tour package in Supabase using admin privileges.
  */
 export async function createTourPackage(pkg: Partial<TourPackage>) {
-  const supabase = createServerClient();
+  const supabase = createAdminClient();
   // Ensure we are not sending undefined fields that might cause issues.
   const insertData = {
     name: pkg.name,
@@ -90,10 +108,10 @@ export async function createTourPackage(pkg: Partial<TourPackage>) {
 }
 
 /**
- * Uploads tour images to Supabase Storage and creates a new tour package.
+ * Uploads tour images to Supabase Storage and creates a new tour package using admin privileges.
  */
 export async function uploadTourImages(formData: FormData) {
-  const supabase = createServerClient();
+  const supabase = createAdminClient();
 
   const imageFiles = formData.getAll('image_files') as File[];
   const featuredImageFile = formData.get('featured_image_file') as File | null;
