@@ -134,21 +134,25 @@ export async function uploadTourImages(formData: FormData) {
   let featuredImageUrl: string | undefined = undefined;
 
   // Upload gallery images
-  for (const file of imageFiles) {
-    const filePath = `images/${Date.now()}-${file.name}`;
-    const { error: uploadError } = await supabase.storage.from('images').upload(filePath, file);
+  if (imageFiles && imageFiles.length > 0) {
+    for (const file of imageFiles) {
+        if (file && file.size > 0) {
+            const filePath = `images/${Date.now()}-${file.name}`;
+            const { error: uploadError } = await supabase.storage.from('images').upload(filePath, file);
 
-    if (uploadError) {
-      console.error('Error uploading image:', uploadError);
-      throw new Error(`Failed to upload ${file.name}: ${uploadError.message}`);
+            if (uploadError) {
+                console.error('Error uploading image:', uploadError);
+                throw new Error(`Failed to upload ${file.name}: ${uploadError.message}`);
+            }
+
+            const { data: { publicUrl } } = supabase.storage.from('images').getPublicUrl(filePath);
+            imageUrls.push(publicUrl);
+        }
     }
-
-    const { data: { publicUrl } } = supabase.storage.from('images').getPublicUrl(filePath);
-    imageUrls.push(publicUrl);
   }
 
   // Upload featured image if it exists
-  if (featuredImageFile) {
+  if (featuredImageFile && featuredImageFile.size > 0) {
     const filePath = `images/featured/${Date.now()}-${featuredImageFile.name}`;
     const { error: uploadError } = await supabase.storage.from('images').upload(filePath, featuredImageFile);
 
@@ -191,7 +195,6 @@ export async function uploadTourImages(formData: FormData) {
 export async function updateTourPackage(id: string, formData: FormData) {
   const supabase = createAdminClient();
 
-  // Helper to extract the storage path from a public URL
   const getPathFromUrl = (url: string) => {
       if (!url) return null;
       try {
@@ -200,7 +203,9 @@ export async function updateTourPackage(id: string, formData: FormData) {
           const pathname = urlObject.pathname;
           const pathStartIndex = pathname.indexOf(pathSegment);
           if (pathStartIndex !== -1) {
-              return decodeURIComponent(pathname.substring(pathStartIndex + pathSegment.length));
+              // The actual path starts after the bucket name, which is part of the path segment.
+              const bucketAndPath = pathname.substring(pathStartIndex + pathSegment.length);
+              return decodeURIComponent(bucketAndPath);
           }
           return null;
       } catch (e) {
@@ -211,48 +216,42 @@ export async function updateTourPackage(id: string, formData: FormData) {
 
   // --- 1. GATHER DATA FROM FORM ---
   const isFeatured = formData.get('is_featured') === 'true';
-
-  // Image URLs from the form
   const originalImageUrls: string[] = JSON.parse(formData.get('original_image_urls') as string || '[]');
-  const newKeptImageUrls: string[] = JSON.parse(formData.get('image_urls') as string || '[]');
+  const keptImageUrls: string[] = JSON.parse(formData.get('image_urls') as string || '[]');
   const originalFeaturedUrl = formData.get('original_featured_image_url') as string || null;
-  const newKeptFeaturedUrl = formData.get('featured_image_url') as string || null;
   
-  // New file uploads
   const newGalleryFiles = formData.getAll('new_image_files').filter(f => f instanceof File && f.size > 0) as File[];
   const newFeaturedFile = formData.get('new_featured_image_file') as File | null;
-  
   
   // --- 2. HANDLE IMAGE DELETIONS ---
   const pathsToDelete: string[] = [];
 
-  // Find gallery images that were removed
+  // Find gallery images that were removed.
   originalImageUrls.forEach(originalUrl => {
-    if (!newKeptImageUrls.includes(originalUrl)) {
-      const path = getPathFromUrl(originalUrl);
-      if (path) pathsToDelete.push(path);
-    }
+      if (!keptImageUrls.includes(originalUrl)) {
+          const path = getPathFromUrl(originalUrl);
+          if (path) pathsToDelete.push(path);
+      }
   });
 
-  // Find if the featured image was removed or replaced
+  // Determine if the original featured image should be deleted.
   if (originalFeaturedUrl) {
-    const featuredImageRemovedOrReplaced = !newKeptFeaturedUrl || newKeptFeaturedUrl !== originalFeaturedUrl;
-    const isNowNotFeatured = !isFeatured;
-    const newFileUploaded = newFeaturedFile && newFeaturedFile.size > 0;
-
-    if (isNowNotFeatured || featuredImageRemovedOrReplaced || newFileUploaded) {
-      const path = getPathFromUrl(originalFeaturedUrl);
-      if (path) pathsToDelete.push(path);
-    }
+      const isReplaced = newFeaturedFile && newFeaturedFile.size > 0;
+      const isDeselected = !isFeatured;
+      const isRemovedManually = !isReplaced && !isDeselected && !formData.get('featured_image_url');
+      
+      if (isReplaced || isDeselected || isRemovedManually) {
+          const path = getPathFromUrl(originalFeaturedUrl);
+          if (path) pathsToDelete.push(path);
+      }
   }
 
   // Execute deletion from storage
   if (pathsToDelete.length > 0) {
-    const { error: deleteError } = await supabase.storage.from('images').remove(pathsToDelete);
-    if (deleteError) {
-      // Log the error but don't block the update
-      console.error("Failed to delete some images from storage:", deleteError.message);
-    }
+      const { error: deleteError } = await supabase.storage.from('images').remove(pathsToDelete);
+      if (deleteError) {
+          console.error("Failed to delete some images from storage:", deleteError.message);
+      }
   }
 
   // --- 3. HANDLE NEW IMAGE UPLOADS ---
@@ -276,8 +275,9 @@ export async function updateTourPackage(id: string, formData: FormData) {
   }
 
   // --- 4. CONSTRUCT FINAL UPDATE OBJECT ---
-  const finalImageUrls = [...newKeptImageUrls, ...uploadedImageUrls];
-  let finalFeaturedImageUrl = uploadedFeaturedImageUrl || newKeptFeaturedUrl;
+  const finalImageUrls = [...keptImageUrls, ...uploadedImageUrls];
+  let finalFeaturedImageUrl = uploadedFeaturedImageUrl || formData.get('featured_image_url') as string | null;
+
   if (!isFeatured) {
     finalFeaturedImageUrl = null;
   }
