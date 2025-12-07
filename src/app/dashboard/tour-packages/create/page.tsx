@@ -2,7 +2,7 @@
 "use client"
 
 import * as React from "react"
-import { useForm, useFieldArray } from "react-hook-form"
+import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import * as z from "zod"
 import { Button } from "@/components/ui/button"
@@ -14,7 +14,11 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useRouter } from "next/navigation"
 import { useToast } from "@/hooks/use-toast"
 import { Switch } from "@/components/ui/switch"
-import { createTourPackage } from "@/lib/supabase/queries"
+import { uploadTourImages } from "@/lib/supabase/queries"
+import { Upload } from "lucide-react"
+
+const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
+const ACCEPTED_IMAGE_TYPES = ["image/jpeg", "image/jpg", "image/png", "image/webp"];
 
 const tourPackageSchema = z.object({
   name: z.string().min(1, "Tour name is required"),
@@ -35,8 +39,15 @@ const tourPackageSchema = z.object({
   is_featured: z.boolean().default(false),
   is_active: z.boolean().default(true),
   
-  image_urls: z.string().min(1, "At least one image URL is required"),
-  featured_image_url: z.string().url().optional().or(z.literal('')),
+  image_files: z.any()
+    .refine((files) => files?.length >= 1, "At least one gallery image is required.")
+    .refine((files) => Array.from(files).every((file: any) => file.size <= MAX_FILE_SIZE), `Max file size is 5MB.`)
+    .refine(
+      (files) => Array.from(files).every((file: any) => ACCEPTED_IMAGE_TYPES.includes(file.type)),
+      ".jpg, .jpeg, .png and .webp files are accepted."
+    ),
+  featured_image_file: z.any()
+    .optional()
 });
 
 type TourPackageFormValues = z.infer<typeof tourPackageSchema>;
@@ -63,19 +74,32 @@ export default function CreateTourPackagePage() {
       terms_and_conditions: "",
       is_featured: false,
       is_active: true,
-      image_urls: "https://picsum.photos/seed/default/600/400",
-      featured_image_url: "",
     },
   });
 
   const onSubmit = async (data: TourPackageFormValues) => {
-    const formattedData = {
-        ...data,
-        image_urls: data.image_urls.split(',').map(s => s.trim()).filter(Boolean),
-    };
+    const formData = new FormData();
     
+    Object.entries(data).forEach(([key, value]) => {
+      if (key === 'image_files' || key === 'featured_image_file') {
+        // Skip file fields for now
+      } else if (value !== undefined && value !== null) {
+        formData.append(key, String(value));
+      }
+    });
+    
+    if (data.image_files) {
+        Array.from(data.image_files).forEach((file: any) => {
+            formData.append('image_files', file);
+        });
+    }
+
+    if (data.featured_image_file && data.featured_image_file.length > 0) {
+        formData.append('featured_image_file', data.featured_image_file[0]);
+    }
+
     try {
-      await createTourPackage(formattedData);
+      await uploadTourImages(formData);
       toast({
         title: "Success!",
         description: "New tour package has been created.",
@@ -117,13 +141,30 @@ export default function CreateTourPackagePage() {
                                 <FormField control={form.control} name="base_price" render={({ field }) => ( <FormItem><FormLabel>Base Price (USD)</FormLabel><FormControl><Input type="number" placeholder="e.g., 1200" {...field} /></FormControl><FormMessage /></FormItem> )} />
                                 <FormField control={form.control} name="max_guests" render={({ field }) => ( <FormItem><FormLabel>Maximum Guests</FormLabel><FormControl><Input type="number" {...field} /></FormControl><FormMessage /></FormItem> )} />
                             </div>
-                            <FormItem>
-                                <FormLabel>Tour Gallery Image URLs</FormLabel>
-                                <FormControl>
-                                    <Textarea placeholder="https://example.com/image1.png, https://example.com/image2.png" {...form.register('image_urls')} />
-                                </FormControl>
-                                <FormDescription>Enter image URLs, separated by commas.</FormDescription>
-                            </FormItem>
+                             <FormField
+                                control={form.control}
+                                name="image_files"
+                                render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Tour Gallery Images</FormLabel>
+                                     <FormControl>
+                                        <div className="flex items-center justify-center w-full">
+                                            <label htmlFor="image-files" className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-lg cursor-pointer bg-muted/50 hover:bg-muted">
+                                                <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                                                <Upload className="w-8 h-8 mb-4 text-muted-foreground" />
+                                                <p className="mb-2 text-sm text-muted-foreground"><span className="font-semibold">Click to upload</span> or drag and drop</p>
+                                                <p className="text-xs text-muted-foreground">PNG, JPG, or WEBP (MAX. 5MB each)</p>
+                                                </div>
+                                                <Input id="image-files" type="file" className="hidden" multiple
+                                                    onChange={(e) => field.onChange(e.target.files)}
+                                                />
+                                            </label>
+                                        </div> 
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                                )}
+                            />
                         </CardContent>
                     </Card>
                 </div>
@@ -146,12 +187,21 @@ export default function CreateTourPackagePage() {
                         <CardContent className="space-y-6">
                             <FormField control={form.control} name="is_featured" render={({ field }) => ( <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4"><div className="space-y-0.5"><FormLabel className="text-base">Featured Package</FormLabel><FormDescription>Display this package prominently.</FormDescription></div><FormControl><Switch checked={field.value} onCheckedChange={field.onChange} /></FormControl></FormItem>)} />
                             {form.watch('is_featured') && (
-                                <FormItem>
-                                    <FormLabel>Featured Image URL</FormLabel>
-                                    <FormControl>
-                                       <Input placeholder="https://example.com/featured-image.png" {...form.register('featured_image_url')} />
-                                    </FormControl>
-                                </FormItem>
+                                 <FormField
+                                    control={form.control}
+                                    name="featured_image_file"
+                                    render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>Featured Image</FormLabel>
+                                        <FormControl>
+                                            <Input type="file" accept="image/*"
+                                                onChange={(e) => field.onChange(e.target.files)}
+                                            />
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                    )}
+                                />
                             )}
                              <FormField control={form.control} name="is_active" render={({ field }) => ( <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4"><div className="space-y-0.5"><FormLabel className="text-base">Active Package</FormLabel><FormDescription>Make this package available for booking.</FormDescription></div><FormControl><Switch checked={field.value} onCheckedChange={field.onChange} /></FormControl></FormItem>)} />
                         </CardContent>

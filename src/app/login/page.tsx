@@ -14,6 +14,7 @@ import { useToast } from '@/hooks/use-toast';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useTheme } from 'next-themes';
+import { createClient } from '@/lib/supabase/client';
 
 const loginSchema = z.object({
   email: z.string().email({ message: "Invalid email address." }),
@@ -29,6 +30,7 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const { theme } = useTheme();
   const [mounted, setMounted] = useState(false);
+  const supabase = createClient();
 
   useEffect(() => {
     setMounted(true);
@@ -41,21 +43,61 @@ export default function LoginPage() {
   const form = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
-      email: '',
-      password: '',
+      email: 'admin@yestogo.com',
+      password: 'password',
       rememberMe: false,
     },
   });
 
-  const onSubmit = (data: LoginFormValues) => {
-    // Mock successful login
-    console.log(data);
-    toast({
-      title: "Login Successful",
-      description: "Redirecting to your dashboard...",
+  const onSubmit = async (data: LoginFormValues) => {
+    const { error } = await supabase.auth.signInWithPassword({
+      email: data.email,
+      password: data.password,
     });
-    // In a real app, you'd handle Firebase auth here.
-    router.push('/dashboard');
+
+    if (error) {
+      toast({
+        variant: "destructive",
+        title: "Login Failed",
+        description: error.message,
+      });
+    } else {
+      toast({
+        title: "Login Successful",
+        description: "Redirecting to your dashboard...",
+      });
+      router.push('/dashboard');
+      router.refresh(); // This is important to re-fetch server components with new auth state
+    }
+  };
+
+  const handleSignUp = async () => {
+    const { email, password } = form.getValues();
+     if (!email || !password) {
+      toast({
+        variant: "destructive",
+        title: "Sign Up Failed",
+        description: "Please enter email and password to sign up.",
+      });
+      return;
+    }
+    const { error } = await supabase.auth.signUp({
+      email,
+      password,
+    });
+
+    if (error) {
+      toast({
+        variant: "destructive",
+        title: "Sign Up Failed",
+        description: error.message,
+      });
+    } else {
+      toast({
+        title: "Sign Up Successful!",
+        description: "Please check your email to confirm your account.",
+      });
+    }
   };
 
   return (
@@ -120,6 +162,9 @@ export default function LoginPage() {
               />
               <Button type="submit" className="w-full">
                 Login
+              </Button>
+               <Button type="button" variant="outline" className="w-full" onClick={handleSignUp}>
+                Sign Up
               </Button>
             </form>
           </Form>
