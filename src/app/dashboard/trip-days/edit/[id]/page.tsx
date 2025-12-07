@@ -67,10 +67,7 @@ export default function EditTripDayPage() {
             accommodation_type: day.accommodation_type || '',
             accommodation_name: day.accommodation_name || '',
             meals_included: day.meals_included || [],
-            activities: (day.activities || []).map(act => ({
-              ...act,
-              activity_time: act.activity_time ? act.activity_time.substring(0, 5) : '',
-            }))
+            activities: day.activities || []
           });
         } else {
           toast({ variant: "destructive", title: "Error", description: "Trip Day not found." });

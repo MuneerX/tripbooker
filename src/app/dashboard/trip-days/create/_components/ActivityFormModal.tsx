@@ -26,7 +26,7 @@ export const activitySchema = z.object({
     id: z.string().optional(),
     title: z.string().min(1, "Activity title is required"),
     activity_type: z.enum(["food", "explore", "stay"]),
-    activity_time: z.string().regex(/^(0[0-9]|1[0-9]|2[0-3]):[0-5][0-9]$/, "Invalid time format (e.g., 09:00 or 17:30)"),
+    activity_time: z.string().regex(/^(0[0-9]|1[0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]$/, "Invalid time format (e.g., 09:00:00 or 17:30:00)"),
     duration_minutes: z.coerce.number().int().min(0, "Duration must be a positive number"),
     description: z.string().min(1, "Description is required"),
     additional_cost: z.coerce.number().min(0).default(0),
@@ -48,7 +48,7 @@ type ActivityFormModalProps = {
 const defaultActivityValues: ActivityFormValues = {
   title: "",
   activity_type: "explore",
-  activity_time: "",
+  activity_time: "00:00:00",
   duration_minutes: 60,
   description: "",
   additional_cost: 0,
@@ -67,14 +67,7 @@ export function ActivityFormModal({ children, activity, onSave }: ActivityFormMo
 
     React.useEffect(() => {
         if (isOpen) {
-            let valuesToSet = activity || defaultActivityValues;
-            if (activity?.activity_time && activity.activity_time.length > 5) {
-                valuesToSet = {
-                    ...activity,
-                    activity_time: activity.activity_time.substring(0, 5),
-                };
-            }
-            activityForm.reset(valuesToSet);
+            activityForm.reset(activity || defaultActivityValues);
         }
     }, [isOpen, activity, activityForm]);
 
@@ -105,7 +98,7 @@ export function ActivityFormModal({ children, activity, onSave }: ActivityFormMo
                                   </SelectContent></Select><FormMessage /></FormItem> )} />
                             </div>
                              <div className="grid md:grid-cols-2 gap-4">
-                                <FormField control={activityForm.control} name="activity_time" render={({ field }) => ( <FormItem><FormLabel>Time (24h)</FormLabel><FormControl><Input placeholder="e.g., 17:30" {...field} /></FormControl><FormMessage /></FormItem>)} />
+                                <FormField control={activityForm.control} name="activity_time" render={({ field }) => ( <FormItem><FormLabel>Time (24h)</FormLabel><FormControl><Input placeholder="e.g., 17:30:00" {...field} /></FormControl><FormMessage /></FormItem>)} />
                                 <FormField control={activityForm.control} name="duration_minutes" render={({ field }) => ( <FormItem><FormLabel>Duration (minutes)</FormLabel><FormControl><Input type="number" placeholder="e.g., 120" {...field} /></FormControl><FormMessage /></FormItem>)} />
                             </div>
                             <FormField control={activityForm.control} name="description" render={({ field }) => ( <FormItem><FormLabel>Description</FormLabel><FormControl><Textarea placeholder="Describe the activity" {...field} /></FormControl><FormMessage /></FormItem>)} />
