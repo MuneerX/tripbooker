@@ -50,7 +50,7 @@ export type TripDay = {
   day_number: number;
   description: string;
   special_instructions?: string;
-  tour_package_id: string;
+  package_id: string;
   activities: Activity[];
   status: 'active' | 'inactive';
   created_at: string;
@@ -121,6 +121,3 @@ export type NavItem = {
   icon: React.ComponentType<{ className?: string }>;
   subItems?: NavItem[];
 };
-
-
-    

@@ -179,7 +179,3 @@ export default function TripDayDetailPage() {
     </div>
   );
 }
-
-    
-
-    

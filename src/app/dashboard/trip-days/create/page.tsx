@@ -37,7 +37,7 @@ const tripDaySchema = z.object({
   description: z.string().min(1, "Description is required"),
   special_instructions: z.string().optional(),
   status: z.enum(["active", "inactive"]),
-  tour_package_id: z.string().min(1, "Please select a tour package"),
+  package_id: z.string().min(1, "Please select a tour package"),
   activities: z.array(activitySchema).optional(),
 });
 
@@ -65,7 +65,7 @@ export default function CreateTripDayPage() {
       description: "",
       special_instructions: "",
       status: "active",
-      tour_package_id: "",
+      package_id: "",
       activities: [],
     },
   });
@@ -96,8 +96,8 @@ export default function CreateTripDayPage() {
     }
   };
 
-  const selectedPackageName = form.watch('tour_package_id') 
-    ? tourPackages.find(p => p.id === form.watch('tour_package_id'))?.name 
+  const selectedPackageName = form.watch('package_id') 
+    ? tourPackages.find(p => p.id === form.watch('package_id'))?.name 
     : '...';
 
   return (
@@ -119,7 +119,7 @@ export default function CreateTripDayPage() {
                 <CardContent className="space-y-6">
                      <FormField
                         control={form.control}
-                        name="tour_package_id"
+                        name="package_id"
                         render={({ field }) => (
                             <FormItem>
                             <FormLabel>Tour Package</FormLabel>
@@ -216,5 +216,3 @@ export default function CreateTripDayPage() {
     </div>
   )
 }
-
-    

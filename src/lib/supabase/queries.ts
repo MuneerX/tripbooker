@@ -187,16 +187,15 @@ export async function updateTourPackage(id: string, formData: FormData) {
         if (!url) return null;
         try {
             const urlObject = new URL(url);
-            // The path starts after /public/ which is standard for Supabase public URLs
             const pathSegments = urlObject.pathname.split('/');
-            const bucketName = 'images'; // your bucket name
+            const bucketName = 'images'; 
             const bucketIndex = pathSegments.findIndex(segment => segment === bucketName);
 
             if (bucketIndex === -1 || bucketIndex + 1 >= pathSegments.length) {
                 console.warn('Could not determine storage path from URL:', url);
                 return null;
             }
-            // Re-join the segments after the bucket name to form the file path
+            
             const filePath = pathSegments.slice(bucketIndex + 1).join('/');
             return decodeURIComponent(filePath);
         } catch (e) {
@@ -230,7 +229,6 @@ export async function updateTourPackage(id: string, formData: FormData) {
     if (originalFeaturedUrl) {
       const isReplaced = !!newFeaturedFile;
       const isDeselected = !isFeatured;
-      // Check if the URL is empty, indicating manual removal without replacement
       const wasManuallyRemoved = !featuredUrlOnForm;
 
       if (isReplaced || isDeselected || wasManuallyRemoved) {
@@ -243,7 +241,6 @@ export async function updateTourPackage(id: string, formData: FormData) {
         console.log('Deleting paths from storage:', pathsToDelete);
         const { error: deleteError } = await supabase.storage.from('images').remove(pathsToDelete);
         if (deleteError) {
-            // Log the error but don't block the update process
             console.error("Failed to delete some images from storage:", deleteError.message);
         }
     }
@@ -324,11 +321,7 @@ export async function getTripDays(): Promise<any[]> {
     const supabase = createBrowserClient();
     const { data, error } = await supabase
         .from('trip_days')
-        .select(`
-            *,
-            tour_package:tour_package_id(name),
-            activities ( count )
-        `)
+        .select(`*, tour_package:package_id(name), activities(count)`)
         .order('day_number');
 
     if (error) {
@@ -338,7 +331,6 @@ export async function getTripDays(): Promise<any[]> {
     
     const result = data.map(day => ({
         ...day,
-        tour_package: day.tour_package, 
         activities_count: Array.isArray(day.activities) && day.activities.length > 0 ? day.activities[0].count : 0
     }));
 
@@ -354,7 +346,7 @@ export async function getTripDayById(id: string): Promise<TripDay | null> {
         .from('trip_days')
         .select(`
             *,
-            tour_package:tour_package_id(name)
+            tour_package:package_id(name)
         `)
         .eq('id', id)
         .single();
@@ -374,7 +366,7 @@ export async function getTripDayById(id: string): Promise<TripDay | null> {
         console.error(`Error fetching activities for trip day ${id}:`, activitiesError);
     }
 
-    return { ...data, activities: activities || [], tour_package: data.tour_package } as TripDay;
+    return { ...data, activities: activities || [] } as TripDay;
 }
 
 /**
