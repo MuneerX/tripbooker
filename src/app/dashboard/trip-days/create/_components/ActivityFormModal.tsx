@@ -67,7 +67,14 @@ export function ActivityFormModal({ children, activity, onSave }: ActivityFormMo
 
     React.useEffect(() => {
         if (isOpen) {
-            activityForm.reset(activity || defaultActivityValues);
+            let valuesToSet = activity || defaultActivityValues;
+            if (activity?.activity_time && activity.activity_time.length > 5) {
+                valuesToSet = {
+                    ...activity,
+                    activity_time: activity.activity_time.substring(0, 5),
+                };
+            }
+            activityForm.reset(valuesToSet);
         }
     }, [isOpen, activity, activityForm]);
 
