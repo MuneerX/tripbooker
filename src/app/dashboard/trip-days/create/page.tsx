@@ -14,21 +14,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useRouter } from "next/navigation"
 import { useToast } from "@/hooks/use-toast"
 import { PlusCircle, Trash2 } from "lucide-react"
-import { Separator } from "@/components/ui/separator"
 import { createTripDay, getTourPackages } from "@/lib/supabase/queries"
 import type { TourPackage } from "@/lib/types"
-import { Checkbox } from "@/components/ui/checkbox"
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-  DialogClose
-} from "@/components/ui/dialog"
-import { ActivityFormModal, activitySchema, type ActivityFormValues } from "./_components/ActivityFormModal"
+import { ActivityFormModal, activitySchema } from "./_components/ActivityFormModal"
 
 
 const tripDaySchema = z.object({
@@ -36,9 +24,12 @@ const tripDaySchema = z.object({
   day_number: z.coerce.number().int().min(1, "Day number must be at least 1"),
   description: z.string().min(1, "Description is required"),
   special_instructions: z.string().optional(),
-  status: z.enum(["active", "inactive"]),
   package_id: z.string().min(1, "Please select a tour package"),
   activities: z.array(activitySchema).optional(),
+  title: z.string().optional(),
+  accommodation_type: z.string().optional(),
+  accommodation_name: z.string().optional(),
+  meals_included: z.array(z.string()).optional(),
 });
 
 type TripDayFormValues = z.infer<typeof tripDaySchema>;
@@ -64,7 +55,6 @@ export default function CreateTripDayPage() {
       day_number: 1,
       description: "",
       special_instructions: "",
-      status: "active",
       package_id: "",
       activities: [],
     },
@@ -143,16 +133,13 @@ export default function CreateTripDayPage() {
                         <FormField control={form.control} name="day_name" render={({ field }) => ( <FormItem><FormLabel>Day Name</FormLabel><FormControl><Input placeholder="e.g., Arrival in Paris" {...field} /></FormControl><FormMessage /></FormItem> )} />
                         <FormField control={form.control} name="day_number" render={({ field }) => ( <FormItem><FormLabel>Day No.</FormLabel><FormControl><Input type="number" {...field} /></FormControl><FormMessage /></FormItem> )} />
                     </div>
+                    <FormField control={form.control} name="title" render={({ field }) => ( <FormItem><FormLabel>Title</FormLabel><FormControl><Input placeholder="e.g., City Exploration" {...field} /></FormControl><FormMessage /></FormItem> )} />
                     <FormField control={form.control} name="description" render={({ field }) => ( <FormItem><FormLabel>Day's Description</FormLabel><FormControl><Textarea placeholder="Describe the plan for the day..." {...field} /></FormControl><FormMessage /></FormItem> )} />
+                    <div className="grid grid-cols-2 gap-4">
+                        <FormField control={form.control} name="accommodation_type" render={({ field }) => ( <FormItem><FormLabel>Accommodation Type</FormLabel><FormControl><Input placeholder="e.g., Hotel" {...field} /></FormControl><FormMessage /></FormItem> )} />
+                        <FormField control={form.control} name="accommodation_name" render={({ field }) => ( <FormItem><FormLabel>Accommodation Name</FormLabel><FormControl><Input placeholder="e.g., Grand Hyatt" {...field} /></FormControl><FormMessage /></FormItem> )} />
+                    </div>
                     <FormField control={form.control} name="special_instructions" render={({ field }) => ( <FormItem><FormLabel>Special Instructions</FormLabel><FormControl><Textarea placeholder="Any special notes for the traveler?" {...field} /></FormControl><FormMessage /></FormItem> )} />
-                    <FormField control={form.control} name="status" render={({ field }) => (
-                    <FormItem><FormLabel>Status</FormLabel>
-                        <Select onValueChange={field.onChange} defaultValue={field.value}>
-                        <FormControl><SelectTrigger className="w-48"><SelectValue placeholder="Select status" /></SelectTrigger></FormControl>
-                        <SelectContent><SelectItem value="active">Active</SelectItem><SelectItem value="inactive">Inactive</SelectItem></SelectContent>
-                        </Select><FormMessage />
-                    </FormItem>
-                    )} />
                 </CardContent>
                 </Card>
             </div>

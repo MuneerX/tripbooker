@@ -6,9 +6,7 @@ import * as React from "react";
 import { useParams, useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { ArrowLeft, Edit, Trash2, Clock, CheckCircle, XCircle } from "lucide-react";
-import { getStatusBadgeColor } from "@/lib/utils";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -21,8 +19,8 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { useToast } from "@/hooks/use-toast";
-import type { TripDay, TourPackage } from "@/lib/types";
-import { getTripDayById, deleteTripDay, getTourPackageById } from "@/lib/supabase/queries";
+import type { TripDay } from "@/lib/types";
+import { getTripDayById, deleteTripDay } from "@/lib/supabase/queries";
 
 export default function TripDayDetailPage() {
   const router = useRouter();
@@ -95,7 +93,6 @@ export default function TripDayDetailPage() {
             <h1 className="flex-1 shrink-0 whitespace-nowrap text-xl font-semibold tracking-tight sm:grow-0">
             {tripDay.day_name}
             </h1>
-            <Badge variant="outline" className={getStatusBadgeColor(tripDay.status)}>{tripDay.status}</Badge>
             <div className="ml-auto flex items-center gap-2">
             <AlertDialogTrigger asChild>
                 <Button variant="outline" size="sm">

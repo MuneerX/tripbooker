@@ -46,13 +46,16 @@ export type Activity = {
 
 export type TripDay = {
   id: string;
-  day_name: string;
-  day_number: number;
-  description: string;
-  special_instructions?: string;
   package_id: string;
+  day_number: number;
+  day_name: string;
+  title?: string;
+  description?: string;
+  accommodation_type?: string;
+  accommodation_name?: string;
+  meals_included?: string[];
+  special_instructions?: string;
   activities: Activity[];
-  status: 'active' | 'inactive';
   created_at: string;
   updated_at: string;
   tour_package?: { name: string } | null;

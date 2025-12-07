@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import * as React from "react";
@@ -6,13 +7,12 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { PlusCircle, MoreHorizontal, FilePenLine, Trash2, View, CalendarDays } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import type { TripDay } from "@/lib/types";
-import { getStatusBadgeColor, cn } from "@/lib/utils";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -78,19 +78,15 @@ export default function TripDaysPage() {
   );
   
   const totalDays = allTripDays.length;
-  const activeDays = allTripDays.filter(d => d.status === 'active').length;
-  const inactiveDays = totalDays - activeDays;
 
   const stats = [
     { label: "Total Days", value: totalDays, icon: <CalendarDays className="h-4 w-4" /> },
-    { label: "Active", value: activeDays, icon: <div className="h-2.5 w-2.5 rounded-full bg-green-500" /> },
-    { label: "Inactive", value: inactiveDays, icon: <div className="h-2.5 w-2.5 rounded-full bg-red-500" /> },
   ];
 
   return (
     <div className="flex flex-col gap-6">
         <div className="grid gap-4 md:grid-cols-3">
-            {stats.map(stat => <StatCard key={stat.label} card={stat} />)}
+            <StatCard card={stats[0]} />
         </div>
         <Card>
         <CardHeader>
@@ -122,7 +118,6 @@ export default function TripDaysPage() {
                 <TableHead className="hidden sm:table-cell">Day No.</TableHead>
                 <TableHead className="hidden md:table-cell">Tour Package</TableHead>
                 <TableHead className="hidden md:table-cell">Activities</TableHead>
-                <TableHead>Status</TableHead>
                 <TableHead>
                     <span className="sr-only">Actions</span>
                 </TableHead>
@@ -131,7 +126,7 @@ export default function TripDaysPage() {
             <TableBody>
                 {loading ? (
                   <TableRow>
-                    <TableCell colSpan={6} className="h-24 text-center">
+                    <TableCell colSpan={5} className="h-24 text-center">
                       Loading...
                     </TableCell>
                   </TableRow>
@@ -143,9 +138,6 @@ export default function TripDaysPage() {
                         <TableCell className="hidden sm:table-cell">{day.day_number}</TableCell>
                         <TableCell className="hidden md:table-cell">{day.tour_package?.name || 'N/A'}</TableCell>
                         <TableCell className="hidden md:table-cell">{day.activities_count || 0}</TableCell>
-                        <TableCell>
-                          <Badge variant="outline" className={cn("capitalize", getStatusBadgeColor(day.status))}>{day.status}</Badge>
-                        </TableCell>
                         <TableCell>
                           <AlertDialog>
                             <DropdownMenu>
@@ -193,7 +185,7 @@ export default function TripDaysPage() {
                 })
                 ) : (
                 <TableRow>
-                    <TableCell colSpan={6} className="h-24 text-center">
+                    <TableCell colSpan={5} className="h-24 text-center">
                     No results found.
                     </TableCell>
                 </TableRow>

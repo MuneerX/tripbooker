@@ -11,7 +11,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ArrowLeft, PlusCircle, Trash2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import type { TripDay } from "@/lib/types";
@@ -24,8 +23,11 @@ const tripDayEditSchema = z.object({
   day_number: z.coerce.number().int().min(1),
   description: z.string().min(1, "Description is required"),
   special_instructions: z.string().optional(),
-  status: z.enum(["active", "inactive"]),
-  activities: z.array(activitySchema).optional()
+  activities: z.array(activitySchema).optional(),
+  title: z.string().optional(),
+  accommodation_type: z.string().optional(),
+  accommodation_name: z.string().optional(),
+  meals_included: z.array(z.string()).optional(),
 });
 
 type TripDayEditFormValues = z.infer<typeof tripDayEditSchema>;
@@ -53,8 +55,11 @@ export default function EditTripDayPage() {
             day_name: day.day_name,
             day_number: day.day_number,
             description: day.description,
+            title: day.title,
+            accommodation_type: day.accommodation_type,
+            accommodation_name: day.accommodation_name,
+            meals_included: day.meals_included,
             special_instructions: day.special_instructions,
-            status: day.status,
             activities: day.activities || []
           });
         } else {
@@ -126,9 +131,11 @@ export default function EditTripDayPage() {
           <CardContent className="grid md:grid-cols-2 gap-6">
             <FormField control={form.control} name="day_name" render={({ field }) => ( <FormItem><FormLabel>Day Name</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem> )} />
             <FormField control={form.control} name="day_number" render={({ field }) => ( <FormItem><FormLabel>Day Number</FormLabel><FormControl><Input type="number" {...field} /></FormControl><FormMessage /></FormItem> )} />
+            <FormField control={form.control} name="title" render={({ field }) => ( <FormItem className="md:col-span-2"><FormLabel>Title</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem> )} />
             <FormField control={form.control} name="description" render={({ field }) => ( <FormItem className="md:col-span-2"><FormLabel>Day's Description</FormLabel><FormControl><Textarea {...field} /></FormControl><FormMessage /></FormItem> )} />
+            <FormField control={form.control} name="accommodation_type" render={({ field }) => ( <FormItem><FormLabel>Accommodation Type</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem> )} />
+            <FormField control={form.control} name="accommodation_name" render={({ field }) => ( <FormItem><FormLabel>Accommodation Name</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem> )} />
             <FormField control={form.control} name="special_instructions" render={({ field }) => ( <FormItem className="md:col-span-2"><FormLabel>Special Instructions</FormLabel><FormControl><Textarea {...field} /></FormControl><FormMessage /></FormItem> )} />
-            <FormField control={form.control} name="status" render={({ field }) => ( <FormItem><FormLabel>Status</FormLabel><Select onValueChange={field.onChange} value={field.value}><FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl><SelectContent><SelectItem value="active">Active</SelectItem><SelectItem value="inactive">Inactive</SelectItem></SelectContent></Select><FormMessage /></FormItem> )} />
           </CardContent>
         </Card>
 

@@ -188,15 +188,14 @@ export async function updateTourPackage(id: string, formData: FormData) {
         try {
             const urlObject = new URL(url);
             const pathSegments = urlObject.pathname.split('/');
-            const bucketName = 'images'; 
-            const bucketIndex = pathSegments.findIndex(segment => segment === bucketName);
+            const bucketNameIndex = pathSegments.findIndex(segment => segment === 'images');
 
-            if (bucketIndex === -1 || bucketIndex + 1 >= pathSegments.length) {
+            if (bucketNameIndex === -1 || bucketNameIndex + 1 >= pathSegments.length) {
                 console.warn('Could not determine storage path from URL:', url);
                 return null;
             }
             
-            const filePath = pathSegments.slice(bucketIndex + 1).join('/');
+            const filePath = pathSegments.slice(bucketNameIndex + 1).join('/');
             return decodeURIComponent(filePath);
         } catch (e) {
             console.error('Invalid URL for image deletion:', url, e);
@@ -321,7 +320,11 @@ export async function getTripDays(): Promise<any[]> {
     const supabase = createBrowserClient();
     const { data, error } = await supabase
         .from('trip_days')
-        .select(`*, tour_package:package_id(name), activities(count)`)
+        .select(`
+            *, 
+            tour_package:package_id(name), 
+            activities(count)
+        `)
         .order('day_number');
 
     if (error) {
