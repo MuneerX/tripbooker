@@ -17,9 +17,9 @@ import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import Link from "next/link";
-import { getTourPackageById } from "@/lib/supabase/queries";
-import type { TourPackage, Booking, TripDay, Review } from "@/lib/types";
-import mockData from "@/lib/data"; // Still needed for related data like bookings, reviews etc.
+import { getTourPackageById, getTripDaysForPackage } from "@/lib/supabase/queries";
+import type { TourPackage, Booking, TripDay, Review, Activity } from "@/lib/types";
+import mockData from "@/lib/data"; // Still needed for bookings, reviews
 
 export default function TourPackageDetailPage() {
   const router = useRouter();
@@ -29,26 +29,29 @@ export default function TourPackageDetailPage() {
   const [tourPackage, setTourPackage] = React.useState<TourPackage | null>(null);
   const [status, setStatus] = React.useState<boolean | undefined>();
   
-  // NOTE: Related data is still coming from mock data.
-  // This would need to be fetched from Supabase as well in a real application.
+  // NOTE: Bookings and reviews are still from mock data.
   const [bookingsForPackage, setBookingsForPackage] = React.useState<Booking[]>([]);
   const [tripDaysForPackage, setTripDaysForPackage] = React.useState<TripDay[]>([]);
   const [reviewsForPackage, setReviewsForPackage] = React.useState<Review[]>([]);
 
   React.useEffect(() => {
     if (id) {
-      const fetchPackage = async () => {
+      const fetchPackageAndRelatedData = async () => {
         const pkg = await getTourPackageById(id);
         setTourPackage(pkg);
+
         if (pkg) {
           setStatus(pkg.is_active);
-          // Filter related mock data
+          
+          const tripDays = await getTripDaysForPackage(pkg.id);
+          setTripDaysForPackage(tripDays);
+
+          // Filter mock data for bookings and reviews
           setBookingsForPackage(mockData.bookings.filter(b => b.tourPackageId === pkg.id));
-          setTripDaysForPackage(mockData.tripDays.filter(d => d.tourPackageId === pkg.id));
           setReviewsForPackage(mockData.reviews.filter(r => r.tourPackageId === pkg.id));
         }
       };
-      fetchPackage();
+      fetchPackageAndRelatedData();
     }
   }, [id]);
 
@@ -176,7 +179,7 @@ export default function TourPackageDetailPage() {
                                                     <div className="text-muted-foreground">{item.icon}</div>
                                                     <div>
                                                         <p className="font-medium text-muted-foreground">{item.label}</p>
-                                                        <p>{item.value}</p>
+                                                        <p>{String(item.value)}</p>
                                                     </div>
                                                 </div>
                                             ))}
@@ -235,7 +238,7 @@ export default function TourPackageDetailPage() {
                             </div>
                              <CardFooter className="p-0 pt-6">
                                 <div className="text-xs text-muted-foreground">
-                                    Last updated on {tourPackage.updatedAt ? format(new Date(tourPackage.updatedAt), "PPP") : 'N/A'}
+                                    Last updated on {tourPackage.updated_at ? format(new Date(tourPackage.updated_at), "PPP") : 'N/A'}
                                 </div>
                             </CardFooter>
                         </div>
@@ -295,7 +298,7 @@ export default function TourPackageDetailPage() {
                             <Card key={day.id} className="overflow-hidden">
                               <CardHeader className="bg-muted/50 flex flex-row items-center justify-between">
                                 <div>
-                                    <CardTitle>Day {day.dayNumber}: {day.dayName}</CardTitle>
+                                    <CardTitle>Day {day.day_number}: {day.day_name}</CardTitle>
                                     <CardDescription>{day.activities.length} activities planned</CardDescription>
                                 </div>
                                 <Button asChild size="sm" variant="outline" className="ml-auto gap-1">
@@ -308,7 +311,7 @@ export default function TourPackageDetailPage() {
                               <CardContent className="p-6 space-y-4">
                                 {day.activities.slice(0, 2).map((activity, index) => (
                                     <div
-                                    key={`${activity.activityId}-${index}`}
+                                    key={`${activity.id}-${index}`}
                                     className="flex items-start gap-4 p-4 border rounded-lg"
                                     >
                                     <div className="bg-muted p-3 rounded-md mt-1">
@@ -316,17 +319,17 @@ export default function TourPackageDetailPage() {
                                     </div>
                                     <div className="grid gap-1 flex-1">
                                         <p className="font-semibold">
-                                        {activity.name}{" "}
+                                        {activity.title}{" "}
                                         <span className="text-xs font-normal text-muted-foreground capitalize">
-                                            ({activity.type})
+                                            ({activity.activity_type})
                                         </span>
                                         </p>
                                         <p className="text-sm text-muted-foreground">
                                         {activity.description}
                                         </p>
                                         <div className="flex items-center text-sm text-muted-foreground gap-4 mt-1">
-                                        <span>Time: {activity.time}</span>
-                                        <span>Duration: {activity.duration}</span>
+                                        <span>Time: {activity.activity_time}</span>
+                                        <span>Duration: {activity.duration_minutes} mins</span>
                                         </div>
                                     </div>
                                     </div>
