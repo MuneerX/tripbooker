@@ -15,7 +15,7 @@ import { useRouter } from "next/navigation"
 import { useToast } from "@/hooks/use-toast"
 import { Switch } from "@/components/ui/switch"
 import { uploadTourImages } from "@/lib/supabase/queries"
-import { Upload } from "lucide-react"
+import { Upload, File as FileIcon, X } from "lucide-react"
 
 const MAX_FILE_SIZE = 2 * 1024 * 1024; // 2MB
 const ACCEPTED_IMAGE_TYPES = ["image/jpeg", "image/jpg", "image/png", "image/webp"];
@@ -76,6 +76,8 @@ export default function CreateTourPackagePage() {
       is_active: true,
     },
   });
+  
+  const imageFiles = form.watch("image_files");
 
   const onSubmit = async (data: TourPackageFormValues) => {
     const formData = new FormData();
@@ -162,6 +164,21 @@ export default function CreateTourPackagePage() {
                                         </div> 
                                     </FormControl>
                                     <FormMessage />
+                                    {imageFiles && imageFiles.length > 0 && (
+                                    <div className="mt-4 space-y-2">
+                                        <h4 className="text-sm font-medium">Selected Files:</h4>
+                                        <div className="grid gap-2 text-sm">
+                                        {Array.from(imageFiles).map((file: any, index: number) => (
+                                            <div key={index} className="flex items-center justify-between p-2 bg-muted rounded-md">
+                                                <div className="flex items-center gap-2">
+                                                    <FileIcon className="h-4 w-4 text-muted-foreground" />
+                                                    <span className="font-medium truncate max-w-xs">{file.name}</span>
+                                                </div>
+                                            </div>
+                                        ))}
+                                        </div>
+                                    </div>
+                                    )}
                                 </FormItem>
                                 )}
                             />
