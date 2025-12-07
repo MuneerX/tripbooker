@@ -78,6 +78,7 @@ export default function CreateTourPackagePage() {
   });
   
   const imageFiles = form.watch("image_files");
+  const featuredImageFile = form.watch("featured_image_file");
 
   const handleRemoveImage = (indexToRemove: number) => {
     const currentFiles = form.getValues("image_files");
@@ -239,7 +240,7 @@ export default function CreateTourPackagePage() {
                                     <FormItem>
                                         <FormLabel>Featured Image</FormLabel>
                                         <FormControl>
-                                            <div>
+                                            <div className="flex items-center gap-4">
                                                 <label htmlFor="featured-image-file" className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-10 px-4 py-2 cursor-pointer shadow-sm">
                                                     Choose File
                                                 </label>
@@ -250,6 +251,17 @@ export default function CreateTourPackagePage() {
                                                     className="hidden"
                                                     onChange={(e) => field.onChange(e.target.files)}
                                                 />
+                                                {featuredImageFile && featuredImageFile.length > 0 ? (
+                                                    <div className="flex items-center justify-between p-2 bg-muted rounded-md flex-1">
+                                                        <div className="flex items-center gap-2">
+                                                            <FileIcon className="h-4 w-4 text-muted-foreground" />
+                                                            <span className="font-medium truncate max-w-xs">{featuredImageFile[0].name}</span>
+                                                        </div>
+                                                        <Button type="button" variant="ghost" size="icon" className="h-6 w-6 text-destructive" onClick={() => form.setValue("featured_image_file", null, { shouldValidate: true })}>
+                                                            <X className="h-4 w-4" />
+                                                        </Button>
+                                                    </div>
+                                                ) : <span className="text-sm text-muted-foreground">No file selected.</span>}
                                             </div>
                                         </FormControl>
                                         <FormMessage />
@@ -274,7 +286,5 @@ export default function CreateTourPackagePage() {
     </div>
   )
 }
-
-    
 
     
