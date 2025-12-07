@@ -44,7 +44,6 @@ export default function TripDaysPage() {
     const fetchTripDays = async () => {
       setLoading(true);
       const days = await getTripDays();
-      console.log('Fetched trip days:', days);
       setAllTripDays(days as TripDayWithPackageAndCount[]);
       setLoading(false);
     };
@@ -195,5 +194,3 @@ export default function TripDaysPage() {
     </div>
   );
 }
-
-    

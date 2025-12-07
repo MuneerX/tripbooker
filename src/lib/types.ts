@@ -50,8 +50,6 @@ export type TripDay = {
   day_number: number;
   description: string;
   special_instructions?: string;
-  departure_location: string;
-  number_of_stays: number;
   tour_package_id: string;
   activities: Activity[];
   status: 'active' | 'inactive';

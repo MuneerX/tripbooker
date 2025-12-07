@@ -1,4 +1,5 @@
 
+
 "use server"
 
 import { createServerClient } from '@supabase/ssr'
@@ -192,8 +193,7 @@ export async function updateTourPackage(id: string, formData: FormData) {
         if (pathStartIndex === -1) return null;
 
         const bucketAndPath = pathname.substring(pathStartIndex + pathSegment.length);
-        const pathParts = bucketAndPath.split('/');
-        const bucketName = pathParts.shift(); // The first part is the bucket name
+        const [bucketName, ...pathParts] = bucketAndPath.split('/');
         if (!bucketName) return null;
         
         const filePath = pathParts.join('/');
@@ -228,16 +228,16 @@ export async function updateTourPackage(id: string, formData: FormData) {
   });
 
   // Determine if the original featured image should be deleted.
-    if (originalFeaturedUrl) {
-        const isReplaced = !!newFeaturedFile;
-        const isDeselected = !isFeatured;
-        const isRemovedManually = !isReplaced && isFeatured && !formData.get('featured_image_url');
+  if (originalFeaturedUrl) {
+    const isReplaced = !!newFeaturedFile;
+    const isDeselected = !isFeatured;
+    const isManuallyRemoved = !isReplaced && isFeatured && !formData.get('featured_image_url');
 
-        if (isReplaced || isDeselected || isRemovedManually) {
-            const path = getPathFromUrl(originalFeaturedUrl);
-            if (path) pathsToDelete.push(path);
-        }
+    if (isReplaced || isDeselected || isManuallyRemoved) {
+        const path = getPathFromUrl(originalFeaturedUrl);
+        if (path) pathsToDelete.push(path);
     }
+  }
 
 
   if (pathsToDelete.length > 0) {
@@ -253,7 +253,7 @@ export async function updateTourPackage(id: string, formData: FormData) {
   const uploadedImageUrls: string[] = [];
   let uploadedFeaturedImageUrl: string | undefined = undefined;
 
-  if (newGalleryFiles && newGalleryFiles.length > 0 && newGalleryFiles[0].size > 0) {
+  if (newGalleryFiles.length > 0) {
     for (const file of newGalleryFiles) {
       const filePath = `images/${Date.now()}-${file.name}`;
       const { error: uploadError } = await supabase.storage.from('images').upload(filePath, file);
@@ -334,8 +334,8 @@ export async function getTripDays(): Promise<any[]> {
             day_name,
             day_number,
             status,
-            activities:activities(count),
-            tour_package:tour_packages(name)
+            activities ( count ),
+            tour_package:tour_packages ( name )
         `)
         .order('tour_package_id')
         .order('day_number');
@@ -349,7 +349,7 @@ export async function getTripDays(): Promise<any[]> {
     // We need to transform this to a simple number.
     return data.map(day => ({
         ...day,
-        activities_count: day.activities[0]?.count || 0
+        activities_count: Array.isArray(day.activities) && day.activities.length > 0 ? day.activities[0].count : 0
     }));
 }
 
