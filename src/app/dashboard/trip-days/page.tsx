@@ -1,7 +1,5 @@
 
 
-"use client";
-
 import * as React from "react";
 import Link from "next/link";
 import { PlusCircle, MoreHorizontal, FilePenLine, Trash2, View, CalendarDays } from "lucide-react";
@@ -24,50 +22,30 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { useRouter } from "next/navigation";
 import { StatCard } from "@/components/dashboard/StatCard";
 import { getTripDays, deleteTripDay } from "@/lib/supabase/queries";
-import { useToast } from "@/hooks/use-toast";
+import { revalidatePath } from "next/cache";
 
 type TripDayWithPackageAndCount = TripDay & { 
   tour_package: { name: string } | null;
   activities_count: number;
 };
 
-export default function TripDaysPage() {
-  const router = useRouter();
-  const { toast } = useToast();
-  const [searchTerm, setSearchTerm] = React.useState("");
-  const [allTripDays, setAllTripDays] = React.useState<TripDayWithPackageAndCount[]>([]);
-  const [loading, setLoading] = React.useState(true);
+// A server-side action to handle deletion
+async function deleteAction(dayId: string, dayName: string) {
+  "use server";
+  try {
+    await deleteTripDay(dayId);
+    revalidatePath('/dashboard/trip-days'); // Revalidate the page to show updated data
+    return { success: true, message: `Trip day "${dayName}" has been deleted.` };
+  } catch (error: any) {
+    return { success: false, message: error.message || "Failed to delete trip day." };
+  }
+}
 
-  React.useEffect(() => {
-    const fetchTripDays = async () => {
-      setLoading(true);
-      const days = await getTripDays();
-      console.log('Fetched Trip Days Data:', days);
-      setAllTripDays(days as TripDayWithPackageAndCount[]);
-      setLoading(false);
-    };
-    fetchTripDays();
-  }, []);
-
-  const handleDelete = async (dayId: string, dayName: string) => {
-    try {
-      await deleteTripDay(dayId);
-      setAllTripDays(allTripDays.filter(d => d.id !== dayId));
-      toast({
-        title: "Success",
-        description: `Trip day "${dayName}" has been deleted.`,
-      });
-    } catch (error: any) {
-       toast({
-        variant: "destructive",
-        title: "Error",
-        description: error.message || "Failed to delete trip day.",
-      });
-    }
-  };
+export default async function TripDaysPage({ searchParams }: { searchParams?: { [key: string]: string | undefined }}) {
+  const searchTerm = searchParams?.search || "";
+  const allTripDays: TripDayWithPackageAndCount[] = await getTripDays();
 
   const filteredTripDays = allTripDays.filter((day) =>
     (day.day_name && day.day_name.toLowerCase().includes(searchTerm.toLowerCase())) ||
@@ -97,12 +75,14 @@ export default function TripDaysPage() {
                 <CardDescription>Manage your trip days from here.</CardDescription>
             </div>
             <div className="flex items-center gap-2">
-                <Input
-                placeholder="Search by day or package..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full md:w-64"
-                />
+                {/* Search is handled by query params now */}
+                <form className="w-full md:w-64">
+                    <Input
+                        placeholder="Search by day or package..."
+                        name="search"
+                        defaultValue={searchTerm}
+                    />
+                </form>
                 <Button asChild>
                 <Link href="/dashboard/trip-days/create">
                     <PlusCircle className="mr-2 h-4 w-4" /> Create Trip Day
@@ -126,11 +106,7 @@ export default function TripDaysPage() {
                 </TableRow>
             </TableHeader>
             <TableBody>
-                {loading ? (
-                  <TableRow>
-                    <TableCell colSpan={6} className="h-24 text-center">Loading...</TableCell>
-                  </TableRow>
-                ) : filteredTripDays.length > 0 ? (
+                {filteredTripDays.length > 0 ? (
                 filteredTripDays.map((day) => {
                     return (
                     <TableRow key={day.id}>
@@ -152,15 +128,19 @@ export default function TripDaysPage() {
                                 </DropdownMenuTrigger>
                                 <DropdownMenuContent align="end">
                                 <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                                <DropdownMenuItem onSelect={() => router.push(`/dashboard/trip-days/${day.id}`)}>
+                                <DropdownMenuItem asChild>
+                                  <Link href={`/dashboard/trip-days/${day.id}`}>
                                     <View className="mr-2 h-4 w-4" /> View
+                                  </Link>
                                 </DropdownMenuItem>
-                                <DropdownMenuItem onSelect={() => router.push(`/dashboard/trip-days/edit/${day.id}`)}>
+                                <DropdownMenuItem asChild>
+                                  <Link href={`/dashboard/trip-days/edit/${day.id}`}>
                                     <FilePenLine className="mr-2 h-4 w-4" /> Edit
+                                  </Link>
                                 </DropdownMenuItem>
                                 <AlertDialogTrigger asChild>
                                     <DropdownMenuItem className="text-red-600 focus:text-red-600 focus:bg-red-50" onSelect={(e) => e.preventDefault()}>
-                                    <Trash2 className="mr-2 h-4 w-4" /> Delete
+                                      <Trash2 className="mr-2 h-4 w-4" /> Delete
                                     </DropdownMenuItem>
                                 </AlertDialogTrigger>
                                 </DropdownMenuContent>
@@ -174,7 +154,12 @@ export default function TripDaysPage() {
                                 </AlertDialogHeader>
                                 <AlertDialogFooter>
                                 <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                <AlertDialogAction onClick={() => handleDelete(day.id, day.day_name)} className="bg-destructive hover:bg-destructive/90">Delete</AlertDialogAction>
+                                <form action={async () => {
+                                  "use server"
+                                  await deleteAction(day.id, day.day_name)
+                                }}>
+                                  <AlertDialogAction type="submit" className="bg-destructive hover:bg-destructive/90">Delete</AlertDialogAction>
+                                </form>
                                 </AlertDialogFooter>
                             </AlertDialogContent>
                             </AlertDialog>

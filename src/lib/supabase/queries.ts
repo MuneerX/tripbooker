@@ -187,13 +187,16 @@ export async function updateTourPackage(id: string, formData: FormData) {
         if (!url) return null;
         try {
             const urlObject = new URL(url);
-            const pathSegments = urlObject.pathname.split('/');
-            const bucketNameIndex = pathSegments.findIndex(segment => segment === 'images');
-            if (bucketNameIndex === -1 || bucketNameIndex + 1 >= pathSegments.length) {
+            // Example path: /storage/v1/object/public/images/images/17180...
+            const pathSegments = urlObject.pathname.split('/'); 
+            const bucketName = 'images'; // your bucket name
+            const bucketIndex = pathSegments.findIndex(segment => segment === bucketName);
+            if (bucketIndex === -1 || bucketIndex + 1 >= pathSegments.length) {
                 console.warn('Could not determine storage path from URL:', url);
                 return null;
             }
-            const filePath = pathSegments.slice(bucketNameIndex + 1).join('/');
+            // Re-join the segments after the bucket name to form the file path
+            const filePath = pathSegments.slice(bucketIndex + 1).join('/');
             return decodeURIComponent(filePath);
         } catch (e) {
             console.error('Invalid URL for image deletion:', url, e);
@@ -314,7 +317,7 @@ export async function updateTourPackage(id: string, formData: FormData) {
  * Fetches all trip days and their related tour package name.
  */
 export async function getTripDays(): Promise<any[]> {
-    const supabase = createBrowserClient();
+    const supabase = createAdminClient();
     const { data, error } = await supabase
         .from('trip_days')
         .select(`
@@ -329,11 +332,13 @@ export async function getTripDays(): Promise<any[]> {
         return [];
     }
     
-    return data.map(day => ({
+    const result = data.map(day => ({
         ...day,
         tour_package: day.tour_package, 
         activities_count: Array.isArray(day.activities) && day.activities.length > 0 ? day.activities[0].count : 0
     }));
+
+    return result;
 }
 
 /**
