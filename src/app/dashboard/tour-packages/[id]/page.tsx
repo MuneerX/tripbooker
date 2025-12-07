@@ -8,7 +8,6 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ArrowLeft, Edit, Trash2, Calendar, Users, Clock, Check, X, Plus, Info, Star, CheckCircle, XCircle, ArrowUpRight } from "lucide-react";
-import mockData from "@/lib/data";
 import { formatCurrency, getStatusBadgeColor, cn } from "@/lib/utils";
 import { Separator } from "@/components/ui/separator";
 import { format } from "date-fns";
@@ -17,50 +16,63 @@ import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import Link from "next/link";
+import { getTourPackageById } from "@/lib/supabase/queries";
+import type { TourPackage, Booking, TripDay, Review } from "@/lib/types";
+import mockData from "@/lib/data"; // Still needed for related data like bookings, reviews etc.
 
 export default function TourPackageDetailPage() {
   const router = useRouter();
   const params = useParams();
-  const { id } = params;
+  const { id } = params as { id: string };
 
-  const tourPackage = mockData.tourPackages.find((pkg) => pkg.id === id);
+  const [tourPackage, setTourPackage] = React.useState<TourPackage | null>(null);
   const [status, setStatus] = React.useState(tourPackage?.status);
+  
+  // NOTE: Related data is still coming from mock data.
+  // This would need to be fetched from Supabase as well in a real application.
+  const [bookingsForPackage, setBookingsForPackage] = React.useState<Booking[]>([]);
+  const [tripDaysForPackage, setTripDaysForPackage] = React.useState<TripDay[]>([]);
+  const [reviewsForPackage, setReviewsForPackage] = React.useState<Review[]>([]);
+
+  React.useEffect(() => {
+    if (id) {
+      const fetchPackage = async () => {
+        const pkg = await getTourPackageById(id);
+        setTourPackage(pkg);
+        if (pkg) {
+          setStatus(pkg.status);
+          // Filter related mock data
+          setBookingsForPackage(mockData.bookings.filter(b => b.tourPackageId === pkg.id));
+          setTripDaysForPackage(mockData.tripDays.filter(d => d.tourPackageId === pkg.id));
+          setReviewsForPackage(mockData.reviews.filter(r => r.tourPackageId === pkg.id));
+        }
+      };
+      fetchPackage();
+    }
+  }, [id]);
 
   if (!tourPackage) {
     return (
       <div className="flex flex-col items-center justify-center h-full text-center">
-        <h1 className="text-2xl font-bold">Tour Package Not Found</h1>
-        <p className="text-muted-foreground">The requested tour package does not exist.</p>
-        <Button onClick={() => router.back()} className="mt-4">
-          <ArrowLeft className="mr-2 h-4 w-4" /> Go Back
-        </Button>
+        <h1 className="text-2xl font-bold">Loading Tour Package...</h1>
+        <p className="text-muted-foreground">Please wait a moment.</p>
       </div>
     );
   }
 
   const handleStatusChange = (newStatus: "active" | "inactive") => {
-    if (tourPackage) {
-      // Update local state
-      setStatus(newStatus);
-      // Update mock data
-      const packageIndex = mockData.tourPackages.findIndex(p => p.id === tourPackage.id);
-      if (packageIndex !== -1) {
-        mockData.tourPackages[packageIndex].status = newStatus;
-      }
-    }
+    // In a real app, you would call a function to update this in Supabase
+    setStatus(newStatus);
+    console.log(`TODO: Update package ${tourPackage.id} status to ${newStatus}`);
   };
 
   const detailItems = [
     { icon: <Clock />, label: "Duration", value: `${tourPackage.days} Days / ${tourPackage.nights} Nights` },
     { icon: <Users />, label: "Maximum Permitted Booking", value: tourPackage.maxPermittedBooking },
-    { icon: <Calendar />, label: "Introduced", value: format(tourPackage.introductionDate, "PPP") },
-    { icon: <Calendar />, label: "Starts On", value: tourPackage.withdrawalDate ? format(tourPackage.withdrawalDate, "PPP") : 'N/A' }, // Using withdrawalDate as startDate for mock data
+    { icon: <Calendar />, label: "Introduced", value: format(new Date(tourPackage.introductionDate), "PPP") },
+    { icon: <Calendar />, label: "Starts On", value: tourPackage.withdrawalDate ? format(new Date(tourPackage.withdrawalDate), "PPP") : 'N/A' },
     { icon: <Check className="text-green-500" />, label: "Featured", value: tourPackage.isFeatured ? 'Yes' : 'No' },
   ];
-
-  const bookingsForPackage = mockData.bookings.filter(b => b.tourPackageId === tourPackage.id);
-  const tripDaysForPackage = mockData.tripDays.filter(d => d.tourPackageId === tourPackage.id);
-  const reviewsForPackage = mockData.reviews.filter(r => r.tourPackageId === tourPackage.id);
 
   return (
     <div className="space-y-6">
@@ -230,7 +242,7 @@ export default function TourPackageDetailPage() {
                             </div>
                              <CardFooter className="p-0 pt-6">
                                 <div className="text-xs text-muted-foreground">
-                                    Last updated on {format(tourPackage.updatedAt, "PPP")}
+                                    Last updated on {format(new Date(tourPackage.updatedAt), "PPP")}
                                 </div>
                             </CardFooter>
                         </div>
@@ -260,7 +272,7 @@ export default function TourPackageDetailPage() {
                                         <div className="font-medium">{booking.customerName}</div>
                                         <div className="text-sm text-muted-foreground hidden md:inline">{booking.customerEmail}</div>
                                       </TableCell>
-                                      <TableCell>{format(booking.reservationDate, "PPP")}</TableCell>
+                                      <TableCell>{format(new Date(booking.reservationDate), "PPP")}</TableCell>
                                       <TableCell className="font-mono text-xs">{booking.transactionId}</TableCell>
                                       <TableCell className="capitalize">{booking.paymentType}</TableCell>
                                       <TableCell>{formatCurrency(booking.totalAmount)}</TableCell>
@@ -363,7 +375,7 @@ export default function TourPackageDetailPage() {
                                     </div>
                                 </div>
                                 <p className="text-sm text-muted-foreground">{review.reviewText}</p>
-                                <p className="text-xs text-muted-foreground mt-1">{format(review.createdAt, "PPP")}</p>
+                                <p className="text-xs text-muted-foreground mt-1">{format(new Date(review.createdAt), "PPP")}</p>
                                 </div>
                             </div>
                             )) : <div className="text-center text-muted-foreground py-8 h-24">No reviews yet for this package.</div>}
@@ -375,5 +387,3 @@ export default function TourPackageDetailPage() {
     </div>
   );
 }
-
-    

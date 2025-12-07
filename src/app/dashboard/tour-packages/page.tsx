@@ -1,3 +1,4 @@
+
 "use client";
 
 import * as React from "react";
@@ -9,7 +10,6 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
-import mockData from "@/lib/data";
 import type { TourPackage } from "@/lib/types";
 import { formatCurrency, getStatusBadgeColor, cn } from "@/lib/utils";
 import { StatCard } from "@/components/dashboard/StatCard";
@@ -25,15 +25,25 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
-} from "@/components/ui/alert-dialog"
+} from "@/components/ui/alert-dialog";
+import { getTourPackages } from "@/lib/supabase/queries";
 
 export default function TourPackagesPage() {
   const router = useRouter();
   const [searchTerm, setSearchTerm] = React.useState("");
   const [currentPage, setCurrentPage] = React.useState(1);
+  const [allPackages, setAllPackages] = React.useState<TourPackage[]>([]);
   const rowsPerPage = 10;
 
-  const filteredPackages = mockData.tourPackages.filter((pkg) =>
+  React.useEffect(() => {
+    const fetchPackages = async () => {
+      const packages = await getTourPackages();
+      setAllPackages(packages);
+    };
+    fetchPackages();
+  }, []);
+
+  const filteredPackages = allPackages.filter((pkg) =>
     pkg.tourName.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
@@ -43,8 +53,8 @@ export default function TourPackagesPage() {
     currentPage * rowsPerPage
   );
   
-  const totalPackages = mockData.tourPackages.length;
-  const activePackages = mockData.tourPackages.filter(p => p.status === 'active').length;
+  const totalPackages = allPackages.length;
+  const activePackages = allPackages.filter(p => p.status === 'active').length;
   const inactivePackages = totalPackages - activePackages;
 
   const stats = [
@@ -105,7 +115,7 @@ export default function TourPackagesPage() {
                     <TableCell className="font-medium">{pkg.tourName}</TableCell>
                     <TableCell className="hidden md:table-cell">{pkg.days}</TableCell>
                     <TableCell className="hidden md:table-cell">{formatCurrency(pkg.basePrice)}</TableCell>
-                    <TableCell className="hidden md:table-cell">{format(pkg.introductionDate, "dd/MM/yyyy")}</TableCell>
+                    <TableCell className="hidden md:table-cell">{format(new Date(pkg.introductionDate), "dd/MM/yyyy")}</TableCell>
                     <TableCell className="hidden lg:table-cell">
                       <Badge variant="secondary" className="capitalize">{pkg.tourType}</Badge>
                     </TableCell>
