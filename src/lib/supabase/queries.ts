@@ -181,15 +181,11 @@ export async function updateTourPackage(id: string, formData: FormData) {
     if (!url) return '';
     try {
       const urlObject = new URL(url);
-      const bucketPath = '/storage/v1/object/public/';
-      const pathIndex = urlObject.pathname.indexOf(bucketPath);
-      if (pathIndex > -1) {
-        // Return the path after the bucket name, e.g., "images/my-image.png"
-        // The pathname would be /storage/v1/object/public/images/images/my-image.png
-        // We need to find the second "images"
-        const parts = urlObject.pathname.split('/images/');
-        // The path we want is the last part.
-        return `images/${parts.slice(1).join('/images/')}`;
+      const bucketName = 'images'; // your bucket name
+      const pathPrefix = `/storage/v1/object/public/${bucketName}/`;
+
+      if (urlObject.pathname.startsWith(pathPrefix)) {
+        return urlObject.pathname.substring(pathPrefix.length);
       }
       return '';
     } catch (e) {
@@ -205,16 +201,19 @@ export async function updateTourPackage(id: string, formData: FormData) {
   const existingFeaturedUrl = formData.get('existing_featured_image_url') as string || '';
 
   const galleryImagesToDelete = originalImageUrls.filter((url: string) => !existingImageUrls.includes(url));
-  const featuredImageToDelete = (originalFeaturedUrl && originalFeaturedUrl !== existingFeaturedUrl && !formData.has('new_featured_image_file')) ? originalFeaturedUrl : null;
   
-  const allImagesToDelete = [...galleryImagesToDelete];
-  // If a new featured image is uploaded, the old one should be deleted.
-  if (originalFeaturedUrl && formData.has('new_featured_image_file')) {
-    allImagesToDelete.push(originalFeaturedUrl);
-  } else if(featuredImageToDelete) {
-    allImagesToDelete.push(featuredImageToDelete);
-  }
+  // Determine if the featured image should be deleted
+  // It should be deleted if:
+  // 1. There was an original URL.
+  // 2. The new URL is different (or empty).
+  // 3. AND there isn't a new file being uploaded to replace it.
+  const featuredImageWasRemoved = originalFeaturedUrl && !existingFeaturedUrl;
+  const featuredImageIsBeingReplaced = originalFeaturedUrl && formData.has('new_featured_image_file');
 
+  const allImagesToDelete = [...galleryImagesToDelete];
+  if (featuredImageWasRemoved || featuredImageIsBeingReplaced) {
+      if(originalFeaturedUrl) allImagesToDelete.push(originalFeaturedUrl);
+  }
 
   if (allImagesToDelete.length > 0) {
     const pathsToDelete = allImagesToDelete.map(getPathFromUrl).filter(Boolean);
@@ -227,7 +226,6 @@ export async function updateTourPackage(id: string, formData: FormData) {
         }
     }
   }
-
 
   // 2. Handle Image Uploads (if any new ones are provided)
   const newImageFiles = formData.getAll('image_files') as File[];
@@ -257,7 +255,8 @@ export async function updateTourPackage(id: string, formData: FormData) {
   }
 
   // 3. Construct the update object
-  const finalImageUrls = newImageUrls.concat(existingImageUrls);
+  const finalImageUrls = [...existingImageUrls, ...newImageUrls];
+  const finalFeaturedImageUrl = newFeaturedImageUrl ?? existingFeaturedUrl;
   
   const updateData: { [key: string]: any } = {
     name: formData.get('name') as string,
@@ -276,7 +275,7 @@ export async function updateTourPackage(id: string, formData: FormData) {
     is_featured: formData.get('is_featured') === 'true',
     is_active: formData.get('is_active') === 'true',
     image_urls: finalImageUrls,
-    featured_image_url: newFeaturedImageUrl ?? existingFeaturedUrl || null,
+    featured_image_url: finalFeaturedImageUrl || null,
   };
   
    // Remove undefined keys so they don't overwrite existing values with null
@@ -285,7 +284,6 @@ export async function updateTourPackage(id: string, formData: FormData) {
        delete updateData[key];
      }
    });
-
 
   // 4. Update the database record
   const { data, error } = await supabase
@@ -302,4 +300,3 @@ export async function updateTourPackage(id: string, formData: FormData) {
 
   return data;
 }
-
