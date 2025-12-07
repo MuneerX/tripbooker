@@ -58,7 +58,13 @@ const nextConfig: NextConfig = {
         hostname: 'upload.wikimedia.org',
         port: '',
         pathname: '/**',
-      }
+      },
+      {
+        protocol: 'https',
+        hostname: 'tour-locations.s3.amazonaws.com',
+        port: '',
+        pathname: '/**',
+      },
     ],
   },
 };
