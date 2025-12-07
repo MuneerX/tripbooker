@@ -64,7 +64,6 @@ export type TripDay = {
   accommodation_type?: string;
   accommodation_name?: string;
   meals_included?: string[];
-  special_instructions?: string;
   activities: Activity[];
   created_at: string;
   updated_at: string;

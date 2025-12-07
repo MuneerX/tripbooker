@@ -23,7 +23,6 @@ const tripDaySchema = z.object({
   day_name: z.string().min(1, "Day name is required"),
   day_number: z.coerce.number().int().min(1, "Day number must be at least 1"),
   description: z.string().min(1, "Description is required"),
-  special_instructions: z.string().optional(),
   package_id: z.string().min(1, "Please select a tour package"),
   activities: z.array(activitySchema).optional(),
   title: z.string().optional(),
@@ -54,7 +53,6 @@ export default function CreateTripDayPage() {
       day_name: "",
       day_number: 1,
       description: "",
-      special_instructions: "",
       package_id: "",
       activities: [],
       title: "",
@@ -143,7 +141,6 @@ export default function CreateTripDayPage() {
                         <FormField control={form.control} name="accommodation_type" render={({ field }) => ( <FormItem><FormLabel>Accommodation Type</FormLabel><FormControl><Input placeholder="e.g., Hotel" {...field} /></FormControl><FormMessage /></FormItem> )} />
                         <FormField control={form.control} name="accommodation_name" render={({ field }) => ( <FormItem><FormLabel>Accommodation Name</FormLabel><FormControl><Input placeholder="e.g., Grand Hyatt" {...field} /></FormControl><FormMessage /></FormItem> )} />
                     </div>
-                    <FormField control={form.control} name="special_instructions" render={({ field }) => ( <FormItem><FormLabel>Special Instructions</FormLabel><FormControl><Textarea placeholder="Any special notes for the traveler?" {...field} /></FormControl><FormMessage /></FormItem> )} />
                 </CardContent>
                 </Card>
             </div>

@@ -21,7 +21,6 @@ const tripDayEditSchema = z.object({
   day_name: z.string().min(1, "Day name is required"),
   day_number: z.coerce.number().int().min(1),
   description: z.string().min(1, "Description is required"),
-  special_instructions: z.string().optional(),
   activities: z.array(activitySchema).optional(),
   title: z.string().optional(),
   accommodation_type: z.string().optional(),
@@ -58,7 +57,6 @@ export default function EditTripDayPage() {
             accommodation_type: day.accommodation_type || '',
             accommodation_name: day.accommodation_name || '',
             meals_included: day.meals_included || [],
-            special_instructions: day.special_instructions || '',
             activities: day.activities.map(a => ({
                 ...a,
                 title: a.title || a.name || '',
@@ -142,7 +140,6 @@ export default function EditTripDayPage() {
             <FormField control={form.control} name="description" render={({ field }) => ( <FormItem className="md:col-span-2"><FormLabel>Day's Description</FormLabel><FormControl><Textarea {...field} /></FormControl><FormMessage /></FormItem> )} />
             <FormField control={form.control} name="accommodation_type" render={({ field }) => ( <FormItem><FormLabel>Accommodation Type</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem> )} />
             <FormField control={form.control} name="accommodation_name" render={({ field }) => ( <FormItem><FormLabel>Accommodation Name</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem> )} />
-            <FormField control={form.control} name="special_instructions" render={({ field }) => ( <FormItem className="md:col-span-2"><FormLabel>Special Instructions</FormLabel><FormControl><Textarea {...field} /></FormControl><FormMessage /></FormItem> )} />
           </CardContent>
         </Card>
 
