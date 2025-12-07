@@ -65,6 +65,20 @@ function createAdminClient() {
         get(name: string) {
           return cookieStore.get(name)?.value
         },
+        set(name: string, value: string, options) {
+            try {
+              cookieStore.set({ name, value, ...options })
+            } catch (error) {
+              // The `set` method was called from a Server Component.
+            }
+          },
+          remove(name: string, options) {
+            try {
+              cookieStore.set({ name, value: '', ...options })
+            } catch (error) {
+              // The `delete` method was called from a Server Component.
+            }
+          },
       },
     }
   );
@@ -185,7 +199,7 @@ export async function updateTourPackage(id: string, formData: FormData) {
       const pathPrefix = `/storage/v1/object/public/${bucketName}/`;
 
       if (urlObject.pathname.startsWith(pathPrefix)) {
-        return urlObject.pathname.substring(pathPrefix.length);
+        return decodeURIComponent(urlObject.pathname.substring(pathPrefix.length));
       }
       return '';
     } catch (e) {
@@ -203,16 +217,12 @@ export async function updateTourPackage(id: string, formData: FormData) {
   const galleryImagesToDelete = originalImageUrls.filter((url: string) => !existingImageUrls.includes(url));
   
   // Determine if the featured image should be deleted
-  // It should be deleted if:
-  // 1. There was an original URL.
-  // 2. The new URL is different (or empty).
-  // 3. AND there isn't a new file being uploaded to replace it.
   const featuredImageWasRemoved = originalFeaturedUrl && !existingFeaturedUrl;
-  const featuredImageIsBeingReplaced = originalFeaturedUrl && formData.has('new_featured_image_file');
+  const featuredImageIsBeingReplaced = originalFeaturedUrl && formData.has('featured_image_file');
 
   const allImagesToDelete = [...galleryImagesToDelete];
-  if (featuredImageWasRemoved || featuredImageIsBeingReplaced) {
-      if(originalFeaturedUrl) allImagesToDelete.push(originalFeaturedUrl);
+  if ((featuredImageWasRemoved || featuredImageIsBeingReplaced) && originalFeaturedUrl) {
+      allImagesToDelete.push(originalFeaturedUrl);
   }
 
   if (allImagesToDelete.length > 0) {
@@ -229,7 +239,7 @@ export async function updateTourPackage(id: string, formData: FormData) {
 
   // 2. Handle Image Uploads (if any new ones are provided)
   const newImageFiles = formData.getAll('image_files') as File[];
-  const newFeaturedImageFile = formData.get('new_featured_image_file') as File | null;
+  const newFeaturedImageFile = formData.get('featured_image_file') as File | null;
   
   const newImageUrls: string[] = [];
   let newFeaturedImageUrl: string | undefined = undefined;
@@ -276,6 +286,7 @@ export async function updateTourPackage(id: string, formData: FormData) {
     is_active: formData.get('is_active') === 'true',
     image_urls: finalImageUrls,
     featured_image_url: finalFeaturedImageUrl || null,
+    updated_at: new Date().toISOString(),
   };
   
    // Remove undefined keys so they don't overwrite existing values with null
