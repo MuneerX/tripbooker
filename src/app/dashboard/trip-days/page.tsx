@@ -34,7 +34,7 @@ export default function TripDaysPage() {
   const router = useRouter();
   const { toast } = useToast();
   
-  const [allTripDays, setAllTripDays] = React.useState<TripDayWithPackageAndCount[]>([]);
+  const [allTripDays, setAllTripDays] = React.useState<TripDay[]>([]);
   const [loading, setLoading] = React.useState(true);
   const [searchTerm, setSearchTerm] = React.useState("");
   const [deletingId, setDeletingId] = React.useState<string | null>(null);
@@ -44,7 +44,7 @@ export default function TripDaysPage() {
       setLoading(true);
       const days = await getTripDays();
       console.log('Fetched Trip Days:', days);
-      setAllTripDays(days as TripDayWithPackageAndCount[]);
+      setAllTripDays(days as TripDay[]);
       setLoading(false);
     }
     fetchTripDays();
@@ -72,7 +72,7 @@ export default function TripDaysPage() {
 
   const filteredTripDays = allTripDays.filter((day) =>
     (day.day_name && day.day_name.toLowerCase().includes(searchTerm.toLowerCase())) ||
-    (day.tour_package?.name && day.tour_package.name.toLowerCase().includes(searchTerm.toLowerCase()))
+    (day.package_id && day.package_id.toLowerCase().includes(searchTerm.toLowerCase()))
   );
   
   const totalDays = allTripDays.length;
@@ -114,8 +114,7 @@ export default function TripDaysPage() {
                 <TableRow>
                 <TableHead>Day Name</TableHead>
                 <TableHead className="hidden sm:table-cell">Day No.</TableHead>
-                <TableHead className="hidden md:table-cell">Tour Package</TableHead>
-                <TableHead className="hidden md:table-cell">Activities</TableHead>
+                <TableHead className="hidden md:table-cell">Tour Package ID</TableHead>
                 <TableHead>
                     <span className="sr-only">Actions</span>
                 </TableHead>
@@ -124,7 +123,7 @@ export default function TripDaysPage() {
             <TableBody>
                 {loading ? (
                   <TableRow>
-                    <TableCell colSpan={5} className="h-24 text-center">
+                    <TableCell colSpan={4} className="h-24 text-center">
                       Loading...
                     </TableCell>
                   </TableRow>
@@ -134,8 +133,7 @@ export default function TripDaysPage() {
                     <TableRow key={day.id}>
                         <TableCell className="font-medium">{day.day_name}</TableCell>
                         <TableCell className="hidden sm:table-cell">{day.day_number}</TableCell>
-                        <TableCell className="hidden md:table-cell">{day.tour_package?.name || 'N/A'}</TableCell>
-                        <TableCell className="hidden md:table-cell">{day.activities_count || 0}</TableCell>
+                        <TableCell className="hidden md:table-cell font-mono text-xs">{day.package_id || 'N/A'}</TableCell>
                         <TableCell>
                           <AlertDialog>
                             <DropdownMenu>
@@ -183,7 +181,7 @@ export default function TripDaysPage() {
                 })
                 ) : (
                 <TableRow>
-                    <TableCell colSpan={5} className="h-24 text-center">
+                    <TableCell colSpan={4} className="h-24 text-center">
                     No results found.
                     </TableCell>
                 </TableRow>

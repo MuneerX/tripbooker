@@ -320,24 +320,14 @@ export async function getTripDays(): Promise<any[]> {
     const supabase = createBrowserClient();
     const { data, error } = await supabase
         .from('trip_days')
-        .select(`
-            *, 
-            tour_package:package_id(name), 
-            activities(count)
-        `)
-        .order('day_number');
+        .select(`*`);
 
     if (error) {
         console.error('Error fetching trip days:', error);
         return [];
     }
     
-    const result = data.map(day => ({
-        ...day,
-        activities_count: Array.isArray(day.activities) && day.activities.length > 0 ? day.activities[0].count : 0
-    }));
-
-    return result;
+    return data || [];
 }
 
 /**
@@ -347,10 +337,7 @@ export async function getTripDayById(id: string): Promise<TripDay | null> {
     const supabase = createBrowserClient();
     const { data, error } = await supabase
         .from('trip_days')
-        .select(`
-            *,
-            tour_package:package_id(name)
-        `)
+        .select(`*`)
         .eq('id', id)
         .single();
     
