@@ -41,9 +41,9 @@ const tourPackageSchema = z.object({
   
   image_files: z.any()
     .refine((files) => files?.length >= 1, "At least one gallery image is required.")
-    .refine((files) => Array.from(files).every((file: any) => file.size <= MAX_FILE_SIZE), `Max file size is 2MB.`)
+    .refine((files) => !files || Array.from(files).every((file: any) => file.size <= MAX_FILE_SIZE), `Max file size is 2MB.`)
     .refine(
-      (files) => Array.from(files).every((file: any) => ACCEPTED_IMAGE_TYPES.includes(file.type)),
+      (files) => !files || Array.from(files).every((file: any) => ACCEPTED_IMAGE_TYPES.includes(file.type)),
       ".jpg, .jpeg, .png and .webp files are accepted."
     ),
   featured_image_file: z.any()
