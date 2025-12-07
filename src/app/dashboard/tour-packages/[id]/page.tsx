@@ -17,14 +17,28 @@ import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import Link from "next/link";
-import { getTourPackageById, getTripDaysForPackage } from "@/lib/supabase/queries";
+import { getTourPackageById, getTripDaysForPackage, deleteTourPackage } from "@/lib/supabase/queries";
 import type { TourPackage, Booking, TripDay, Review, Activity } from "@/lib/types";
 import mockData from "@/lib/data"; // Still needed for bookings, reviews
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import { useToast } from "@/hooks/use-toast";
+
 
 export default function TourPackageDetailPage() {
   const router = useRouter();
   const params = useParams();
   const { id } = params as { id: string };
+  const { toast } = useToast();
 
   const [tourPackage, setTourPackage] = React.useState<TourPackage | null>(null);
   const [status, setStatus] = React.useState<boolean | undefined>();
@@ -55,6 +69,25 @@ export default function TourPackageDetailPage() {
     }
   }, [id]);
 
+   const handleDelete = async () => {
+    if (!tourPackage) return;
+    try {
+      await deleteTourPackage(tourPackage);
+      toast({
+        title: "Success",
+        description: `Tour package "${tourPackage.name}" has been deleted.`,
+      });
+      router.push('/dashboard/tour-packages');
+      router.refresh();
+    } catch (error: any) {
+      toast({
+        variant: "destructive",
+        title: "Error deleting package",
+        description: error.message || "An unexpected error occurred.",
+      });
+    }
+  };
+
   if (!tourPackage) {
     return (
       <div className="flex flex-col items-center justify-center h-full text-center">
@@ -80,6 +113,7 @@ export default function TourPackageDetailPage() {
 
   return (
     <div className="space-y-6">
+      <AlertDialog>
         <div className="flex items-center gap-4">
             <Button variant="outline" size="icon" className="h-7 w-7" onClick={() => router.back()}>
                 <ArrowLeft className="h-4 w-4" />
@@ -111,13 +145,17 @@ export default function TourPackageDetailPage() {
                 </Button>
             </div>
             <div className="ml-auto flex items-center gap-2">
-                <Button variant="outline" size="sm">
-                    <Trash2 className="mr-2 h-4 w-4" />
-                    Delete
-                </Button>
-                <Button size="sm">
-                    <Edit className="mr-2 h-4 w-4" />
-                    Edit
+                <AlertDialogTrigger asChild>
+                  <Button variant="outline" size="sm">
+                      <Trash2 className="mr-2 h-4 w-4" />
+                      Delete
+                  </Button>
+                </AlertDialogTrigger>
+                <Button size="sm" asChild>
+                  <Link href={`/dashboard/tour-packages/edit/${tourPackage.id}`}>
+                      <Edit className="mr-2 h-4 w-4" />
+                      Edit
+                  </Link>
                 </Button>
             </div>
         </div>
@@ -380,6 +418,21 @@ export default function TourPackageDetailPage() {
                 </CardContent>
             </Card>
         </Tabs>
+         <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. This will permanently delete the tour package "{tourPackage.name}" and all of its associated images.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDelete} className="bg-destructive hover:bg-destructive/90">
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

@@ -311,6 +311,53 @@ export async function updateTourPackage(id: string, formData: FormData) {
     return data;
 }
 
+/**
+ * Deletes a tour package and all associated images from storage.
+ */
+export async function deleteTourPackage(pkg: TourPackage) {
+  if (!pkg) throw new Error("Tour package data is required.");
+
+  const supabase = createAdminClient();
+
+  // 1. Collect all image URLs to delete
+  const urlsToDelete = [...(pkg.image_urls || [])];
+  if (pkg.featured_image_url) {
+    urlsToDelete.push(pkg.featured_image_url);
+  }
+
+  const pathsToDelete: string[] = urlsToDelete.map(url => {
+    try {
+      const urlObject = new URL(url);
+      const path = urlObject.pathname.split('/images/').pop();
+      return `images/${path}`;
+    } catch (e) {
+      console.warn(`Invalid URL found, skipping deletion: ${url}`);
+      return null;
+    }
+  }).filter((path): path is string => path !== null);
+
+  // 2. Delete images from storage if any paths were found
+  if (pathsToDelete.length > 0) {
+    const { error: storageError } = await supabase.storage.from('images').remove(pathsToDelete);
+    if (storageError) {
+      console.error("Error deleting images from storage:", storageError);
+      // Decide if you want to stop the process or just log the error
+      // For this case, we'll log and continue to delete the DB record
+    }
+  }
+
+  // 3. Delete the tour package record from the database
+  const { error: dbError } = await supabase.from('tour_packages').delete().eq('id', pkg.id);
+
+  if (dbError) {
+    console.error("Error deleting tour package from database:", dbError);
+    throw new Error(dbError.message);
+  }
+
+  return { success: true };
+}
+
+
 // --- Trip Day Functions ---
 
 /**
