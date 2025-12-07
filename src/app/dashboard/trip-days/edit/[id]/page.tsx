@@ -13,150 +13,104 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ArrowLeft, PlusCircle, Trash2 } from "lucide-react";
-import mockData from "@/lib/data";
 import { useToast } from "@/hooks/use-toast";
-import type { TripDay, Activity } from "@/lib/types";
-import { Checkbox } from "@/components/ui/checkbox";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-  DialogClose
-} from "@/components/ui/dialog";
+import type { TripDay } from "@/lib/types";
+import { getTripDayById, updateTripDay } from "@/lib/supabase/queries";
+import { ActivityFormModal, activitySchema, type ActivityFormValues } from "../create/_components/ActivityFormModal";
 
-const activitySchema = z.object({
-    activityId: z.string().optional(),
-    name: z.string().min(1, "Activity name is required"),
-    type: z.enum(["trekking", "sightseeing", "meal", "transport", "accommodation", "adventure", "shopping", "leisure"]),
-    time: z.string().regex(/^(0[1-9]|1[0-2]):[0-5][0-9] (AM|PM)$/, "Invalid time format (e.g., 09:00 AM)"),
-    duration: z.string().min(1, "Duration is required"),
-    location: z.string().min(1, "Location is required"),
-    price: z.coerce.number().min(0).default(0),
-    priceIncluded: z.boolean().default(true),
-    bookingRequired: z.boolean().default(false),
-    description: z.string().min(1, "Description is required"),
-});
 
 const tripDayEditSchema = z.object({
-  dayName: z.string().min(1, "Day name is required"),
-  dayNumber: z.coerce.number().int().min(1),
+  day_name: z.string().min(1, "Day name is required"),
+  day_number: z.coerce.number().int().min(1),
   description: z.string().min(1, "Description is required"),
-  specialInstructions: z.string().optional(),
+  special_instructions: z.string().optional(),
   status: z.enum(["active", "inactive"]),
-  activities: z.array(activitySchema)
+  activities: z.array(activitySchema).optional()
 });
 
 type TripDayEditFormValues = z.infer<typeof tripDayEditSchema>;
-type ActivityFormValues = z.infer<typeof activitySchema>;
 
 export default function EditTripDayPage() {
   const router = useRouter();
   const params = useParams();
-  const searchParams = useSearchParams();
-  const { id } = params;
+  const { id } = params as { id: string };
   const { toast } = useToast();
-
-  const [tripDay] = React.useState<TripDay | undefined>(
-    mockData.tripDays.find((day) => day.id === id)
-  );
+  const [loading, setLoading] = React.useState(true);
+  const [isSubmitting, setIsSubmitting] = React.useState(false);
 
   const form = useForm<TripDayEditFormValues>({
     resolver: zodResolver(tripDayEditSchema),
-    defaultValues: tripDay ? {
-      dayName: tripDay.dayName,
-      dayNumber: tripDay.dayNumber,
-      description: tripDay.description,
-      specialInstructions: tripDay.specialInstructions || "",
-      status: tripDay.status,
-      activities: tripDay.activities,
-    } : {},
+    defaultValues: {},
   });
+
+  React.useEffect(() => {
+    if (id) {
+      const fetchDay = async () => {
+        setLoading(true);
+        const day = await getTripDayById(id);
+        if (day) {
+          form.reset({
+            ...day,
+            activities: day.activities || []
+          });
+        } else {
+          toast({ variant: "destructive", title: "Error", description: "Trip Day not found." });
+          router.push('/dashboard/trip-days');
+        }
+        setLoading(false);
+      };
+      fetchDay();
+    }
+  }, [id, router, toast, form]);
 
   const { fields, append, remove, update } = useFieldArray({
     control: form.control,
     name: "activities"
   });
 
-  const onSubmit = (data: TripDayEditFormValues) => {
-    const fromCreatePage = searchParams.get('from') === 'create';
-
-    const dayIndex = mockData.tripDays.findIndex(d => d.id === id);
-    if (dayIndex !== -1) {
-      mockData.tripDays[dayIndex] = {
-        ...mockData.tripDays[dayIndex],
-        ...data,
-      };
-    }
-    
-    if (fromCreatePage) {
-        try {
-            const savedDays = sessionStorage.getItem('createdTripDays');
-            if (savedDays) {
-                let parsedDays: TripDay[] = JSON.parse(savedDays);
-                const dayToUpdateIndex = parsedDays.findIndex(d => d.id === id);
-                if (dayToUpdateIndex !== -1) {
-                    const existingDay = parsedDays[dayToUpdateIndex];
-                    parsedDays[dayToUpdateIndex] = {
-                        ...existingDay,
-                        ...data,
-                        createdAt: new Date(existingDay.createdAt),
-                        updatedAt: new Date(),
-                    };
-                    sessionStorage.setItem('createdTripDays', JSON.stringify(parsedDays));
-                }
-            }
-        } catch(e) {
-             console.error("Failed to update sessionStorage", e);
-        }
-    }
-    
-    toast({
-      title: "Success!",
-      description: `Day ${data.dayNumber}: ${data.dayName} has been updated.`,
-    });
-
-    if (fromCreatePage) {
-      router.push('/dashboard/trip-days/create');
-    } else {
+  const onSubmit = async (data: TripDayEditFormValues) => {
+    setIsSubmitting(true);
+    try {
+      await updateTripDay(id, data);
+       toast({
+        title: "Success!",
+        description: `Day ${data.day_number}: ${data.day_name} has been updated.`,
+      });
       router.push('/dashboard/trip-days');
+      router.refresh();
+    } catch (error: any) {
+       toast({
+        variant: "destructive",
+        title: "Error updating trip day",
+        description: error.message,
+      });
+    } finally {
+        setIsSubmitting(false);
     }
   };
   
-  if (!tripDay) {
-    return (
-      <div className="flex flex-col items-center justify-center h-full text-center">
-        <h1 className="text-2xl font-bold">Trip Day Not Found</h1>
-        <p className="text-muted-foreground">The requested trip day could not be found.</p>
-        <Button onClick={() => router.back()} className="mt-4">
-          <ArrowLeft className="mr-2 h-4 w-4" /> Go Back
-        </Button>
-      </div>
-    );
+  if (loading) {
+    return <div className="flex justify-center items-center h-full">Loading...</div>
   }
 
-  const getCancelRedirectUrl = () => {
-    const fromCreatePage = searchParams.get('from') === 'create';
-    return fromCreatePage ? '/dashboard/trip-days/create' : '/dashboard/trip-days';
-  };
+  const originalDayName = form.getValues('day_name');
 
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
         <div className="flex items-center gap-4">
-          <Button type="button" variant="outline" size="icon" className="h-7 w-7" onClick={() => router.push(getCancelRedirectUrl())}>
+          <Button type="button" variant="outline" size="icon" className="h-7 w-7" onClick={() => router.back()}>
             <ArrowLeft className="h-4 w-4" />
             <span className="sr-only">Back</span>
           </Button>
           <h1 className="flex-1 text-xl font-semibold">
-            Edit Day {tripDay.dayNumber}: {tripDay.dayName}
+            Edit Day: {originalDayName}
           </h1>
           <div className="flex items-center gap-2">
-            <Button type="button" variant="outline" onClick={() => router.push(getCancelRedirectUrl())}>Cancel</Button>
-            <Button type="submit">Save Changes</Button>
+            <Button type="button" variant="outline" onClick={() => router.back()}>Cancel</Button>
+            <Button type="submit" disabled={isSubmitting}>
+              {isSubmitting ? "Saving..." : "Save Changes"}
+            </Button>
           </div>
         </div>
 
@@ -166,11 +120,11 @@ export default function EditTripDayPage() {
             <CardDescription>Edit the main information for this day.</CardDescription>
           </CardHeader>
           <CardContent className="grid md:grid-cols-2 gap-6">
-            <FormField control={form.control} name="dayName" render={({ field }) => ( <FormItem><FormLabel>Day Name</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem> )} />
-            <FormField control={form.control} name="dayNumber" render={({ field }) => ( <FormItem><FormLabel>Day Number</FormLabel><FormControl><Input type="number" {...field} /></FormControl><FormMessage /></FormItem> )} />
+            <FormField control={form.control} name="day_name" render={({ field }) => ( <FormItem><FormLabel>Day Name</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem> )} />
+            <FormField control={form.control} name="day_number" render={({ field }) => ( <FormItem><FormLabel>Day Number</FormLabel><FormControl><Input type="number" {...field} /></FormControl><FormMessage /></FormItem> )} />
             <FormField control={form.control} name="description" render={({ field }) => ( <FormItem className="md:col-span-2"><FormLabel>Day's Description</FormLabel><FormControl><Textarea {...field} /></FormControl><FormMessage /></FormItem> )} />
-            <FormField control={form.control} name="specialInstructions" render={({ field }) => ( <FormItem className="md:col-span-2"><FormLabel>Special Instructions</FormLabel><FormControl><Textarea {...field} /></FormControl><FormMessage /></FormItem> )} />
-            <FormField control={form.control} name="status" render={({ field }) => ( <FormItem><FormLabel>Status</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl><SelectContent><SelectItem value="active">Active</SelectItem><SelectItem value="inactive">Inactive</SelectItem></SelectContent></Select><FormMessage /></FormItem> )} />
+            <FormField control={form.control} name="special_instructions" render={({ field }) => ( <FormItem className="md:col-span-2"><FormLabel>Special Instructions</FormLabel><FormControl><Textarea {...field} /></FormControl><FormMessage /></FormItem> )} />
+            <FormField control={form.control} name="status" render={({ field }) => ( <FormItem><FormLabel>Status</FormLabel><Select onValueChange={field.onChange} value={field.value}><FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl><SelectContent><SelectItem value="active">Active</SelectItem><SelectItem value="inactive">Inactive</SelectItem></SelectContent></Select><FormMessage /></FormItem> )} />
           </CardContent>
         </Card>
 
@@ -192,7 +146,7 @@ export default function EditTripDayPage() {
                 <Card key={activity.id} className="bg-muted/30 p-4">
                     <div className="flex justify-between items-start">
                         <div className="grid gap-1">
-                            <p className="font-semibold">{activity.name} <span className="text-xs font-normal text-muted-foreground">({activity.type})</span></p>
+                            <p className="font-semibold">{activity.name} <span className="text-xs font-normal text-muted-foreground capitalize">({activity.type})</span></p>
                             <p className="text-sm text-muted-foreground">{activity.time} &bull; {activity.duration} &bull; {activity.location}</p>
                             <p className="text-sm text-muted-foreground mt-2">{activity.description}</p>
                         </div>
@@ -223,95 +177,4 @@ export default function EditTripDayPage() {
   );
 }
 
-
-// Activity Form Modal Component
-type ActivityFormModalProps = {
-    children: React.ReactNode;
-    activity?: ActivityFormValues & {id?: string};
-    onSave: (data: ActivityFormValues) => void;
-}
-
-const defaultActivityValues: ActivityFormValues = {
-  name: "",
-  type: "sightseeing",
-  time: "",
-  duration: "",
-  location: "",
-  price: 0,
-  priceIncluded: true,
-  bookingRequired: false,
-  description: "",
-};
-
-function ActivityFormModal({ children, activity, onSave }: ActivityFormModalProps) {
-    const [isOpen, setIsOpen] = React.useState(false);
     
-    const activityForm = useForm<ActivityFormValues>({
-        resolver: zodResolver(activitySchema),
-        defaultValues: activity || defaultActivityValues
-    });
-
-    React.useEffect(() => {
-        if (isOpen) {
-            activityForm.reset(activity || defaultActivityValues);
-        }
-    }, [isOpen, activity, activityForm]);
-
-    const handleSave = (data: ActivityFormValues) => {
-        onSave(data);
-        setIsOpen(false);
-    }
-
-    const onFormSubmit = (e: React.MouseEvent<HTMLButtonElement>) => {
-      e.preventDefault();
-      activityForm.handleSubmit(handleSave)();
-    }
-
-    return (
-         <Dialog open={isOpen} onOpenChange={setIsOpen}>
-            <DialogTrigger asChild>{children}</DialogTrigger>
-            <DialogContent className="sm:max-w-[600px]">
-                 <Form {...activityForm}>
-                    <form onSubmit={(e) => e.preventDefault()}>
-                        <DialogHeader>
-                            <DialogTitle>{activity ? 'Edit' : 'Add'} Activity</DialogTitle>
-                            <DialogDescription>Fill in the details for the activity.</DialogDescription>
-                        </DialogHeader>
-
-                        <div className="grid gap-4 py-6">
-                            <div className="grid md:grid-cols-2 gap-4">
-                                <FormField control={activityForm.control} name="name" render={({ field }) => ( <FormItem><FormLabel>Activity Name</FormLabel><FormControl><Input placeholder="e.g., Sunset Cruise" {...field} /></FormControl><FormMessage /></FormItem>)} />
-                                <FormField control={activityForm.control} name="type" render={({ field }) => ( <FormItem><FormLabel>Type</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Select type" /></SelectTrigger></FormControl><SelectContent>
-                                  <SelectItem value="trekking">Trekking</SelectItem>
-                                  <SelectItem value="sightseeing">Sightseeing</SelectItem>
-                                  <SelectItem value="meal">Meal</SelectItem>
-                                  <SelectItem value="transport">Transport</SelectItem>
-                                  <SelectItem value="accommodation">Accommodation</SelectItem>
-                                  <SelectItem value="adventure">Adventure</SelectItem>
-                                  <SelectItem value="shopping">Shopping</SelectItem>
-                                  <SelectItem value="leisure">Leisure</SelectItem>
-                                  </SelectContent></Select><FormMessage /></FormItem> )} />
-                            </div>
-                             <div className="grid md:grid-cols-2 gap-4">
-                                <FormField control={activityForm.control} name="time" render={({ field }) => ( <FormItem><FormLabel>Time</FormLabel><FormControl><Input placeholder="e.g., 05:00 PM" {...field} /></FormControl><FormMessage /></FormItem>)} />
-                                <FormField control={activityForm.control} name="duration" render={({ field }) => ( <FormItem><FormLabel>Duration</FormLabel><FormControl><Input placeholder="e.g., 2 hours" {...field} /></FormControl><FormMessage /></FormItem>)} />
-                            </div>
-                            <FormField control={activityForm.control} name="location" render={({ field }) => ( <FormItem><FormLabel>Location</FormLabel><FormControl><Input placeholder="Name of the place" {...field} /></FormControl><FormMessage /></FormItem>)} />
-                            <FormField control={activityForm.control} name="description" render={({ field }) => ( <FormItem><FormLabel>Description</FormLabel><FormControl><Textarea placeholder="Describe the activity" {...field} /></FormControl><FormMessage /></FormItem>)} />
-                             <div className="grid md:grid-cols-3 gap-4 items-center">
-                                <FormField control={activityForm.control} name="price" render={({ field }) => ( <FormItem><FormLabel>Price (USD)</FormLabel><FormControl><Input type="number" {...field} /></FormControl><FormMessage /></FormItem>)} />
-                                <FormField control={activityForm.control} name="priceIncluded" render={({ field }) => (<FormItem className="flex items-center gap-2 pt-8"><FormControl><Checkbox checked={field.value} onCheckedChange={field.onChange} /></FormControl><FormLabel>Price Included</FormLabel></FormItem>)} />
-                                <FormField control={activityForm.control} name="bookingRequired" render={({ field }) => (<FormItem className="flex items-center gap-2 pt-8"><FormControl><Checkbox checked={field.value} onCheckedChange={field.onChange} /></FormControl><FormLabel>Booking Required</FormLabel></FormItem>)} />
-                            </div>
-                        </div>
-
-                        <DialogFooter>
-                            <DialogClose asChild><Button type="button" variant="outline">Cancel</Button></DialogClose>
-                            <Button type="button" onClick={onFormSubmit}>Save Activity</Button>
-                        </DialogFooter>
-                    </form>
-                </Form>
-            </DialogContent>
-        </Dialog>
-    )
-}

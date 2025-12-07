@@ -7,7 +7,6 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ArrowLeft, Edit, Trash2, Clock, CheckCircle, XCircle } from "lucide-react";
-import mockData from "@/lib/data";
 import { getStatusBadgeColor } from "@/lib/utils";
 import {
   AlertDialog,
@@ -21,33 +20,61 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { useToast } from "@/hooks/use-toast";
+import type { TripDay, TourPackage } from "@/lib/types";
+import { getTripDayById, deleteTripDay, getTourPackageById } from "@/lib/supabase/queries";
 
 export default function TripDayDetailPage() {
   const router = useRouter();
   const params = useParams();
-  const { id } = params;
+  const { id } = params as { id: string };
   const { toast } = useToast();
 
-  const tripDay = mockData.tripDays.find((day) => day.id === id);
-  const tourPackage = tripDay ? mockData.tourPackages.find(pkg => pkg.id === tripDay.tourPackageId) : undefined;
+  const [tripDay, setTripDay] = React.useState<TripDay | null>(null);
+  const [tourPackage, setTourPackage] = React.useState<TourPackage | null>(null);
+  const [loading, setLoading] = React.useState(true);
 
-  const handleDelete = () => {
-    const dayIndex = mockData.tripDays.findIndex(d => d.id === id);
-    if (dayIndex !== -1) {
-      mockData.tripDays.splice(dayIndex, 1);
+  React.useEffect(() => {
+    if (id) {
+      const fetchTripDay = async () => {
+        setLoading(true);
+        const day = await getTripDayById(id);
+        if (day) {
+          setTripDay(day);
+          if (day.tour_package_id) {
+            const pkg = await getTourPackageById(day.tour_package_id);
+            setTourPackage(pkg);
+          }
+        } else {
+           toast({ variant: "destructive", title: "Error", description: "Trip day not found." });
+           router.push('/dashboard/trip-days');
+        }
+        setLoading(false);
+      };
+      fetchTripDay();
+    }
+  }, [id, toast, router]);
+
+  const handleDelete = async () => {
+    try {
+      await deleteTripDay(id);
       toast({
         title: "Success",
-        description: `Trip day "${tripDay?.dayName}" has been deleted.`,
+        description: `Trip day "${tripDay?.day_name}" has been deleted.`,
       });
       router.push('/dashboard/trip-days');
-    } else {
+      router.refresh();
+    } catch (error: any) {
       toast({
         variant: "destructive",
         title: "Error",
-        description: "Failed to delete trip day.",
+        description: error.message || "Failed to delete trip day.",
       });
     }
   };
+  
+  if (loading) {
+    return <div className="flex justify-center items-center h-full">Loading...</div>
+  }
 
   if (!tripDay) {
     return (
@@ -70,7 +97,7 @@ export default function TripDayDetailPage() {
             <span className="sr-only">Back</span>
             </Button>
             <h1 className="flex-1 shrink-0 whitespace-nowrap text-xl font-semibold tracking-tight sm:grow-0">
-            {tripDay.dayName}
+            {tripDay.day_name}
             </h1>
             <Badge variant="outline" className={getStatusBadgeColor(tripDay.status)}>{tripDay.status}</Badge>
             <div className="ml-auto flex items-center gap-2">
@@ -88,9 +115,9 @@ export default function TripDayDetailPage() {
         </div>
         <Card>
             <CardHeader>
-            <CardTitle>Day {tripDay.dayNumber}: {tripDay.dayName}</CardTitle>
+            <CardTitle>Day {tripDay.day_number}: {tripDay.day_name}</CardTitle>
             <CardDescription>
-                Part of the <span className="font-semibold text-primary">{tourPackage?.tourName || 'N/A'}</span> tour package.
+                Part of the <span className="font-semibold text-primary">{tourPackage?.name || 'N/A'}</span> tour package.
             </CardDescription>
             </CardHeader>
             <CardContent className="grid gap-6">
@@ -98,22 +125,23 @@ export default function TripDayDetailPage() {
                 <h3 className="font-semibold mb-2">Daily Itinerary</h3>
                 <p className="text-muted-foreground">{tripDay.description}</p>
             </div>
-            {tripDay.specialInstructions && (
+            {tripDay.special_instructions && (
                 <div>
                 <h3 className="font-semibold mb-2">Special Instructions</h3>
-                <p className="text-muted-foreground">{tripDay.specialInstructions}</p>
+                <p className="text-muted-foreground">{tripDay.special_instructions}</p>
                 </div>
             )}
             <div>
                 <h3 className="font-semibold mb-4">Activities</h3>
                 <div className="grid gap-4">
-                {tripDay.activities.map((activity, index) => (
-                    <div key={`${activity.activityId}-${index}`} className="flex items-start gap-4 p-4 border rounded-lg">
+                {(tripDay.activities && tripDay.activities.length > 0) ? (
+                  tripDay.activities.map((activity, index) => (
+                    <div key={activity.id || index} className="flex items-start gap-4 p-4 border rounded-lg">
                     <div className="bg-muted p-3 rounded-md">
                             <Clock className="h-5 w-5 text-muted-foreground" />
                     </div>
                     <div className="grid gap-1 flex-1">
-                            <p className="font-semibold">{activity.name} <span className="text-xs font-normal text-muted-foreground">({activity.type})</span></p>
+                            <p className="font-semibold">{activity.name} <span className="text-xs font-normal text-muted-foreground capitalize">({activity.type})</span></p>
                             <p className="text-sm text-muted-foreground">{activity.description}</p>
                             <div className="flex items-center text-sm text-muted-foreground gap-4 mt-1">
                                 <span>Time: {activity.time}</span>
@@ -122,17 +150,19 @@ export default function TripDayDetailPage() {
                             </div>
                             <div className="flex items-center text-sm gap-4 mt-2">
                             <div className="flex items-center gap-1">
-                                    {activity.priceIncluded ? <CheckCircle className="h-4 w-4 text-green-500" /> : <XCircle className="h-4 w-4 text-red-500" />}
+                                    {activity.price_included ? <CheckCircle className="h-4 w-4 text-green-500" /> : <XCircle className="h-4 w-4 text-red-500" />}
                                     <span>Price Included</span>
                             </div>
                             <div className="flex items-center gap-1">
-                                    {activity.bookingRequired ? <CheckCircle className="h-4 w-4 text-green-500" /> : <XCircle className="h-4 w-4 text-red-500" />}
+                                    {activity.booking_required ? <CheckCircle className="h-4 w-4 text-green-500" /> : <XCircle className="h-4 w-4 text-red-500" />}
                                     <span>Booking Required</span>
                             </div>
                             </div>
                     </div>
                     </div>
-                ))}
+                ))) : (
+                  <p className="text-muted-foreground text-center">No activities planned for this day.</p>
+                )}
                 </div>
             </div>
             </CardContent>
@@ -141,7 +171,7 @@ export default function TripDayDetailPage() {
             <AlertDialogHeader>
               <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
               <AlertDialogDescription>
-                This action cannot be undone. This will permanently delete the trip day "{tripDay.dayName}".
+                This action cannot be undone. This will permanently delete the trip day "{tripDay.day_name}".
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
@@ -153,3 +183,5 @@ export default function TripDayDetailPage() {
     </div>
   );
 }
+
+    

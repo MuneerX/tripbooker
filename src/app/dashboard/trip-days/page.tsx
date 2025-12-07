@@ -10,8 +10,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
-import mockData from "@/lib/data";
-import type { TripDay } from "@/lib/types";
+import type { TripDay, TourPackage } from "@/lib/types";
 import { getStatusBadgeColor, cn } from "@/lib/utils";
 import {
   AlertDialog,
@@ -26,17 +25,52 @@ import {
 } from "@/components/ui/alert-dialog";
 import { useRouter } from "next/navigation";
 import { StatCard } from "@/components/dashboard/StatCard";
+import { getTripDays, getTourPackages, deleteTripDay } from "@/lib/supabase/queries";
+import { useToast } from "@/hooks/use-toast";
+
+type TripDayWithPackage = TripDay & { tour_package: { name: string } | null };
 
 export default function TripDaysPage() {
   const router = useRouter();
+  const { toast } = useToast();
   const [searchTerm, setSearchTerm] = React.useState("");
+  const [allTripDays, setAllTripDays] = React.useState<TripDayWithPackage[]>([]);
+  const [loading, setLoading] = React.useState(true);
 
-  const filteredTripDays = mockData.tripDays.filter((day) =>
-    day.dayName.toLowerCase().includes(searchTerm.toLowerCase())
+  React.useEffect(() => {
+    const fetchTripDays = async () => {
+      setLoading(true);
+      const days = await getTripDays();
+      setAllTripDays(days as TripDayWithPackage[]);
+      setLoading(false);
+    };
+    fetchTripDays();
+  }, []);
+
+  const handleDelete = async (dayId: string, dayName: string) => {
+    try {
+      await deleteTripDay(dayId);
+      setAllTripDays(allTripDays.filter(d => d.id !== dayId));
+      toast({
+        title: "Success",
+        description: `Trip day "${dayName}" has been deleted.`,
+      });
+    } catch (error: any) {
+       toast({
+        variant: "destructive",
+        title: "Error",
+        description: error.message || "Failed to delete trip day.",
+      });
+    }
+  };
+
+  const filteredTripDays = allTripDays.filter((day) =>
+    day.day_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    day.tour_package?.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
   
-  const totalDays = mockData.tripDays.length;
-  const activeDays = mockData.tripDays.filter(d => d.status === 'active').length;
+  const totalDays = allTripDays.length;
+  const activeDays = allTripDays.filter(d => d.status === 'active').length;
   const inactiveDays = totalDays - activeDays;
 
   const stats = [
@@ -59,7 +93,7 @@ export default function TripDaysPage() {
             </div>
             <div className="flex items-center gap-2">
                 <Input
-                placeholder="Search by day name..."
+                placeholder="Search by day or package..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="w-full md:w-64"
@@ -80,8 +114,6 @@ export default function TripDaysPage() {
                 <TableHead className="hidden sm:table-cell">Day No.</TableHead>
                 <TableHead className="hidden md:table-cell">Tour Package</TableHead>
                 <TableHead className="hidden md:table-cell">Activities</TableHead>
-                <TableHead className="hidden lg:table-cell">Stays</TableHead>
-                <TableHead className="hidden lg:table-cell">Flight Included</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead>
                     <span className="sr-only">Actions</span>
@@ -89,23 +121,23 @@ export default function TripDaysPage() {
                 </TableRow>
             </TableHeader>
             <TableBody>
-                {filteredTripDays.length > 0 ? (
-                filteredTripDays.map((day: TripDay) => {
-                    const tourPackage = mockData.tourPackages.find(p => p.id === day.tourPackageId);
-                    const flightIncluded = tourPackage?.inclusions.some(inc => inc.toLowerCase().includes('flight'));
+                {loading ? (
+                  <TableRow>
+                    <TableCell colSpan={6} className="h-24 text-center">Loading...</TableCell>
+                  </TableRow>
+                ) : filteredTripDays.length > 0 ? (
+                filteredTripDays.map((day: TripDayWithPackage) => {
                     return (
                     <TableRow key={day.id}>
-                        <TableCell className="font-medium">{day.dayName}</TableCell>
-                        <TableCell className="hidden sm:table-cell">{day.dayNumber}</TableCell>
-                        <TableCell className="hidden md:table-cell">{tourPackage?.tourName || 'N/A'}</TableCell>
-                        <TableCell className="hidden md:table-cell">{day.activities.length}</TableCell>
-                        <TableCell className="hidden lg:table-cell">{day.numberOfStays}</TableCell>
-                        <TableCell className="hidden lg:table-cell">{flightIncluded ? 'Yes' : 'No'}</TableCell>
+                        <TableCell className="font-medium">{day.day_name}</TableCell>
+                        <TableCell className="hidden sm:table-cell">{day.day_number}</TableCell>
+                        <TableCell className="hidden md:table-cell">{day.tour_package?.name || 'N/A'}</TableCell>
+                        <TableCell className="hidden md:table-cell">{day.activities?.length || 0}</TableCell>
                         <TableCell>
-                        <Badge variant="outline" className={cn("capitalize", getStatusBadgeColor(day.status))}>{day.status}</Badge>
+                          <Badge variant="outline" className={cn("capitalize", getStatusBadgeColor(day.status))}>{day.status}</Badge>
                         </TableCell>
                         <TableCell>
-                        <AlertDialog>
+                          <AlertDialog>
                             <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
                                 <Button aria-haspopup="true" size="icon" variant="ghost">
@@ -132,12 +164,12 @@ export default function TripDaysPage() {
                                 <AlertDialogHeader>
                                 <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
                                 <AlertDialogDescription>
-                                    This action cannot be undone. This will permanently delete the trip day "{day.dayName}".
+                                    This action cannot be undone. This will permanently delete the trip day "{day.day_name}".
                                 </AlertDialogDescription>
                                 </AlertDialogHeader>
                                 <AlertDialogFooter>
                                 <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                <AlertDialogAction className="bg-destructive hover:bg-destructive/90">Delete</AlertDialogAction>
+                                <AlertDialogAction onClick={() => handleDelete(day.id, day.day_name)} className="bg-destructive hover:bg-destructive/90">Delete</AlertDialogAction>
                                 </AlertDialogFooter>
                             </AlertDialogContent>
                             </AlertDialog>
@@ -147,7 +179,7 @@ export default function TripDaysPage() {
                 })
                 ) : (
                 <TableRow>
-                    <TableCell colSpan={8} className="h-24 text-center">
+                    <TableCell colSpan={6} className="h-24 text-center">
                     No results found.
                     </TableCell>
                 </TableRow>
@@ -159,3 +191,5 @@ export default function TripDaysPage() {
     </div>
   );
 }
+
+    

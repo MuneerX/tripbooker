@@ -1,33 +1,26 @@
 
-
 "use server"
 
 import { createServerClient } from '@supabase/ssr'
 import { createClient as createBrowserClient } from './client'
 import { cookies } from 'next/headers'
 
-import type { TourPackage } from '@/lib/types'
+import type { TourPackage, TripDay, Activity } from '@/lib/types'
 
 /**
  * Fetches all tour packages from Supabase.
  */
 export async function getTourPackages(): Promise<TourPackage[]> {
   const supabase = createBrowserClient();
-  const { data, error } = await supabase.from('tour_packages').select('*')
+  const { data, error } = await supabase.from('tour_packages').select('*').order('created_at', { ascending: false });
   
   if (error) {
     console.error('Error fetching tour packages:', error)
     return []
   }
   
-  // Supabase returns dates as strings, so we need to convert them.
-  // Also, we need to handle cases where dates might be null or invalid.
   return (data || []).map(pkg => ({
     ...pkg,
-    created_at: pkg.created_at ? new Date(pkg.created_at) : new Date(),
-    updatedAt: pkg.updated_at ? new Date(pkg.updated_at) : new Date(),
-    withdrawalDate: pkg.withdrawalDate ? new Date(pkg.withdrawalDate) : new Date(),
-    introductionDate: pkg.introductionDate ? new Date(pkg.introductionDate) : new Date(),
   })) as TourPackage[];
 }
 
@@ -45,13 +38,7 @@ export async function getTourPackageById(id: string): Promise<TourPackage | null
 
     if (!data) return null;
 
-    return {
-        ...data,
-        created_at: data.created_at ? new Date(data.created_at) : new Date(),
-        updatedAt: data.updated_at ? new Date(data.updated_at) : new Date(),
-        withdrawalDate: data.withdrawalDate ? new Date(data.withdrawalDate) : new Date(),
-        introductionDate: data.introductionDate ? new Date(data.introductionDate) : new Date(),
-    } as TourPackage;
+    return { ...data } as TourPackage;
 }
 
 // Function to create a Supabase client with admin privileges (service_role)
@@ -195,25 +182,29 @@ export async function uploadTourImages(formData: FormData) {
 export async function updateTourPackage(id: string, formData: FormData) {
   const supabase = createAdminClient();
 
-  const getPathFromUrl = (url: string) => {
-      if (!url) return null;
-      try {
-          const urlObject = new URL(url);
-          const pathSegment = '/storage/v1/object/public/';
-          const pathname = urlObject.pathname;
-          const pathStartIndex = pathname.indexOf(pathSegment);
-          if (pathStartIndex !== -1) {
-              const bucketAndPath = pathname.substring(pathStartIndex + pathSegment.length);
-              const pathParts = bucketAndPath.split('/');
-              // The first part is the bucket name, the rest is the path to the file.
-              const filePath = pathParts.slice(1).join('/');
-              return decodeURIComponent(filePath);
-          }
-          return null;
-      } catch (e) {
-          console.error('Invalid URL for image deletion:', url, e);
-          return null;
-      }
+  const getPathFromUrl = (url: string): string | null => {
+    if (!url) return null;
+    try {
+        const urlObject = new URL(url);
+        // The path starts after '/public/'. Supabase URLs are like:
+        // .../storage/v1/object/public/images/images/17163...
+        const pathSegment = '/storage/v1/object/public/';
+        const pathname = urlObject.pathname;
+        const pathStartIndex = pathname.indexOf(pathSegment);
+        if (pathStartIndex === -1) return null;
+
+        // Extract path after '/public/' which includes the bucket name.
+        const bucketAndPath = pathname.substring(pathStartIndex + pathSegment.length);
+        
+        // The first part is the bucket name, the rest is the file path.
+        const pathParts = bucketAndPath.split('/');
+        const filePath = pathParts.slice(1).join('/'); // Remove bucket name from path
+        
+        return decodeURIComponent(filePath);
+    } catch (e) {
+        console.error('Invalid URL for image deletion:', url, e);
+        return null;
+    }
   };
 
   // --- 1. GATHER DATA FROM FORM ---
@@ -242,7 +233,6 @@ export async function updateTourPackage(id: string, formData: FormData) {
   if (originalFeaturedUrl) {
       const isReplaced = !!newFeaturedFile;
       const isDeselected = !isFeatured;
-      // User manually removed it without replacing it, and isFeatured is still true
       const isRemovedManually = !isReplaced && isFeatured && !formData.get('featured_image_url');
 
       if (isReplaced || isDeselected || isRemovedManually) {
@@ -251,13 +241,10 @@ export async function updateTourPackage(id: string, formData: FormData) {
       }
   }
 
-  // Execute deletion from storage
   if (pathsToDelete.length > 0) {
-      console.log('Attempting to delete paths:', pathsToDelete);
-      const { data: deleteData, error: deleteError } = await supabase.storage.from('images').remove(pathsToDelete);
+      const { error: deleteError } = await supabase.storage.from('images').remove(pathsToDelete);
       if (deleteError) {
           console.error("Failed to delete some images from storage:", deleteError.message);
-          // We don't throw here, just log, so the rest of the update can proceed
       }
   }
 
@@ -326,3 +313,170 @@ export async function updateTourPackage(id: string, formData: FormData) {
   return data;
 }
 
+// --- Trip Day Functions ---
+
+/**
+ * Fetches all trip days and their related tour package name.
+ */
+export async function getTripDays(): Promise<TripDay[]> {
+    const supabase = createBrowserClient();
+    const { data, error } = await supabase
+        .from('trip_days')
+        .select(`
+            *,
+            tour_package:tour_packages(name)
+        `)
+        .order('tour_package_id')
+        .order('day_number');
+
+    if (error) {
+        console.error('Error fetching trip days:', error);
+        return [];
+    }
+    return data as TripDay[];
+}
+
+/**
+ * Fetches a single trip day by its ID.
+ */
+export async function getTripDayById(id: string): Promise<TripDay | null> {
+    const supabase = createBrowserClient();
+    const { data, error } = await supabase
+        .from('trip_days')
+        .select('*')
+        .eq('id', id)
+        .single();
+    
+    if (error) {
+        console.error(`Error fetching trip day ${id}:`, error);
+        return null;
+    }
+    
+    // Also fetch activities for this day
+    const { data: activities, error: activitiesError } = await supabase
+        .from('activities')
+        .select('*')
+        .eq('trip_day_id', id)
+        .order('time');
+        
+    if (activitiesError) {
+        console.error(`Error fetching activities for trip day ${id}:`, activitiesError);
+        // Return day data even if activities fail
+    }
+
+    return { ...data, activities: activities || [] } as TripDay;
+}
+
+/**
+ * Creates a new trip day and its activities.
+ */
+export async function createTripDay(tripDayData: Partial<TripDay>) {
+    const supabase = createAdminClient();
+    const { activities, ...dayData } = tripDayData;
+
+    // Insert the trip day first
+    const { data: newDay, error: dayError } = await supabase
+        .from('trip_days')
+        .insert(dayData)
+        .select()
+        .single();
+
+    if (dayError) {
+        console.error('Error creating trip day:', dayError);
+        throw new Error(dayError.message);
+    }
+
+    // If activities exist, insert them with the new trip_day_id
+    if (activities && activities.length > 0) {
+        const activitiesToInsert = activities.map(act => ({ ...act, trip_day_id: newDay.id }));
+        const { error: activitiesError } = await supabase
+            .from('activities')
+            .insert(activitiesToInsert);
+
+        if (activitiesError) {
+            console.error('Error creating activities:', activitiesError);
+            // Optionally, delete the created trip day for atomicity
+            await supabase.from('trip_days').delete().eq('id', newDay.id);
+            throw new Error(`Failed to create activities: ${activitiesError.message}`);
+        }
+    }
+
+    return newDay;
+}
+
+/**
+ * Updates a trip day and its activities.
+ */
+export async function updateTripDay(id: string, tripDayData: Partial<TripDay>) {
+    const supabase = createAdminClient();
+    const { activities, ...dayData } = tripDayData;
+
+    // Update the trip day details
+    const { data: updatedDay, error: dayError } = await supabase
+        .from('trip_days')
+        .update(dayData)
+        .eq('id', id)
+        .select()
+        .single();
+
+    if (dayError) {
+        console.error('Error updating trip day:', dayError);
+        throw new Error(dayError.message);
+    }
+
+    // --- Sync Activities ---
+    // 1. Get existing activity IDs for this trip day
+    const { data: existingActivities, error: fetchError } = await supabase
+        .from('activities')
+        .select('id')
+        .eq('trip_day_id', id);
+
+    if (fetchError) {
+        console.error('Error fetching existing activities:', fetchError);
+        throw new Error(fetchError.message);
+    }
+    const existingIds = existingActivities.map(a => a.id);
+    
+    // 2. Separate incoming activities into "new" and "to be updated"
+    const incomingIds = (activities || []).map(a => a.id).filter(Boolean);
+    const newActivities = (activities || []).filter(a => !a.id);
+    const updatedActivities = (activities || []).filter(a => a.id);
+    
+    // 3. Determine which activities to delete
+    const idsToDelete = existingIds.filter(existingId => !incomingIds.includes(existingId));
+
+    // 4. Perform DB operations
+    if (idsToDelete.length > 0) {
+        const { error } = await supabase.from('activities').delete().in('id', idsToDelete);
+        if (error) console.error('Error deleting activities:', error.message);
+    }
+
+    if (updatedActivities.length > 0) {
+        const { error } = await supabase.from('activities').upsert(updatedActivities);
+        if (error) console.error('Error updating activities:', error.message);
+    }
+
+    if (newActivities.length > 0) {
+        const activitiesToInsert = newActivities.map(act => ({ ...act, trip_day_id: id }));
+        const { error } = await supabase.from('activities').insert(activitiesToInsert);
+        if (error) console.error('Error inserting new activities:', error.message);
+    }
+
+    return updatedDay;
+}
+
+
+/**
+ * Deletes a trip day. Activities will be cascade deleted by the database.
+ */
+export async function deleteTripDay(id: string) {
+    const supabase = createAdminClient();
+    const { error } = await supabase.from('trip_days').delete().eq('id', id);
+    if (error) {
+        console.error('Error deleting trip day:', error);
+        throw new Error(error.message);
+    }
+    return { success: true };
+}
+
+    

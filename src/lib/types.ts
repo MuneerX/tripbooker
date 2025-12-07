@@ -1,36 +1,36 @@
 
+
 import type { Timestamp } from 'firebase/firestore';
 
 export type TourPackage = {
   id: string;
-  name: string; // was tourName
-  package_type: 'domestic' | 'international' | 'World' | 'India' | 'Kerala'; // was tourType
+  name: string;
+  package_type: 'domestic' | 'international' | 'World' | 'India' | 'Kerala';
   category: 'adventure' | 'leisure' | 'pilgrimage' | 'cultural' | 'wildlife' | 'Family' | 'Premium' | 'LadiesOnly';
-  base_price: number; // was basePrice
+  base_price: number;
   days: number;
   nights: number;
-  created_at: Date; // was introductionDate
-  withdrawalDate: Date | string; // Allow string for form values
-  max_guests: number; // was maxPermittedBooking
+  created_at: string;
+  withdrawalDate: string;
+  max_guests: number;
   itineraryId: string;
-  image_urls: string[]; // was imageUrl
+  image_urls: string[];
   payInParts: Array<{ partName: string; durationMonths: number; price: number }>;
   description: string;
   highlights: string[];
-  inclusion: string; // was inclusions
-  exclusion: string; // was exclusions
-  booking_policy: string; // was bookingPolicies
-  cancellation_policy: string; // was cancellationPolicies
-  terms_and_conditions: string; // was termsAndConditions
-  is_featured: boolean; // was isFeatured
-  featured_image_url: string; // was featuredImageUrl
-  is_active: boolean; // was status
-  createdAt: Date;
-  updatedAt: Date;
+  inclusion: string;
+  exclusion: string;
+  booking_policy: string;
+  cancellation_policy: string;
+  terms_and_conditions: string;
+  is_featured: boolean;
+  featured_image_url: string | null;
+  is_active: boolean;
+  updated_at: string;
 };
 
 export type Activity = {
-  activityId: string;
+  id?: string;
   name: string;
   type: 'trekking' | 'sightseeing' | 'meal' | 'transport' | 'accommodation' | 'adventure' | 'shopping' | 'leisure';
   time: string; // HH:MM AM/PM
@@ -38,24 +38,25 @@ export type Activity = {
   location: string;
   locationId?: string;
   price: number;
-  priceIncluded: boolean;
-  bookingRequired: boolean;
+  price_included: boolean;
+  booking_required: boolean;
   description: string;
+  trip_day_id?: string;
 };
 
 export type TripDay = {
   id: string;
-  dayName: string;
-  dayNumber: number;
+  day_name: string;
+  day_number: number;
   description: string;
-  specialInstructions?: string;
-  departureLocation: string;
-  numberOfStays: number;
-  tourPackageId: string;
+  special_instructions?: string;
+  departure_location: string;
+  number_of_stays: number;
+  tour_package_id: string;
   activities: Activity[];
   status: 'active' | 'inactive';
-  createdAt: Date;
-  updatedAt: Date;
+  created_at: string;
+  updated_at: string;
 };
 
 export type TripLocation = {
