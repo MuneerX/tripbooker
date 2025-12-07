@@ -239,9 +239,18 @@ export default function CreateTourPackagePage() {
                                     <FormItem>
                                         <FormLabel>Featured Image</FormLabel>
                                         <FormControl>
-                                            <Input type="file" accept="image/*"
-                                                onChange={(e) => field.onChange(e.target.files)}
-                                            />
+                                            <div>
+                                                <label htmlFor="featured-image-file" className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-10 px-4 py-2 cursor-pointer shadow-sm">
+                                                    Choose File
+                                                </label>
+                                                <Input 
+                                                    id="featured-image-file"
+                                                    type="file" 
+                                                    accept="image/*"
+                                                    className="hidden"
+                                                    onChange={(e) => field.onChange(e.target.files)}
+                                                />
+                                            </div>
                                         </FormControl>
                                         <FormMessage />
                                     </FormItem>
@@ -265,5 +274,7 @@ export default function CreateTourPackagePage() {
     </div>
   )
 }
+
+    
 
     
