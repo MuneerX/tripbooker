@@ -5,7 +5,7 @@ import * as React from "react";
 import { useParams, useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { ArrowLeft, Edit, Trash2, Clock, CheckCircle, XCircle } from "lucide-react";
+import { ArrowLeft, Edit, Trash2, Clock, CheckCircle, XCircle, AlertTriangle, DollarSign } from "lucide-react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -20,6 +20,7 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import type { TripDay } from "@/lib/types";
 import { getTripDayById, deleteTripDay } from "@/lib/supabase/queries";
+import { formatCurrency } from "@/lib/utils";
 
 export default function TripDayDetailPage() {
   const router = useRouter();
@@ -130,27 +131,39 @@ export default function TripDayDetailPage() {
                 {(tripDay.activities && tripDay.activities.length > 0) ? (
                   tripDay.activities.map((activity, index) => (
                     <div key={activity.id || index} className="flex items-start gap-4 p-4 border rounded-lg">
-                    <div className="bg-muted p-3 rounded-md">
-                            <Clock className="h-5 w-5 text-muted-foreground" />
-                    </div>
-                    <div className="grid gap-1 flex-1">
-                            <p className="font-semibold">{activity.title} <span className="text-xs font-normal text-muted-foreground capitalize">({activity.activity_type})</span></p>
-                            <p className="text-sm text-muted-foreground">{activity.description}</p>
-                            <div className="flex items-center text-sm text-muted-foreground gap-4 mt-1">
-                                <span>Time: {activity.activity_time}</span>
-                                <span>Duration: {activity.duration_minutes} mins</span>
-                            </div>
-                            <div className="flex items-center text-sm gap-4 mt-2">
-                            <div className="flex items-center gap-1">
-                                    {activity.cost_included ? <CheckCircle className="h-4 w-4 text-green-500" /> : <XCircle className="h-4 w-4 text-red-500" />}
-                                    <span>Cost Included</span>
-                            </div>
-                            <div className="flex items-center gap-1">
-                                    {activity.booking_required ? <CheckCircle className="h-4 w-4 text-green-500" /> : <XCircle className="h-4 w-4 text-red-500" />}
-                                    <span>Booking Required</span>
-                            </div>
-                            </div>
-                    </div>
+                      <div className="bg-muted p-3 rounded-md mt-1">
+                        <Clock className="h-5 w-5 text-muted-foreground" />
+                      </div>
+                      <div className="grid gap-1 flex-1">
+                        <p className="font-semibold">{activity.title} <span className="text-xs font-normal text-muted-foreground capitalize">({activity.activity_type})</span></p>
+                        <p className="text-sm text-muted-foreground">{activity.description}</p>
+                        <div className="flex items-center text-sm text-muted-foreground gap-4 mt-1">
+                          <span>Time: {activity.activity_time}</span>
+                          <span>Duration: {activity.duration_minutes} mins</span>
+                        </div>
+                        <div className="flex items-center text-sm gap-4 mt-2">
+                          <div className="flex items-center gap-1">
+                            {activity.cost_included ? <CheckCircle className="h-4 w-4 text-green-500" /> : <XCircle className="h-4 w-4 text-red-500" />}
+                            <span>Cost Included</span>
+                          </div>
+                          <div className="flex items-center gap-1">
+                            {activity.booking_required ? <CheckCircle className="h-4 w-4 text-green-500" /> : <XCircle className="h-4 w-4 text-red-500" />}
+                            <span>Booking Required</span>
+                          </div>
+                        </div>
+                        {activity.additional_cost && activity.additional_cost > 0 && (
+                          <div className="flex items-center text-sm gap-2 mt-2 text-amber-600">
+                            <DollarSign className="h-4 w-4" />
+                            <span>Additional Cost: {formatCurrency(activity.additional_cost)}</span>
+                          </div>
+                        )}
+                        {activity.special_instructions && (
+                          <div className="flex items-start text-sm gap-2 mt-2 text-sky-600">
+                            <AlertTriangle className="h-4 w-4 mt-0.5" />
+                            <span>{activity.special_instructions}</span>
+                          </div>
+                        )}
+                      </div>
                     </div>
                 ))) : (
                   <p className="text-muted-foreground text-center">No activities planned for this day.</p>
