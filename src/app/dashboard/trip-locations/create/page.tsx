@@ -10,12 +10,14 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { useRouter } from "next/navigation"
 import { useToast } from "@/hooks/use-toast"
-import { MapPin, Upload } from "lucide-react"
-import { createTripLocation } from "@/lib/supabase/queries"
+import { MapPin, Upload, File as FileIcon, X } from "lucide-react"
+import { createTripLocationWithImages } from "@/lib/supabase/queries"
 import { Switch } from "@/components/ui/switch"
+
+const MAX_FILE_SIZE = 2 * 1024 * 1024; // 2MB
+const ACCEPTED_IMAGE_TYPES = ["image/jpeg", "image/jpg", "image/png", "image/webp"];
 
 const tripLocationSchema = z.object({
   name: z.string().min(1, "Location name is required"),
@@ -30,6 +32,13 @@ const tripLocationSchema = z.object({
   description: z.string().min(1, "Description is required"),
   address: z.string().min(1, "Address is required"),
   is_active: z.boolean().default(true),
+  image_files: z.any()
+    .optional()
+    .refine((files) => !files || Array.from(files).every((file: any) => file.size <= MAX_FILE_SIZE), `Max file size is 2MB.`)
+    .refine(
+      (files) => !files || Array.from(files).every((file: any) => ACCEPTED_IMAGE_TYPES.includes(file.type)),
+      ".jpg, .jpeg, .png and .webp files are accepted."
+    ),
 });
 
 type TripLocationFormValues = z.infer<typeof tripLocationSchema>;
@@ -57,11 +66,46 @@ export default function CreateTripLocationPage() {
     },
   });
 
+  const imageFiles = form.watch("image_files");
+
+  const handleRemoveImage = (indexToRemove: number) => {
+    const currentFiles = form.getValues("image_files");
+    if (!currentFiles) return;
+    const newFiles = Array.from(currentFiles).filter((_, index) => index !== indexToRemove);
+    const dataTransfer = new DataTransfer();
+    newFiles.forEach(file => dataTransfer.items.add(file as File));
+    form.setValue("image_files", dataTransfer.files, { shouldValidate: true });
+  };
+  
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>, field: any) => {
+    const filesToAdd = Array.from(e.target.files || []);
+    if (filesToAdd.length === 0) return;
+    const currentFiles = Array.from(form.getValues("image_files") || []);
+    const combinedFiles = [...currentFiles, ...filesToAdd];
+    const dataTransfer = new DataTransfer();
+    combinedFiles.forEach(file => dataTransfer.items.add(file as File));
+    field.onChange(dataTransfer.files);
+  };
+
+
   const onSubmit = async (data: TripLocationFormValues) => {
     setIsSubmitting(true);
+    const formData = new FormData();
+    
+    Object.entries(data).forEach(([key, value]) => {
+      if (key !== 'image_files' && value !== undefined && value !== null) {
+        formData.append(key, String(value));
+      }
+    });
+
+    if (data.image_files) {
+      Array.from(data.image_files).forEach((file: any) => {
+        formData.append('image_files', file);
+      });
+    }
+
     try {
-      // NOTE: image_urls are not handled in this form for now.
-      await createTripLocation({ ...data, image_urls: [] });
+      await createTripLocationWithImages(formData);
       toast({
         title: "Success!",
         description: "New trip location has been created.",
@@ -180,21 +224,48 @@ export default function CreateTripLocationPage() {
                                     </FormItem>
                                 )}
                             />
-                            <FormItem>
-                                <FormLabel>Upload Images</FormLabel>
-                                <FormControl>
-                                    <div className="flex items-center justify-center w-full">
-                                    <label htmlFor="dropzone-file" className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-lg cursor-pointer bg-muted/50 hover:bg-muted">
-                                        <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                                        <Upload className="w-8 h-8 mb-4 text-muted-foreground" />
-                                        <p className="mb-2 text-sm text-muted-foreground"><span className="font-semibold">Click to upload</span> or drag and drop</p>
-                                        <p className="text-xs text-muted-foreground">SVG, PNG, JPG or GIF (MAX. 800x400px)</p>
+                             <FormField
+                                control={form.control}
+                                name="image_files"
+                                render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Location Images</FormLabel>
+                                     <FormControl>
+                                        <div className="flex items-center justify-center w-full">
+                                            <label htmlFor="image-files" className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-lg cursor-pointer bg-muted/50 hover:bg-muted">
+                                                <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                                                <Upload className="w-8 h-8 mb-4 text-muted-foreground" />
+                                                <p className="mb-2 text-sm text-muted-foreground"><span className="font-semibold">Click to upload</span> or drag and drop</p>
+                                                <p className="text-xs text-muted-foreground">PNG, JPG, or WEBP (MAX. 2MB each)</p>
+                                                </div>
+                                                <Input id="image-files" type="file" className="hidden" multiple
+                                                    onChange={(e) => handleFileChange(e, field)}
+                                                />
+                                            </label>
+                                        </div> 
+                                    </FormControl>
+                                    <FormMessage />
+                                    {imageFiles && imageFiles.length > 0 && (
+                                    <div className="mt-4 space-y-2">
+                                        <h4 className="text-sm font-medium">Selected Files:</h4>
+                                        <div className="grid gap-2 text-sm">
+                                        {Array.from(imageFiles).map((file: any, index: number) => (
+                                            <div key={index} className="flex items-center justify-between p-2 bg-muted rounded-md">
+                                                <div className="flex items-center gap-2">
+                                                    <FileIcon className="h-4 w-4 text-muted-foreground" />
+                                                    <span className="font-medium truncate max-w-xs">{file.name}</span>
+                                                </div>
+                                                <Button type="button" variant="ghost" size="icon" className="h-6 w-6 text-destructive" onClick={() => handleRemoveImage(index)}>
+                                                    <X className="h-4 w-4" />
+                                                </Button>
+                                            </div>
+                                        ))}
                                         </div>
-                                        <Input id="dropzone-file" type="file" className="hidden" multiple />
-                                    </label>
-                                    </div> 
-                                </FormControl>
-                            </FormItem>
+                                    </div>
+                                    )}
+                                </FormItem>
+                                )}
+                            />
                             <FormField
                                 control={form.control}
                                 name="is_active"
@@ -228,3 +299,5 @@ export default function CreateTripLocationPage() {
     </div>
   )
 }
+
+    

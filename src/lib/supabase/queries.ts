@@ -365,7 +365,6 @@ export async function getTripDayById(id: string): Promise<TripDay | null> {
         console.error(`Error fetching activities for trip day ${id}:`, activitiesError);
     }
 
-    console.log('Fetched Trip Day with Activities:', { ...data, activities: activities || [] });
     return { ...data, activities: activities || [] } as TripDay;
 }
 
@@ -397,7 +396,6 @@ export async function createTripDay(tripDayData: Partial<TripDay>) {
 
     if (activities && activities.length > 0) {
         const activitiesToInsert = activities.map(act => {
-            // eslint-disable-next-line @typescript-eslint/no-unused-vars
             const { id, ...restOfAct } = act; // Exclude the temporary client-side ID
             return {
                 ...restOfAct,
@@ -434,6 +432,7 @@ export async function updateTripDay(id: string, tripDayData: Partial<TripDay>) {
       accommodation_type: dayData.accommodation_type || null,
       accommodation_name: dayData.accommodation_name || null,
       meals_included: dayData.meals_included || [],
+      updated_at: new Date().toISOString(),
     };
     const { data: updatedDay, error: dayError } = await supabase
         .from('trip_days')
@@ -544,6 +543,52 @@ export async function createTripLocation(locationData: Partial<Omit<TripLocation
 }
 
 /**
+ * Uploads images and creates a new trip location record.
+ */
+export async function createTripLocationWithImages(formData: FormData) {
+  const supabase = createAdminClient();
+
+  const imageFiles = formData.getAll('image_files') as File[];
+  const imageUrls: string[] = [];
+
+  if (imageFiles && imageFiles.length > 0) {
+    for (const file of imageFiles) {
+      if (file && file.size > 0) {
+        const filePath = `images/locations/${Date.now()}-${file.name}`;
+        const { error: uploadError } = await supabase.storage.from('images').upload(filePath, file);
+
+        if (uploadError) {
+          console.error('Error uploading image:', uploadError);
+          throw new Error(`Failed to upload ${file.name}: ${uploadError.message}`);
+        }
+
+        const { data: { publicUrl } } = supabase.storage.from('images').getPublicUrl(filePath);
+        imageUrls.push(publicUrl);
+      }
+    }
+  }
+
+  const locationData = {
+    name: formData.get('name') as string,
+    place_type: formData.get('place_type') as string,
+    city: formData.get('city') as string,
+    country: formData.get('country') as string,
+    latitude: Number(formData.get('latitude')) || null,
+    longitude: Number(formData.get('longitude')) || null,
+    state: formData.get('state') as string,
+    district: formData.get('district') as string,
+    code: formData.get('code') as string,
+    description: formData.get('description') as string,
+    address: formData.get('address') as string,
+    is_active: formData.get('is_active') === 'true',
+    image_urls: imageUrls,
+  };
+
+  return createTripLocation(locationData);
+}
+
+
+/**
  * Updates an existing trip location.
  */
 export async function updateTripLocation(id: string, locationData: Partial<Omit<TripLocation, 'id' | 'created_at' | 'updated_at'>>) {
@@ -577,3 +622,5 @@ export async function deleteTripLocation(id: string) {
     }
     return { success: true };
 }
+
+    
