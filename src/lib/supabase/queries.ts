@@ -16,12 +16,13 @@ export async function getTourPackages(): Promise<TourPackage[]> {
   }
   
   // Supabase returns dates as strings, so we need to convert them.
+  // Also, we need to handle cases where dates might be null or invalid.
   return data.map(pkg => ({
     ...pkg,
-    introductionDate: new Date(pkg.introductionDate),
-    withdrawalDate: new Date(pkg.withdrawalDate),
-    createdAt: new Date(pkg.createdAt),
-    updatedAt: new Date(pkg.updatedAt),
+    introductionDate: pkg.introductionDate ? new Date(pkg.introductionDate) : new Date(0), // Use a default date if null
+    withdrawalDate: pkg.withdrawalDate ? new Date(pkg.withdrawalDate) : new Date(0),
+    createdAt: pkg.createdAt ? new Date(pkg.createdAt) : new Date(),
+    updatedAt: pkg.updatedAt ? new Date(pkg.updatedAt) : new Date(),
   })) as TourPackage[];
 }
 
@@ -40,10 +41,10 @@ export async function getTourPackageById(id: string): Promise<TourPackage | null
 
     return {
         ...data,
-        introductionDate: new Date(data.introductionDate),
-        withdrawalDate: new Date(data.withdrawalDate),
-        createdAt: new Date(data.createdAt),
-        updatedAt: new Date(data.updatedAt),
+        introductionDate: data.introductionDate ? new Date(data.introductionDate) : new Date(0),
+        withdrawalDate: data.withdrawalDate ? new Date(data.withdrawalDate) : new Date(0),
+        createdAt: data.createdAt ? new Date(data.createdAt) : new Date(),
+        updatedAt: data.updatedAt ? new Date(data.updatedAt) : new Date(),
     } as TourPackage;
 }
 
@@ -60,3 +61,4 @@ export async function createTourPackage(pkg: Omit<TourPackage, 'id' | 'createdAt
 
   return data;
 }
+
