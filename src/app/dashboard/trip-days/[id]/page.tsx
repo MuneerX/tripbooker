@@ -36,6 +36,7 @@ export default function TripDayDetailPage() {
       const fetchTripDay = async () => {
         setLoading(true);
         const day = await getTripDayById(id);
+        console.log('Fetched Trip Day with Activities:', day);
         if (day) {
           setTripDay(day);
         } else {
