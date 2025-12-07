@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import * as React from "react";
@@ -68,8 +69,8 @@ export default function TourPackageDetailPage() {
 
   const detailItems = [
     { icon: <Clock />, label: "Duration", value: `${tourPackage.days} Days / ${tourPackage.nights} Nights` },
-    { icon: <Users />, label: "Maximum Permitted Booking", value: tourPackage.max_guests },
-    { icon: <Calendar />, label: "Introduced", value: format(new Date(tourPackage.created_at), "PPP") },
+    { icon: <Users />, label: "Maximum Guests", value: tourPackage.max_guests },
+    { icon: <Calendar />, label: "Introduced", value: tourPackage.created_at ? format(new Date(tourPackage.created_at), "PPP") : 'N/A' },
     { icon: <Calendar />, label: "Withdrawal Date", value: tourPackage.withdrawalDate ? format(new Date(tourPackage.withdrawalDate), "PPP") : 'N/A' },
     { icon: <Check className="text-green-500" />, label: "Featured", value: tourPackage.is_featured ? 'Yes' : 'No' },
   ];
@@ -204,13 +205,7 @@ export default function TourPackageDetailPage() {
                             
                             <Separator className="my-8" />
 
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                                <div className="space-y-4">
-                                    <h3 className="text-lg font-semibold flex items-center gap-2"><Plus className="text-accent"/> Highlights</h3>
-                                    <ul className="space-y-2 text-muted-foreground">
-                                        {tourPackage.highlights.map((h, i) => <li key={i} className="flex items-start gap-2"><span className="mt-1.5 h-1.5 w-1.5 rounded-full bg-accent" /><span>{h}</span></li>)}
-                                    </ul>
-                                </div>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                                 <div className="space-y-4">
                                     <h3 className="text-lg font-semibold flex items-center gap-2"><Check className="text-green-500"/> Inclusions</h3>
                                      <p className="text-sm text-muted-foreground leading-relaxed">{tourPackage.inclusion}</p>
@@ -240,7 +235,7 @@ export default function TourPackageDetailPage() {
                             </div>
                              <CardFooter className="p-0 pt-6">
                                 <div className="text-xs text-muted-foreground">
-                                    Last updated on {format(new Date(tourPackage.updatedAt), "PPP")}
+                                    Last updated on {tourPackage.updatedAt ? format(new Date(tourPackage.updatedAt), "PPP") : 'N/A'}
                                 </div>
                             </CardFooter>
                         </div>
@@ -385,5 +380,3 @@ export default function TourPackageDetailPage() {
     </div>
   );
 }
-
-    
