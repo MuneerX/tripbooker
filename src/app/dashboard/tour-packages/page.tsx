@@ -40,6 +40,7 @@ export default function TourPackagesPage() {
     const fetchPackages = async () => {
       setLoading(true);
       const packages = await getTourPackages();
+      console.log('Fetched Packages:', packages);
       setAllPackages(packages);
       setLoading(false);
     };
