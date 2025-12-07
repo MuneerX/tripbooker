@@ -1,5 +1,4 @@
 
-
 "use client";
 
 import * as React from "react";
@@ -135,17 +134,16 @@ export default function TripDayDetailPage() {
                             <Clock className="h-5 w-5 text-muted-foreground" />
                     </div>
                     <div className="grid gap-1 flex-1">
-                            <p className="font-semibold">{activity.name} <span className="text-xs font-normal text-muted-foreground capitalize">({activity.type})</span></p>
+                            <p className="font-semibold">{activity.title} <span className="text-xs font-normal text-muted-foreground capitalize">({activity.activity_type})</span></p>
                             <p className="text-sm text-muted-foreground">{activity.description}</p>
                             <div className="flex items-center text-sm text-muted-foreground gap-4 mt-1">
-                                <span>Time: {activity.time}</span>
-                                <span>Duration: {activity.duration}</span>
-                                <span>Location: {activity.location}</span>
+                                <span>Time: {activity.activity_time}</span>
+                                <span>Duration: {activity.duration_minutes} mins</span>
                             </div>
                             <div className="flex items-center text-sm gap-4 mt-2">
                             <div className="flex items-center gap-1">
-                                    {activity.price_included ? <CheckCircle className="h-4 w-4 text-green-500" /> : <XCircle className="h-4 w-4 text-red-500" />}
-                                    <span>Price Included</span>
+                                    {activity.cost_included ? <CheckCircle className="h-4 w-4 text-green-500" /> : <XCircle className="h-4 w-4 text-red-500" />}
+                                    <span>Cost Included</span>
                             </div>
                             <div className="flex items-center gap-1">
                                     {activity.booking_required ? <CheckCircle className="h-4 w-4 text-green-500" /> : <XCircle className="h-4 w-4 text-red-500" />}

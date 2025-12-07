@@ -1,5 +1,4 @@
 
-
 "use server"
 
 import { createServerClient } from '@supabase/ssr'
@@ -350,7 +349,7 @@ export async function getTripDayById(id: string): Promise<TripDay | null> {
         .from('trip_day_activities')
         .select('*')
         .eq('trip_day_id', id)
-        .order('time');
+        .order('activity_time');
         
     if (activitiesError) {
         console.error(`Error fetching activities for trip day ${id}:`, activitiesError);
@@ -378,7 +377,7 @@ export async function createTripDay(tripDayData: Partial<TripDay>) {
     }
 
     if (activities && activities.length > 0) {
-        const activitiesToInsert = activities.map(act => ({ ...act, trip_day_id: newDay.id }));
+        const activitiesToInsert = activities.map(act => ({ ...act, trip_day_id: newDay.id, name: act.title }));
         const { error: activitiesError } = await supabase
             .from('trip_day_activities')
             .insert(activitiesToInsert);
@@ -435,12 +434,13 @@ export async function updateTripDay(id: string, tripDayData: Partial<TripDay>) {
     }
 
     if (updatedActivities.length > 0) {
-        const { error } = await supabase.from('trip_day_activities').upsert(updatedActivities);
+        const updates = updatedActivities.map(act => ({...act, name: act.title}));
+        const { error } = await supabase.from('trip_day_activities').upsert(updates);
         if (error) console.error('Error updating activities:', error.message);
     }
 
     if (newActivities.length > 0) {
-        const activitiesToInsert = newActivities.map(act => ({ ...act, trip_day_id: id }));
+        const activitiesToInsert = newActivities.map(act => ({ ...act, trip_day_id: id, name: act.title }));
         const { error } = await supabase.from('trip_day_activities').insert(activitiesToInsert);
         if (error) console.error('Error inserting new activities:', error.message);
     }

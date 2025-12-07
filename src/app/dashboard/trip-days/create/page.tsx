@@ -169,8 +169,8 @@ export default function CreateTripDayPage() {
                         <Card key={activity.id} className="bg-muted/30 p-4">
                            <div className="flex justify-between items-start">
                                 <div className="grid gap-1">
-                                    <p className="font-semibold">{activity.name} <span className="text-xs font-normal text-muted-foreground">({activity.type})</span></p>
-                                    <p className="text-sm text-muted-foreground">{activity.time} &bull; {activity.duration} &bull; {activity.location}</p>
+                                    <p className="font-semibold">{activity.title} <span className="text-xs font-normal text-muted-foreground">({activity.activity_type})</span></p>
+                                    <p className="text-sm text-muted-foreground">{activity.activity_time} &bull; {activity.duration_minutes} mins</p>
                                 </div>
                                 <div className="flex items-center gap-2">
                                      <ActivityFormModal 

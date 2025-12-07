@@ -13,7 +13,6 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { ArrowLeft, PlusCircle, Trash2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import type { TripDay } from "@/lib/types";
 import { getTripDayById, updateTripDay } from "@/lib/supabase/queries";
 import { ActivityFormModal, activitySchema } from "@/app/dashboard/trip-days/create/_components/ActivityFormModal";
 
@@ -60,7 +59,13 @@ export default function EditTripDayPage() {
             accommodation_name: day.accommodation_name,
             meals_included: day.meals_included,
             special_instructions: day.special_instructions,
-            activities: day.activities || []
+            activities: day.activities.map(a => ({
+                ...a,
+                title: a.title || a.name || '',
+                activity_time: a.activity_time || a.time || '',
+                duration_minutes: a.duration_minutes || (a.duration ? parseInt(a.duration) : 0),
+                activity_type: a.activity_type || a.type || 'sightseeing'
+            })) || []
           });
         } else {
           toast({ variant: "destructive", title: "Error", description: "Trip Day not found." });
@@ -157,8 +162,8 @@ export default function EditTripDayPage() {
                 <Card key={activity.id} className="bg-muted/30 p-4">
                     <div className="flex justify-between items-start">
                         <div className="grid gap-1">
-                            <p className="font-semibold">{activity.name} <span className="text-xs font-normal text-muted-foreground capitalize">({activity.type})</span></p>
-                            <p className="text-sm text-muted-foreground">{activity.time} &bull; {activity.duration} &bull; {activity.location}</p>
+                            <p className="font-semibold">{activity.title} <span className="text-xs font-normal text-muted-foreground capitalize">({activity.activity_type})</span></p>
+                            <p className="text-sm text-muted-foreground">{activity.activity_time} &bull; {activity.duration_minutes} mins</p>
                             <p className="text-sm text-muted-foreground mt-2">{activity.description}</p>
                         </div>
                         <div className="flex items-center gap-2">

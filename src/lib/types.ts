@@ -1,5 +1,4 @@
 
-
 import type { Timestamp } from 'firebase/firestore';
 
 export type TourPackage = {
@@ -31,17 +30,28 @@ export type TourPackage = {
 
 export type Activity = {
   id?: string;
-  name: string;
-  type: 'trekking' | 'sightseeing' | 'meal' | 'transport' | 'accommodation' | 'adventure' | 'shopping' | 'leisure';
-  time: string; // HH:MM AM/PM
-  duration: string;
-  location: string;
-  locationId?: string;
-  price: number;
-  price_included: boolean;
-  booking_required: boolean;
-  description: string;
   trip_day_id: string;
+  activity_time?: string | null; // time without time zone
+  title: string;
+  description?: string | null;
+  activity_type?: 'trekking' | 'sightseeing' | 'meal' | 'transport' | 'accommodation' | 'adventure' | 'shopping' | 'leisure' | null;
+  place_id?: string | null;
+  duration_minutes?: number | null;
+  travel_duration_minutes?: number | null;
+  cost_included?: boolean | null;
+  additional_cost?: number | null;
+  booking_required?: boolean | null;
+  special_instructions?: string | null;
+  created_at?: string;
+  updated_at?: string;
+  // Fields from old schema for compatibility during transition
+  name?: string; // Will be mapped to title
+  time?: string;
+  duration?: string;
+  location?: string;
+  price?: number;
+  price_included?: boolean;
+  type?: 'trekking' | 'sightseeing' | 'meal' | 'transport' | 'accommodation' | 'adventure' | 'shopping' | 'leisure';
 };
 
 export type TripDay = {

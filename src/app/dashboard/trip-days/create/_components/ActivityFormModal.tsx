@@ -23,17 +23,19 @@ import {
 } from "@/components/ui/dialog";
 
 export const activitySchema = z.object({
-    id: z.string().optional(), // For Supabase ID
-    name: z.string().min(1, "Activity name is required"),
-    type: z.enum(["trekking", "sightseeing", "meal", "transport", "accommodation", "adventure", "shopping", "leisure"]),
-    time: z.string().regex(/^(0[1-9]|1[0-2]):[0-5][0-9] (AM|PM)$/, "Invalid time format (e.g., 09:00 AM)"),
-    duration: z.string().min(1, "Duration is required"),
-    location: z.string().min(1, "Location is required"),
-    price: z.coerce.number().min(0).default(0),
-    price_included: z.boolean().default(true),
-    booking_required: z.boolean().default(false),
+    id: z.string().optional(),
+    title: z.string().min(1, "Activity title is required"),
+    activity_type: z.enum(["trekking", "sightseeing", "meal", "transport", "accommodation", "adventure", "shopping", "leisure"]),
+    activity_time: z.string().regex(/^(0[0-9]|1[0-9]|2[0-3]):[0-5][0-9]$/, "Invalid time format (e.g., 09:00 or 17:30)"),
+    duration_minutes: z.coerce.number().int().min(0, "Duration must be a positive number"),
     description: z.string().min(1, "Description is required"),
+    additional_cost: z.coerce.number().min(0).default(0),
+    cost_included: z.boolean().default(true),
+    booking_required: z.boolean().default(false),
+    special_instructions: z.string().optional(),
+    place_id: z.string().optional(),
 });
+
 
 export type ActivityFormValues = z.infer<typeof activitySchema>;
 
@@ -44,15 +46,15 @@ type ActivityFormModalProps = {
 }
 
 const defaultActivityValues: ActivityFormValues = {
-  name: "",
-  type: "sightseeing",
-  time: "",
-  duration: "",
-  location: "",
-  price: 0,
-  price_included: true,
-  booking_required: false,
+  title: "",
+  activity_type: "sightseeing",
+  activity_time: "",
+  duration_minutes: 60,
   description: "",
+  additional_cost: 0,
+  cost_included: true,
+  booking_required: false,
+  special_instructions: "",
 };
 
 export function ActivityFormModal({ children, activity, onSave }: ActivityFormModalProps) {
@@ -92,8 +94,8 @@ export function ActivityFormModal({ children, activity, onSave }: ActivityFormMo
 
                         <div className="grid gap-4 py-6">
                             <div className="grid md:grid-cols-2 gap-4">
-                                <FormField control={activityForm.control} name="name" render={({ field }) => ( <FormItem><FormLabel>Activity Name</FormLabel><FormControl><Input placeholder="e.g., Sunset Cruise" {...field} /></FormControl><FormMessage /></FormItem>)} />
-                                <FormField control={activityForm.control} name="type" render={({ field }) => ( <FormItem><FormLabel>Type</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Select type" /></SelectTrigger></FormControl><SelectContent>
+                                <FormField control={activityForm.control} name="title" render={({ field }) => ( <FormItem><FormLabel>Activity Title</FormLabel><FormControl><Input placeholder="e.g., Sunset Cruise" {...field} /></FormControl><FormMessage /></FormItem>)} />
+                                <FormField control={activityForm.control} name="activity_type" render={({ field }) => ( <FormItem><FormLabel>Type</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Select type" /></SelectTrigger></FormControl><SelectContent>
                                   <SelectItem value="trekking">Trekking</SelectItem>
                                   <SelectItem value="sightseeing">Sightseeing</SelectItem>
                                   <SelectItem value="meal">Meal</SelectItem>
@@ -105,14 +107,15 @@ export function ActivityFormModal({ children, activity, onSave }: ActivityFormMo
                                   </SelectContent></Select><FormMessage /></FormItem> )} />
                             </div>
                              <div className="grid md:grid-cols-2 gap-4">
-                                <FormField control={activityForm.control} name="time" render={({ field }) => ( <FormItem><FormLabel>Time</FormLabel><FormControl><Input placeholder="e.g., 05:00 PM" {...field} /></FormControl><FormMessage /></FormItem>)} />
-                                <FormField control={activityForm.control} name="duration" render={({ field }) => ( <FormItem><FormLabel>Duration</FormLabel><FormControl><Input placeholder="e.g., 2 hours" {...field} /></FormControl><FormMessage /></FormItem>)} />
+                                <FormField control={activityForm.control} name="activity_time" render={({ field }) => ( <FormItem><FormLabel>Time (24h)</FormLabel><FormControl><Input placeholder="e.g., 17:30" {...field} /></FormControl><FormMessage /></FormItem>)} />
+                                <FormField control={activityForm.control} name="duration_minutes" render={({ field }) => ( <FormItem><FormLabel>Duration (minutes)</FormLabel><FormControl><Input type="number" placeholder="e.g., 120" {...field} /></FormControl><FormMessage /></FormItem>)} />
                             </div>
-                            <FormField control={activityForm.control} name="location" render={({ field }) => ( <FormItem><FormLabel>Location</FormLabel><FormControl><Input placeholder="Name of the place" {...field} /></FormControl><FormMessage /></FormItem>)} />
                             <FormField control={activityForm.control} name="description" render={({ field }) => ( <FormItem><FormLabel>Description</FormLabel><FormControl><Textarea placeholder="Describe the activity" {...field} /></FormControl><FormMessage /></FormItem>)} />
+                            <FormField control={activityForm.control} name="special_instructions" render={({ field }) => ( <FormItem><FormLabel>Special Instructions</FormLabel><FormControl><Textarea placeholder="e.g., Bring sunscreen" {...field} /></FormControl><FormMessage /></FormItem>)} />
+
                              <div className="grid md:grid-cols-3 gap-4 items-center">
-                                <FormField control={activityForm.control} name="price" render={({ field }) => ( <FormItem><FormLabel>Price (USD)</FormLabel><FormControl><Input type="number" {...field} /></FormControl><FormMessage /></FormItem>)} />
-                                <FormField control={activityForm.control} name="price_included" render={({ field }) => (<FormItem className="flex items-center gap-2 pt-8"><FormControl><Checkbox checked={field.value} onCheckedChange={field.onChange} /></FormControl><FormLabel>Price Included</FormLabel></FormItem>)} />
+                                <FormField control={activityForm.control} name="additional_cost" render={({ field }) => ( <FormItem><FormLabel>Additional Cost (USD)</FormLabel><FormControl><Input type="number" {...field} /></FormControl><FormMessage /></FormItem>)} />
+                                <FormField control={activityForm.control} name="cost_included" render={({ field }) => (<FormItem className="flex items-center gap-2 pt-8"><FormControl><Checkbox checked={field.value} onCheckedChange={field.onChange} /></FormControl><FormLabel>Cost Included</FormLabel></FormItem>)} />
                                 <FormField control={activityForm.control} name="booking_required" render={({ field }) => (<FormItem className="flex items-center gap-2 pt-8"><FormControl><Checkbox checked={field.value} onCheckedChange={field.onChange} /></FormControl><FormLabel>Booking Required</FormLabel></FormItem>)} />
                             </div>
                         </div>
@@ -127,5 +130,3 @@ export function ActivityFormModal({ children, activity, onSave }: ActivityFormMo
         </Dialog>
     )
 }
-
-    
