@@ -34,7 +34,7 @@ export type Activity = {
   activity_time?: string | null; // time without time zone
   title: string;
   description?: string | null;
-  activity_type?: 'trekking' | 'sight_seeing' | 'meal' | 'transport' | 'accommodation' | 'adventure' | 'shopping' | 'leisure' | null;
+  activity_type?: 'trekking' | 'sightseeing' | 'meal' | 'transport' | 'accommodation' | 'adventure' | 'shopping' | 'leisure' | null;
   place_id?: string | null;
   duration_minutes?: number | null;
   travel_duration_minutes?: number | null;
@@ -60,6 +60,7 @@ export type TripDay = {
   created_at: string;
   updated_at: string;
   tour_package?: { name: string } | null;
+  special_instructions?: string | null;
 };
 
 export type TripLocation = {
