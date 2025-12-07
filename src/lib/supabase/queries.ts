@@ -472,5 +472,3 @@ export async function deleteTripDay(id: string) {
     }
     return { success: true };
 }
-
-```
