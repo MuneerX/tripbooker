@@ -48,7 +48,7 @@ export default function TourPackagesPage() {
   }, []);
 
   const filteredPackages = allPackages.filter((pkg) =>
-    pkg.tourName?.toLowerCase().includes(searchTerm.toLowerCase())
+    pkg.name?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const totalPages = Math.ceil(filteredPackages.length / rowsPerPage);
@@ -58,7 +58,7 @@ export default function TourPackagesPage() {
   );
   
   const totalPackages = allPackages.length;
-  const activePackages = allPackages.filter(p => p.status === 'active').length;
+  const activePackages = allPackages.filter(p => p.is_active).length;
   const inactivePackages = totalPackages - activePackages;
 
   const stats = [
@@ -122,18 +122,18 @@ export default function TourPackagesPage() {
               ) : paginatedPackages.length > 0 ? (
                 paginatedPackages.map((pkg: TourPackage) => (
                   <TableRow key={pkg.id}>
-                    <TableCell className="font-medium">{pkg.tourName}</TableCell>
+                    <TableCell className="font-medium">{pkg.name}</TableCell>
                     <TableCell className="hidden md:table-cell">{pkg.days}</TableCell>
-                    <TableCell className="hidden md:table-cell">{formatCurrency(pkg.basePrice)}</TableCell>
-                    <TableCell className="hidden md:table-cell">{format(new Date(pkg.introductionDate), "dd/MM/yyyy")}</TableCell>
+                    <TableCell className="hidden md:table-cell">{formatCurrency(pkg.base_price)}</TableCell>
+                    <TableCell className="hidden md:table-cell">{format(new Date(pkg.created_at), "dd/MM/yyyy")}</TableCell>
                     <TableCell className="hidden lg:table-cell">
-                      <Badge variant="secondary" className="capitalize">{pkg.tourType}</Badge>
+                      <Badge variant="secondary" className="capitalize">{pkg.package_type}</Badge>
                     </TableCell>
                     <TableCell className="hidden lg:table-cell">
                       <Badge variant="outline" className="capitalize">{pkg.category}</Badge>
                     </TableCell>
                     <TableCell>
-                      <Badge variant="outline" className={cn("capitalize", getStatusBadgeColor(pkg.status))}>{pkg.status}</Badge>
+                      <Badge variant="outline" className={cn("capitalize", getStatusBadgeColor(pkg.is_active ? 'active' : 'inactive'))}>{pkg.is_active ? 'active' : 'inactive'}</Badge>
                     </TableCell>
                     <TableCell>
                       <AlertDialog>
@@ -163,7 +163,7 @@ export default function TourPackagesPage() {
                             <AlertDialogHeader>
                               <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
                               <AlertDialogDescription>
-                                This action cannot be undone. This will permanently delete the tour package "{pkg.tourName}".
+                                This action cannot be undone. This will permanently delete the tour package "{pkg.name}".
                               </AlertDialogDescription>
                             </AlertDialogHeader>
                             <AlertDialogFooter>

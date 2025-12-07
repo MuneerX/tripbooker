@@ -3,28 +3,28 @@ import type { Timestamp } from 'firebase/firestore';
 
 export type TourPackage = {
   id: string;
-  tourName: string;
-  tourType: 'domestic' | 'international';
-  category: 'adventure' | 'leisure' | 'pilgrimage' | 'cultural' | 'wildlife';
-  basePrice: number;
+  name: string; // was tourName
+  package_type: 'domestic' | 'international' | 'World' | 'India' | 'Kerala'; // was tourType
+  category: 'adventure' | 'leisure' | 'pilgrimage' | 'cultural' | 'wildlife' | 'Family' | 'Premium' | 'LadiesOnly';
+  base_price: number; // was basePrice
   days: number;
   nights: number;
-  introductionDate: Date;
+  created_at: Date; // was introductionDate
   withdrawalDate: Date | string; // Allow string for form values
-  maxPermittedBooking: number;
+  max_guests: number; // was maxPermittedBooking
   itineraryId: string;
-  imageUrl: string;
+  image_urls: string[]; // was imageUrl
   payInParts: Array<{ partName: string; durationMonths: number; price: number }>;
   description: string;
   highlights: string[];
-  inclusions: string[];
-  exclusions: string[];
-  bookingPolicies: string;
-  cancellationPolicies: string;
-  termsAndConditions: string;
-  isFeatured: boolean;
-  featuredImageUrl: string;
-  status: 'active' | 'inactive';
+  inclusion: string; // was inclusions
+  exclusion: string; // was exclusions
+  booking_policy: string; // was bookingPolicies
+  cancellation_policy: string; // was cancellationPolicies
+  terms_and_conditions: string; // was termsAndConditions
+  is_featured: boolean; // was isFeatured
+  featured_image_url: string; // was featuredImageUrl
+  is_active: boolean; // was status
   createdAt: Date;
   updatedAt: Date;
 };
