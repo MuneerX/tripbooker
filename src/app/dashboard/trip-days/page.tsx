@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import * as React from "react";
@@ -44,7 +45,6 @@ export default function TripDaysPage() {
     const fetchTripDays = async () => {
       setLoading(true);
       const days = await getTripDays();
-      console.log('Fetched Trip Days Data:', days); // Console log added here
       setAllTripDays(days as TripDayWithPackageAndCount[]);
       setLoading(false);
     };
@@ -195,3 +195,6 @@ export default function TripDaysPage() {
     </div>
   );
 }
+
+
+    

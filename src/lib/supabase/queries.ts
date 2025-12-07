@@ -184,32 +184,27 @@ export async function updateTourPackage(id: string, formData: FormData) {
   const supabase = createAdminClient();
 
   const getPathFromUrl = (url: string): string | null => {
-    if (!url) return null;
-    try {
-        const urlObject = new URL(url);
-        // Correctly find the start of the path after the bucket name
-        const pathSegment = '/storage/v1/object/public/images/';
-        const pathname = urlObject.pathname;
-        const pathStartIndex = pathname.indexOf(pathSegment);
-        
-        if (pathStartIndex === -1) {
-            // Fallback for potentially different structures like featured images
-            const alternativeSegment = '/images/featured/';
-            const altIndex = pathname.indexOf(alternativeSegment);
-            if (altIndex !== -1) {
-                 return decodeURIComponent(pathname.substring(altIndex + 1));
-            }
-            console.warn('Could not determine storage path from URL:', url);
-            return null;
-        };
-
-        const filePath = pathname.substring(pathStartIndex + pathSegment.length);
-        return `images/${decodeURIComponent(filePath)}`;
-
-    } catch (e) {
-        console.error('Invalid URL for image deletion:', url, e);
-        return null;
-    }
+      if (!url) return null;
+      try {
+          const urlObject = new URL(url);
+          // Example URL: https://<project-ref>.supabase.co/storage/v1/object/public/images/images/1718886988839-image.png
+          // We need to extract the path after the bucket name 'images'
+          const pathSegments = urlObject.pathname.split('/');
+          const bucketName = 'images';
+          const bucketIndex = pathSegments.indexOf(bucketName);
+          
+          if (bucketIndex === -1 || bucketIndex + 1 >= pathSegments.length) {
+              console.warn('Could not determine storage path from URL:', url);
+              return null;
+          }
+          
+          // Join the segments after the bucket name
+          const filePath = pathSegments.slice(bucketIndex + 1).join('/');
+          return decodeURIComponent(filePath);
+      } catch (e) {
+          console.error('Invalid URL for image deletion:', url, e);
+          return null;
+      }
   };
 
 
@@ -239,7 +234,8 @@ export async function updateTourPackage(id: string, formData: FormData) {
   if (originalFeaturedUrl) {
     const isReplaced = !!newFeaturedFile;
     const isDeselected = !isFeatured;
-    const isManuallyRemoved = !isReplaced && isFeatured && !formData.get('featured_image_url');
+    // This checks if the URL is not in the form data, meaning the user clicked 'X'
+    const isManuallyRemoved = !formData.get('featured_image_url');
 
     if (isReplaced || isDeselected || isManuallyRemoved) {
         const path = getPathFromUrl(originalFeaturedUrl);
@@ -282,10 +278,10 @@ export async function updateTourPackage(id: string, formData: FormData) {
   // --- 4. CONSTRUCT FINAL UPDATE OBJECT ---
   const finalImageUrls = [...keptImageUrls, ...uploadedImageUrls];
   let finalFeaturedImageUrl: string | null | undefined = uploadedFeaturedImageUrl;
-    if (!uploadedFeaturedImageUrl) {
+    if (finalFeaturedImageUrl === undefined) { // Only if no new file was uploaded
         finalFeaturedImageUrl = formData.get('featured_image_url') as string | null;
     }
-
+    
     if (!isFeatured) {
         finalFeaturedImageUrl = null;
     }
@@ -343,7 +339,7 @@ export async function getTripDays(): Promise<any[]> {
             day_number,
             status,
             activities ( count ),
-            tour_package:tour_packages!inner( name )
+            tour_packages ( name )
         `)
         .order('tour_package_id')
         .order('day_number');
@@ -357,6 +353,7 @@ export async function getTripDays(): Promise<any[]> {
     // We need to transform this to a simple number.
     return data.map(day => ({
         ...day,
+        tour_package: day.tour_packages, // Flatten the structure
         activities_count: Array.isArray(day.activities) && day.activities.length > 0 ? day.activities[0].count : 0
     }));
 }
@@ -370,7 +367,7 @@ export async function getTripDayById(id: string): Promise<TripDay | null> {
         .from('trip_days')
         .select(`
             *,
-            tour_package:tour_packages(name)
+            tour_packages(name)
         `)
         .eq('id', id)
         .single();
@@ -392,7 +389,7 @@ export async function getTripDayById(id: string): Promise<TripDay | null> {
         // Return day data even if activities fail
     }
 
-    return { ...data, activities: activities || [] } as TripDay;
+    return { ...data, activities: activities || [], tour_package: data.tour_packages } as TripDay;
 }
 
 /**
@@ -506,3 +503,6 @@ export async function deleteTripDay(id: string) {
     }
     return { success: true };
 }
+
+
+    

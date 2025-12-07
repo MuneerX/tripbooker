@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import * as React from "react";
@@ -30,7 +31,6 @@ export default function TripDayDetailPage() {
   const { toast } = useToast();
 
   const [tripDay, setTripDay] = React.useState<TripDay | null>(null);
-  const [tourPackage, setTourPackage] = React.useState<TourPackage | null>(null);
   const [loading, setLoading] = React.useState(true);
 
   React.useEffect(() => {
@@ -40,10 +40,6 @@ export default function TripDayDetailPage() {
         const day = await getTripDayById(id);
         if (day) {
           setTripDay(day);
-          if (day.tour_package_id) {
-            const pkg = await getTourPackageById(day.tour_package_id);
-            setTourPackage(pkg);
-          }
         } else {
            toast({ variant: "destructive", title: "Error", description: "Trip day not found." });
            router.push('/dashboard/trip-days');
@@ -117,7 +113,7 @@ export default function TripDayDetailPage() {
             <CardHeader>
             <CardTitle>Day {tripDay.day_number}: {tripDay.day_name}</CardTitle>
             <CardDescription>
-                Part of the <span className="font-semibold text-primary">{tourPackage?.name || 'N/A'}</span> tour package.
+                Part of the <span className="font-semibold text-primary">{tripDay.tour_package?.name || 'N/A'}</span> tour package.
             </CardDescription>
             </CardHeader>
             <CardContent className="grid gap-6">
@@ -183,5 +179,7 @@ export default function TripDayDetailPage() {
     </div>
   );
 }
+
+    
 
     

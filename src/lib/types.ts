@@ -55,6 +55,7 @@ export type TripDay = {
   status: 'active' | 'inactive';
   created_at: string;
   updated_at: string;
+  tour_package?: { name: string } | null;
 };
 
 export type TripLocation = {
@@ -120,3 +121,6 @@ export type NavItem = {
   icon: React.ComponentType<{ className?: string }>;
   subItems?: NavItem[];
 };
+
+
+    
