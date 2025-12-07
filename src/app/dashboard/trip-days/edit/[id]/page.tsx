@@ -50,7 +50,11 @@ export default function EditTripDayPage() {
         const day = await getTripDayById(id);
         if (day) {
           form.reset({
-            ...day,
+            day_name: day.day_name,
+            day_number: day.day_number,
+            description: day.description,
+            special_instructions: day.special_instructions,
+            status: day.status,
             activities: day.activities || []
           });
         } else {
@@ -176,5 +180,3 @@ export default function EditTripDayPage() {
     </Form>
   );
 }
-
-    

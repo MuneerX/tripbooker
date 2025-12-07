@@ -1,10 +1,12 @@
 
+"use client";
 
 import * as React from "react";
 import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
 import { PlusCircle, MoreHorizontal, FilePenLine, Trash2, View, CalendarDays } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
@@ -20,32 +22,55 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-  AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { StatCard } from "@/components/dashboard/StatCard";
 import { getTripDays, deleteTripDay } from "@/lib/supabase/queries";
-import { revalidatePath } from "next/cache";
+import { useToast } from "@/hooks/use-toast";
 
 type TripDayWithPackageAndCount = TripDay & { 
   tour_package: { name: string } | null;
   activities_count: number;
 };
 
-// A server-side action to handle deletion
-async function deleteAction(dayId: string, dayName: string) {
-  "use server";
-  try {
-    await deleteTripDay(dayId);
-    revalidatePath('/dashboard/trip-days'); // Revalidate the page to show updated data
-    return { success: true, message: `Trip day "${dayName}" has been deleted.` };
-  } catch (error: any) {
-    return { success: false, message: error.message || "Failed to delete trip day." };
-  }
-}
+export default function TripDaysPage() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const { toast } = useToast();
+  
+  const [allTripDays, setAllTripDays] = React.useState<TripDayWithPackageAndCount[]>([]);
+  const [loading, setLoading] = React.useState(true);
+  const [searchTerm, setSearchTerm] = React.useState(searchParams.get('search') || "");
+  const [deletingId, setDeletingId] = React.useState<string | null>(null);
 
-export default async function TripDaysPage({ searchParams }: { searchParams?: { [key: string]: string | undefined }}) {
-  const searchTerm = searchParams?.search || "";
-  const allTripDays: TripDayWithPackageAndCount[] = await getTripDays();
+  React.useEffect(() => {
+    async function fetchTripDays() {
+      setLoading(true);
+      const days = await getTripDays();
+      setAllTripDays(days as TripDayWithPackageAndCount[]);
+      setLoading(false);
+    }
+    fetchTripDays();
+  }, []);
+
+  const handleDelete = async (dayId: string, dayName: string) => {
+    setDeletingId(dayId);
+    try {
+      await deleteTripDay(dayId);
+      setAllTripDays(prevDays => prevDays.filter(day => day.id !== dayId));
+      toast({
+        title: "Success",
+        description: `Trip day "${dayName}" has been deleted.`,
+      });
+    } catch (error: any) {
+      toast({
+        variant: "destructive",
+        title: "Error deleting trip day",
+        description: error.message,
+      });
+    } finally {
+      setDeletingId(null);
+    }
+  };
 
   const filteredTripDays = allTripDays.filter((day) =>
     (day.day_name && day.day_name.toLowerCase().includes(searchTerm.toLowerCase())) ||
@@ -75,14 +100,12 @@ export default async function TripDaysPage({ searchParams }: { searchParams?: { 
                 <CardDescription>Manage your trip days from here.</CardDescription>
             </div>
             <div className="flex items-center gap-2">
-                {/* Search is handled by query params now */}
-                <form className="w-full md:w-64">
-                    <Input
-                        placeholder="Search by day or package..."
-                        name="search"
-                        defaultValue={searchTerm}
-                    />
-                </form>
+                <Input
+                    placeholder="Search by day or package..."
+                    name="search"
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                />
                 <Button asChild>
                 <Link href="/dashboard/trip-days/create">
                     <PlusCircle className="mr-2 h-4 w-4" /> Create Trip Day
@@ -106,7 +129,13 @@ export default async function TripDaysPage({ searchParams }: { searchParams?: { 
                 </TableRow>
             </TableHeader>
             <TableBody>
-                {filteredTripDays.length > 0 ? (
+                {loading ? (
+                  <TableRow>
+                    <TableCell colSpan={6} className="h-24 text-center">
+                      Loading...
+                    </TableCell>
+                  </TableRow>
+                ) : filteredTripDays.length > 0 ? (
                 filteredTripDays.map((day) => {
                     return (
                     <TableRow key={day.id}>
@@ -128,21 +157,19 @@ export default async function TripDaysPage({ searchParams }: { searchParams?: { 
                                 </DropdownMenuTrigger>
                                 <DropdownMenuContent align="end">
                                 <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                                <DropdownMenuItem asChild>
-                                  <Link href={`/dashboard/trip-days/${day.id}`}>
+                                <DropdownMenuItem onSelect={() => router.push(`/dashboard/trip-days/${day.id}`)}>
                                     <View className="mr-2 h-4 w-4" /> View
-                                  </Link>
                                 </DropdownMenuItem>
-                                <DropdownMenuItem asChild>
-                                  <Link href={`/dashboard/trip-days/edit/${day.id}`}>
+                                <DropdownMenuItem onSelect={() => router.push(`/dashboard/trip-days/edit/${day.id}`)}>
                                     <FilePenLine className="mr-2 h-4 w-4" /> Edit
-                                  </Link>
                                 </DropdownMenuItem>
-                                <AlertDialogTrigger asChild>
-                                    <DropdownMenuItem className="text-red-600 focus:text-red-600 focus:bg-red-50" onSelect={(e) => e.preventDefault()}>
+                                <DropdownMenuItem className="text-red-600 focus:text-red-600 focus:bg-red-50" onSelect={(e) => e.preventDefault()}>
+                                  <AlertDialogTrigger asChild>
+                                    <button className="w-full text-left flex items-center">
                                       <Trash2 className="mr-2 h-4 w-4" /> Delete
-                                    </DropdownMenuItem>
-                                </AlertDialogTrigger>
+                                    </button>
+                                  </AlertDialogTrigger>
+                                </DropdownMenuItem>
                                 </DropdownMenuContent>
                             </DropdownMenu>
                             <AlertDialogContent>
@@ -154,12 +181,9 @@ export default async function TripDaysPage({ searchParams }: { searchParams?: { 
                                 </AlertDialogHeader>
                                 <AlertDialogFooter>
                                 <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                <form action={async () => {
-                                  "use server"
-                                  await deleteAction(day.id, day.day_name)
-                                }}>
-                                  <AlertDialogAction type="submit" className="bg-destructive hover:bg-destructive/90">Delete</AlertDialogAction>
-                                </form>
+                                <AlertDialogAction onClick={() => handleDelete(day.id, day.day_name)} className="bg-destructive hover:bg-destructive/90">
+                                  {deletingId === day.id ? "Deleting..." : "Delete"}
+                                </AlertDialogAction>
                                 </AlertDialogFooter>
                             </AlertDialogContent>
                             </AlertDialog>

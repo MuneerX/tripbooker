@@ -187,10 +187,11 @@ export async function updateTourPackage(id: string, formData: FormData) {
         if (!url) return null;
         try {
             const urlObject = new URL(url);
-            // Example path: /storage/v1/object/public/images/images/17180...
-            const pathSegments = urlObject.pathname.split('/'); 
+            // The path starts after /public/ which is standard for Supabase public URLs
+            const pathSegments = urlObject.pathname.split('/');
             const bucketName = 'images'; // your bucket name
             const bucketIndex = pathSegments.findIndex(segment => segment === bucketName);
+
             if (bucketIndex === -1 || bucketIndex + 1 >= pathSegments.length) {
                 console.warn('Could not determine storage path from URL:', url);
                 return null;
@@ -225,12 +226,14 @@ export async function updateTourPackage(id: string, formData: FormData) {
     });
 
     // Determine if the original featured image should be deleted.
+    const featuredUrlOnForm = formData.get('featured_image_url') as string;
     if (originalFeaturedUrl) {
       const isReplaced = !!newFeaturedFile;
       const isDeselected = !isFeatured;
-      const isManuallyRemoved = !formData.get('featured_image_url');
+      // Check if the URL is empty, indicating manual removal without replacement
+      const wasManuallyRemoved = !featuredUrlOnForm;
 
-      if (isReplaced || isDeselected || isManuallyRemoved) {
+      if (isReplaced || isDeselected || wasManuallyRemoved) {
           const path = getPathFromUrl(originalFeaturedUrl);
           if (path) pathsToDelete.push(path);
       }
@@ -240,6 +243,7 @@ export async function updateTourPackage(id: string, formData: FormData) {
         console.log('Deleting paths from storage:', pathsToDelete);
         const { error: deleteError } = await supabase.storage.from('images').remove(pathsToDelete);
         if (deleteError) {
+            // Log the error but don't block the update process
             console.error("Failed to delete some images from storage:", deleteError.message);
         }
     }
@@ -317,12 +321,12 @@ export async function updateTourPackage(id: string, formData: FormData) {
  * Fetches all trip days and their related tour package name.
  */
 export async function getTripDays(): Promise<any[]> {
-    const supabase = createAdminClient();
+    const supabase = createBrowserClient();
     const { data, error } = await supabase
         .from('trip_days')
         .select(`
             *,
-            tour_package:tour_packages!inner(name),
+            tour_package:tour_package_id(name),
             activities ( count )
         `)
         .order('day_number');
@@ -350,7 +354,7 @@ export async function getTripDayById(id: string): Promise<TripDay | null> {
         .from('trip_days')
         .select(`
             *,
-            tour_package:tour_packages(name)
+            tour_package:tour_package_id(name)
         `)
         .eq('id', id)
         .single();
