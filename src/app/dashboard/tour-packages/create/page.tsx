@@ -17,7 +17,7 @@ import { Switch } from "@/components/ui/switch"
 import { uploadTourImages } from "@/lib/supabase/queries"
 import { Upload } from "lucide-react"
 
-const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
+const MAX_FILE_SIZE = 2 * 1024 * 1024; // 2MB
 const ACCEPTED_IMAGE_TYPES = ["image/jpeg", "image/jpg", "image/png", "image/webp"];
 
 const tourPackageSchema = z.object({
@@ -41,7 +41,7 @@ const tourPackageSchema = z.object({
   
   image_files: z.any()
     .refine((files) => files?.length >= 1, "At least one gallery image is required.")
-    .refine((files) => Array.from(files).every((file: any) => file.size <= MAX_FILE_SIZE), `Max file size is 5MB.`)
+    .refine((files) => Array.from(files).every((file: any) => file.size <= MAX_FILE_SIZE), `Max file size is 2MB.`)
     .refine(
       (files) => Array.from(files).every((file: any) => ACCEPTED_IMAGE_TYPES.includes(file.type)),
       ".jpg, .jpeg, .png and .webp files are accepted."
@@ -153,7 +153,7 @@ export default function CreateTourPackagePage() {
                                                 <div className="flex flex-col items-center justify-center pt-5 pb-6">
                                                 <Upload className="w-8 h-8 mb-4 text-muted-foreground" />
                                                 <p className="mb-2 text-sm text-muted-foreground"><span className="font-semibold">Click to upload</span> or drag and drop</p>
-                                                <p className="text-xs text-muted-foreground">PNG, JPG, or WEBP (MAX. 5MB each)</p>
+                                                <p className="text-xs text-muted-foreground">PNG, JPG, or WEBP (MAX. 2MB each)</p>
                                                 </div>
                                                 <Input id="image-files" type="file" className="hidden" multiple
                                                     onChange={(e) => field.onChange(e.target.files)}

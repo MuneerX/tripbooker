@@ -104,28 +104,28 @@ export async function uploadTourImages(formData: FormData) {
   // Upload gallery images
   for (const file of imageFiles) {
     const filePath = `tour_images/${Date.now()}-${file.name}`;
-    const { error: uploadError } = await supabase.storage.from('tour-images').upload(filePath, file);
+    const { error: uploadError } = await supabase.storage.from('images').upload(filePath, file);
 
     if (uploadError) {
       console.error('Error uploading image:', uploadError);
       throw new Error(`Failed to upload ${file.name}: ${uploadError.message}`);
     }
 
-    const { data: { publicUrl } } = supabase.storage.from('tour-images').getPublicUrl(filePath);
+    const { data: { publicUrl } } = supabase.storage.from('images').getPublicUrl(filePath);
     imageUrls.push(publicUrl);
   }
 
   // Upload featured image if it exists
   if (featuredImageFile) {
     const filePath = `tour_images/featured/${Date.now()}-${featuredImageFile.name}`;
-    const { error: uploadError } = await supabase.storage.from('tour-images').upload(filePath, featuredImageFile);
+    const { error: uploadError } = await supabase.storage.from('images').upload(filePath, featuredImageFile);
 
     if (uploadError) {
       console.error('Error uploading featured image:', uploadError);
       throw new Error(`Failed to upload featured image: ${uploadError.message}`);
     }
 
-    const { data: { publicUrl } } = supabase.storage.from('tour-images').getPublicUrl(filePath);
+    const { data: { publicUrl } } = supabase.storage.from('images').getPublicUrl(filePath);
     featuredImageUrl = publicUrl;
   }
   
@@ -151,4 +151,3 @@ export async function uploadTourImages(formData: FormData) {
   
   return createTourPackage(tourPackageData);
 }
-
