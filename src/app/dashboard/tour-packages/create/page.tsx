@@ -1,5 +1,4 @@
 
-
 "use client"
 
 import * as React from "react"
@@ -19,7 +18,7 @@ import { createTourPackage } from "@/lib/supabase/queries"
 
 const tourPackageSchema = z.object({
   name: z.string().min(1, "Tour name is required"),
-  package_type: z.enum(["domestic", "international", "World", "India", "Kerala"]),
+  package_type: z.enum(["Domestic", "International", "World", "India", "Kerala"]),
   category: z.enum(["Adventure", "Leisure", "Pilgrimage", "Cultural", "Wildlife", "Family", "Premium", "LadiesOnly"]),
   base_price: z.coerce.number().min(0, "Price must be a positive number"),
   days: z.coerce.number().int().min(1, "Must be at least 1 day"),
@@ -50,7 +49,7 @@ export default function CreateTourPackagePage() {
     resolver: zodResolver(tourPackageSchema),
     defaultValues: {
       name: "",
-      package_type: "domestic",
+      package_type: "Domestic",
       category: "Leisure",
       base_price: 0,
       days: 1,
@@ -115,7 +114,7 @@ export default function CreateTourPackagePage() {
                         <CardContent className="space-y-6">
                             <FormField control={form.control} name="name" render={({ field }) => ( <FormItem><FormLabel>Tour Name</FormLabel><FormControl><Input placeholder="e.g., Himalayan Adventure" {...field} /></FormControl><FormMessage /></FormItem> )} />
                             <div className="grid grid-cols-2 gap-4">
-                                <FormField control={form.control} name="package_type" render={({ field }) => ( <FormItem><FormLabel>Tour Type</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Select a type" /></SelectTrigger></FormControl><SelectContent><SelectItem value="domestic">Domestic</SelectItem><SelectItem value="international">International</SelectItem><SelectItem value="World">World</SelectItem><SelectItem value="India">India</SelectItem><SelectItem value="Kerala">Kerala</SelectItem></SelectContent></Select><FormMessage /></FormItem> )} />
+                                <FormField control={form.control} name="package_type" render={({ field }) => ( <FormItem><FormLabel>Tour Type</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Select a type" /></SelectTrigger></FormControl><SelectContent><SelectItem value="Domestic">Domestic</SelectItem><SelectItem value="International">International</SelectItem><SelectItem value="World">World</SelectItem><SelectItem value="India">India</SelectItem><SelectItem value="Kerala">Kerala</SelectItem></SelectContent></Select><FormMessage /></FormItem> )} />
                                 <FormField control={form.control} name="category" render={({ field }) => ( <FormItem><FormLabel>Category</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Select a category" /></SelectTrigger></FormControl><SelectContent><SelectItem value="Adventure">Adventure</SelectItem><SelectItem value="Leisure">Leisure</SelectItem><SelectItem value="Pilgrimage">Pilgrimage</SelectItem><SelectItem value="Cultural">Cultural</SelectItem><SelectItem value="Wildlife">Wildlife</SelectItem><SelectItem value="Family">Family</SelectItem><SelectItem value="Premium">Premium</SelectItem><SelectItem value="LadiesOnly">Ladies Only</SelectItem></SelectContent></Select><FormMessage /></FormItem>)} />
                             </div>
                             <div className="grid grid-cols-2 gap-4">
@@ -179,3 +178,5 @@ export default function CreateTourPackagePage() {
     </div>
   )
 }
+
+    
