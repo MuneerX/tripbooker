@@ -71,35 +71,6 @@ export default function LoginPage() {
     }
   };
 
-  const handleSignUp = async () => {
-    const { email, password } = form.getValues();
-     if (!email || !password) {
-      toast({
-        variant: "destructive",
-        title: "Sign Up Failed",
-        description: "Please enter email and password to sign up.",
-      });
-      return;
-    }
-    const { error } = await supabase.auth.signUp({
-      email,
-      password,
-    });
-
-    if (error) {
-      toast({
-        variant: "destructive",
-        title: "Sign Up Failed",
-        description: error.message,
-      });
-    } else {
-      toast({
-        title: "Sign Up Successful!",
-        description: "Please check your email to confirm your account.",
-      });
-    }
-  };
-
   return (
     <div className="w-full lg:grid lg:min-h-screen lg:grid-cols-2">
       <div className="relative flex items-center justify-center py-12">
@@ -162,9 +133,6 @@ export default function LoginPage() {
               />
               <Button type="submit" className="w-full">
                 Login
-              </Button>
-               <Button type="button" variant="outline" className="w-full" onClick={handleSignUp}>
-                Sign Up
               </Button>
             </form>
           </Form>
