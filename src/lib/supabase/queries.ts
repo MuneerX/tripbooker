@@ -169,3 +169,84 @@ export async function uploadTourImages(formData: FormData) {
   
   return createTourPackage(tourPackageData);
 }
+
+/**
+ * Updates an existing tour package.
+ */
+export async function updateTourPackage(id: string, formData: FormData) {
+  const supabase = createAdminClient();
+
+  // 1. Handle Image Uploads (if any new ones are provided)
+  const newImageFiles = formData.getAll('image_files') as File[];
+  const newFeaturedImageFile = formData.get('featured_image_file') as File | null;
+  
+  const newImageUrls: string[] = [];
+  let newFeaturedImageUrl: string | undefined = undefined;
+
+  // Upload new gallery images
+  if (newImageFiles.length > 0 && newImageFiles[0].size > 0) {
+    for (const file of newImageFiles) {
+      const filePath = `images/${Date.now()}-${file.name}`;
+      const { error: uploadError } = await supabase.storage.from('images').upload(filePath, file);
+      if (uploadError) throw new Error(`Failed to upload ${file.name}: ${uploadError.message}`);
+      const { data: { publicUrl } } = supabase.storage.from('images').getPublicUrl(filePath);
+      newImageUrls.push(publicUrl);
+    }
+  }
+  
+  // Upload new featured image
+  if (newFeaturedImageFile) {
+    const filePath = `images/featured/${Date.now()}-${newFeaturedImageFile.name}`;
+    const { error: uploadError } = await supabase.storage.from('images').upload(filePath, newFeaturedImageFile);
+    if (uploadError) throw new Error(`Failed to upload featured image: ${uploadError.message}`);
+    const { data: { publicUrl } } = supabase.storage.from('images').getPublicUrl(filePath);
+    newFeaturedImageUrl = publicUrl;
+  }
+
+  // 2. Construct the update object
+  const existingImageUrls = formData.get('existing_image_urls') as string | null;
+  const finalImageUrls = newImageUrls.concat(existingImageUrls ? JSON.parse(existingImageUrls) : []);
+  
+  const updateData: Partial<TourPackage> = {
+    name: formData.get('name') as string,
+    package_type: formData.get('package_type') as TourPackage['package_type'],
+    category: formData.get('category') as TourPackage['category'],
+    base_price: Number(formData.get('base_price')),
+    days: Number(formData.get('days')),
+    nights: Number(formData.get('nights')),
+    max_guests: Number(formData.get('max_guests')),
+    description: formData.get('description') as string,
+    inclusion: formData.get('inclusion') as string,
+    exclusion: formData.get('exclusion') as string,
+    booking_policy: formData.get('booking_policy') as string,
+    cancellation_policy: formData.get('cancellation_policy') as string,
+    terms_and_conditions: formData.get('terms_and_conditions') as string,
+    is_featured: formData.get('is_featured') === 'true',
+    is_active: formData.get('is_active') === 'true',
+    image_urls: finalImageUrls.length > 0 ? finalImageUrls : undefined,
+    featured_image_url: newFeaturedImageUrl ?? (formData.get('existing_featured_image_url') as string) || undefined,
+  };
+  
+   // Remove undefined keys so they don't overwrite existing values with null
+   Object.keys(updateData).forEach(key => {
+     if ((updateData as any)[key] === undefined) {
+       delete (updateData as any)[key];
+     }
+   });
+
+
+  // 3. Update the database record
+  const { data, error } = await supabase
+    .from('tour_packages')
+    .update(updateData)
+    .eq('id', id)
+    .select()
+    .single();
+
+  if (error) {
+    console.error('Error updating tour package:', error);
+    throw new Error(error.message);
+  }
+
+  return data;
+}
