@@ -347,7 +347,7 @@ export async function getTripDayById(id: string): Promise<TripDay | null> {
     }
     
     const { data: activities, error: activitiesError } = await supabase
-        .from('activities')
+        .from('trip_day_activities')
         .select('*')
         .eq('trip_day_id', id)
         .order('time');
@@ -380,7 +380,7 @@ export async function createTripDay(tripDayData: Partial<TripDay>) {
     if (activities && activities.length > 0) {
         const activitiesToInsert = activities.map(act => ({ ...act, trip_day_id: newDay.id }));
         const { error: activitiesError } = await supabase
-            .from('activities')
+            .from('trip_day_activities')
             .insert(activitiesToInsert);
 
         if (activitiesError) {
@@ -413,7 +413,7 @@ export async function updateTripDay(id: string, tripDayData: Partial<TripDay>) {
     }
 
     const { data: existingActivities, error: fetchError } = await supabase
-        .from('activities')
+        .from('trip_day_activities')
         .select('id')
         .eq('trip_day_id', id);
 
@@ -430,18 +430,18 @@ export async function updateTripDay(id: string, tripDayData: Partial<TripDay>) {
     const idsToDelete = existingIds.filter(existingId => !incomingIds.includes(existingId));
 
     if (idsToDelete.length > 0) {
-        const { error } = await supabase.from('activities').delete().in('id', idsToDelete);
+        const { error } = await supabase.from('trip_day_activities').delete().in('id', idsToDelete);
         if (error) console.error('Error deleting activities:', error.message);
     }
 
     if (updatedActivities.length > 0) {
-        const { error } = await supabase.from('activities').upsert(updatedActivities);
+        const { error } = await supabase.from('trip_day_activities').upsert(updatedActivities);
         if (error) console.error('Error updating activities:', error.message);
     }
 
     if (newActivities.length > 0) {
         const activitiesToInsert = newActivities.map(act => ({ ...act, trip_day_id: id }));
-        const { error } = await supabase.from('activities').insert(activitiesToInsert);
+        const { error } = await supabase.from('trip_day_activities').insert(activitiesToInsert);
         if (error) console.error('Error inserting new activities:', error.message);
     }
 

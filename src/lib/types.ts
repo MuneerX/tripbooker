@@ -41,7 +41,7 @@ export type Activity = {
   price_included: boolean;
   booking_required: boolean;
   description: string;
-  trip_day_id?: string;
+  trip_day_id: string;
 };
 
 export type TripDay = {
