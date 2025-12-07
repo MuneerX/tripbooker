@@ -14,20 +14,21 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useRouter } from "next/navigation"
 import { useToast } from "@/hooks/use-toast"
 import { MapPin, Upload } from "lucide-react"
+import { createTripLocation } from "@/lib/supabase/queries"
 
 const tripLocationSchema = z.object({
   locationName: z.string().min(1, "Location name is required"),
   type: z.enum(["city", "landmark", "nature", "heritage", "beach", "mountain"]),
   city: z.string().min(1, "City is required"),
   country: z.string().min(1, "Country is required"),
-  latitude: z.coerce.number().optional(),
-  longitude: z.coerce.number().optional(),
+  latitude: z.coerce.number().optional().nullable(),
+  longitude: z.coerce.number().optional().nullable(),
   state: z.string().min(1, "State is required"),
   district: z.string().min(1, "District is required"),
   code: z.string().min(1, "Location code is required"),
   description: z.string().min(1, "Description is required"),
   address: z.string().min(1, "Address is required"),
-  // images: z.any().optional(), // File upload validation is complex with Zod and react-hook-form
+  // images: z.any().optional(), // File upload handling is complex and not fully implemented here
   status: z.enum(["active", "inactive"]),
 });
 
@@ -36,6 +37,7 @@ type TripLocationFormValues = z.infer<typeof tripLocationSchema>;
 export default function CreateTripLocationPage() {
   const router = useRouter();
   const { toast } = useToast();
+  const [isSubmitting, setIsSubmitting] = React.useState(false);
 
   const form = useForm<TripLocationFormValues>({
     resolver: zodResolver(tripLocationSchema),
@@ -50,16 +52,30 @@ export default function CreateTripLocationPage() {
       description: "",
       address: "",
       status: "active",
+      latitude: null,
+      longitude: null,
     },
   });
 
-  const onSubmit = (data: TripLocationFormValues) => {
-    console.log(data);
-    toast({
-      title: "Success!",
-      description: "New trip location has been created.",
-    });
-    router.push('/dashboard/trip-locations');
+  const onSubmit = async (data: TripLocationFormValues) => {
+    setIsSubmitting(true);
+    try {
+      await createTripLocation({ ...data, images: [] }); // Sending empty array for images for now
+      toast({
+        title: "Success!",
+        description: "New trip location has been created.",
+      });
+      router.push('/dashboard/trip-locations');
+      router.refresh();
+    } catch (error: any) {
+       toast({
+        variant: "destructive",
+        title: "Uh oh! Something went wrong.",
+        description: error.message || "Could not create the location.",
+      });
+    } finally {
+        setIsSubmitting(false);
+    }
   };
 
   return (
@@ -120,8 +136,8 @@ export default function CreateTripLocationPage() {
                         <FormField control={form.control} name="state" render={({ field }) => (<FormItem><FormLabel>State</FormLabel><FormControl><Input placeholder="e.g., Île-de-France" {...field} /></FormControl><FormMessage /></FormItem>)} />
                         <FormField control={form.control} name="district" render={({ field }) => (<FormItem><FormLabel>District</FormLabel><FormControl><Input placeholder="e.g., Paris" {...field} /></FormControl><FormMessage /></FormItem>)} />
                         <FormField control={form.control} name="country" render={({ field }) => (<FormItem><FormLabel>Country</FormLabel><FormControl><Input placeholder="e.g., France" {...field} /></FormControl><FormMessage /></FormItem>)} />
-                        <FormField control={form.control} name="latitude" render={({ field }) => (<FormItem><FormLabel>Latitude</FormLabel><FormControl><Input type="number" placeholder="e.g., 48.8584" {...field} /></FormControl><FormMessage /></FormItem>)} />
-                        <FormField control={form.control} name="longitude" render={({ field }) => (<FormItem><FormLabel>Longitude</FormLabel><FormControl><Input type="number" placeholder="e.g., 2.2945" {...field} /></FormControl><FormMessage /></FormItem>)} />
+                        <FormField control={form.control} name="latitude" render={({ field }) => (<FormItem><FormLabel>Latitude</FormLabel><FormControl><Input type="number" placeholder="e.g., 48.8584" {...field} value={field.value ?? ''} /></FormControl><FormMessage /></FormItem>)} />
+                        <FormField control={form.control} name="longitude" render={({ field }) => (<FormItem><FormLabel>Longitude</FormLabel><FormControl><Input type="number" placeholder="e.g., 2.2945" {...field} value={field.value ?? ''} /></FormControl><FormMessage /></FormItem>)} />
                         <div className="md:col-span-2 flex items-end gap-4">
                             <FormField
                                 control={form.control}
@@ -218,7 +234,9 @@ export default function CreateTripLocationPage() {
             
             <div className="flex justify-end gap-2">
                 <Button type="button" variant="outline" onClick={() => router.back()}>Cancel</Button>
-                <Button type="submit">Create Location</Button>
+                <Button type="submit" disabled={isSubmitting}>
+                    {isSubmitting ? 'Creating...' : 'Create Location'}
+                </Button>
             </div>
           </form>
         </Form>

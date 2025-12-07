@@ -1,3 +1,4 @@
+
 "use client";
 
 import * as React from "react";
@@ -9,7 +10,6 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
-import mockData from "@/lib/data";
 import type { TripLocation } from "@/lib/types";
 import { getStatusBadgeColor, cn } from "@/lib/utils";
 import {
@@ -26,17 +26,53 @@ import {
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { StatCard } from "@/components/dashboard/StatCard";
+import { getTripLocations, deleteTripLocation } from "@/lib/supabase/queries";
+import { useToast } from "@/hooks/use-toast";
 
 export default function TripLocationsPage() {
   const router = useRouter();
+  const { toast } = useToast();
   const [searchTerm, setSearchTerm] = React.useState("");
+  const [allLocations, setAllLocations] = React.useState<TripLocation[]>([]);
+  const [loading, setLoading] = React.useState(true);
+  const [deletingId, setDeletingId] = React.useState<string | null>(null);
 
-  const filteredLocations = mockData.tripLocations.filter((location) =>
+  React.useEffect(() => {
+    async function fetchLocations() {
+      setLoading(true);
+      const locations = await getTripLocations();
+      setAllLocations(locations);
+      setLoading(false);
+    }
+    fetchLocations();
+  }, []);
+
+  const handleDelete = async (locationId: string, locationName: string) => {
+    setDeletingId(locationId);
+    try {
+      await deleteTripLocation(locationId);
+      setAllLocations(prev => prev.filter(loc => loc.id !== locationId));
+      toast({
+        title: "Success",
+        description: `Location "${locationName}" has been deleted.`,
+      });
+    } catch (error: any) {
+      toast({
+        variant: "destructive",
+        title: "Error deleting location",
+        description: error.message,
+      });
+    } finally {
+      setDeletingId(null);
+    }
+  };
+
+  const filteredLocations = allLocations.filter((location) =>
     location.locationName.toLowerCase().includes(searchTerm.toLowerCase())
   );
   
-  const totalLocations = mockData.tripLocations.length;
-  const activeLocations = mockData.tripLocations.filter(l => l.status === 'active').length;
+  const totalLocations = allLocations.length;
+  const activeLocations = allLocations.filter(l => l.status === 'active').length;
   const inactiveLocations = totalLocations - activeLocations;
 
   const stats = [
@@ -91,7 +127,11 @@ export default function TripLocationsPage() {
                 </TableRow>
             </TableHeader>
             <TableBody>
-                {filteredLocations.length > 0 ? (
+                {loading ? (
+                    <TableRow>
+                        <TableCell colSpan={8} className="h-24 text-center">Loading...</TableCell>
+                    </TableRow>
+                ) : filteredLocations.length > 0 ? (
                 filteredLocations.map((location: TripLocation) => (
                     <TableRow key={location.id}>
                     <TableCell className="hidden sm:table-cell">
@@ -99,7 +139,7 @@ export default function TripLocationsPage() {
                         alt={location.locationName}
                         className="aspect-square rounded-md object-cover"
                         height="64"
-                        src={location.images[0]}
+                        src={location.images?.[0] || "https://picsum.photos/seed/placeholder/64/64"}
                         width="64"
                         />
                     </TableCell>
@@ -145,8 +185,10 @@ export default function TripLocationsPage() {
                             </AlertDialogDescription>
                             </AlertDialogHeader>
                             <AlertDialogFooter>
-                            <AlertDialogCancel>Cancel</AlertDialogCancel>
-                            <AlertDialogAction className="bg-destructive hover:bg-destructive/90">Delete</AlertDialogAction>
+                              <AlertDialogCancel>Cancel</AlertDialogCancel>
+                              <AlertDialogAction onClick={() => handleDelete(location.id, location.locationName)} className="bg-destructive hover:bg-destructive/90">
+                                {deletingId === location.id ? "Deleting..." : "Delete"}
+                              </AlertDialogAction>
                             </AlertDialogFooter>
                         </AlertDialogContent>
                         </AlertDialog>

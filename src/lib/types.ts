@@ -1,4 +1,5 @@
 
+
 import type { Timestamp } from 'firebase/firestore';
 
 export type TourPackage = {
@@ -66,8 +67,8 @@ export type TripDay = {
 export type TripLocation = {
   id: string;
   locationName: string;
-  latitude: number;
-  longitude: number;
+  latitude: number | null;
+  longitude: number | null;
   type: 'city' | 'landmark' | 'nature' | 'heritage' | 'beach' | 'mountain';
   country: string;
   state: string;
@@ -78,8 +79,8 @@ export type TripLocation = {
   address: string;
   images: string[];
   status: 'active' | 'inactive';
-  createdAt: Date;
-  updatedAt: Date;
+  created_at: string;
+  updated_at: string;
 };
 
 export type Booking = {

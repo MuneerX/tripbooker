@@ -6,7 +6,7 @@ import { createServerClient } from '@supabase/ssr'
 import { createClient as createBrowserClient } from './client'
 import { cookies } from 'next/headers'
 
-import type { TourPackage, TripDay, Activity } from '@/lib/types'
+import type { TourPackage, TripDay, Activity, TripLocation } from '@/lib/types'
 
 /**
  * Fetches all tour packages from Supabase.
@@ -396,10 +396,14 @@ export async function createTripDay(tripDayData: Partial<TripDay>) {
     }
 
     if (activities && activities.length > 0) {
-        const activitiesToInsert = activities.map(act => ({ 
-            ...act,
-            trip_day_id: newDay.id,
-        }));
+        const activitiesToInsert = activities.map(act => {
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
+            const { id, ...restOfAct } = act; // Exclude the temporary client-side ID
+            return {
+                ...restOfAct,
+                trip_day_id: newDay.id,
+            };
+        });
 
         const { error: activitiesError } = await supabase
             .from('trip_day_activities')
@@ -486,6 +490,117 @@ export async function deleteTripDay(id: string) {
     const { error } = await supabase.from('trip_days').delete().eq('id', id);
     if (error) {
         console.error('Error deleting trip day:', error);
+        throw new Error(error.message);
+    }
+    return { success: true };
+}
+
+
+// --- Trip Location Functions ---
+
+/**
+ * Fetches all trip locations from Supabase.
+ */
+export async function getTripLocations(): Promise<TripLocation[]> {
+  const supabase = createBrowserClient();
+  const { data, error } = await supabase.from('places').select('*').order('created_at', { ascending: false });
+
+  if (error) {
+    console.error('Error fetching trip locations:', error);
+    return [];
+  }
+  return data.map(item => ({
+    ...item,
+    locationName: item.location_name
+  })) as TripLocation[];
+}
+
+/**
+ * Fetches a single trip location by its ID from Supabase.
+ */
+export async function getTripLocationById(id: string): Promise<TripLocation | null> {
+  const supabase = createBrowserClient();
+  const { data, error } = await supabase.from('places').select('*').eq('id', id).single();
+
+  if (error) {
+    console.error(`Error fetching trip location ${id}:`, error);
+    return null;
+  }
+  if (!data) return null;
+
+  return { ...data, locationName: data.location_name } as TripLocation;
+}
+
+/**
+ * Creates a new trip location.
+ */
+export async function createTripLocation(locationData: Omit<TripLocation, 'id' | 'created_at' | 'updated_at'>) {
+    const supabase = createAdminClient();
+    const payload = {
+        location_name: locationData.locationName,
+        type: locationData.type,
+        city: locationData.city,
+        country: locationData.country,
+        latitude: locationData.latitude,
+        longitude: locationData.longitude,
+        state: locationData.state,
+        district: locationData.district,
+        code: locationData.code,
+        description: locationData.description,
+        address: locationData.address,
+        images: locationData.images || [],
+        status: locationData.status,
+    };
+    const { data, error } = await supabase.from('places').insert([payload]).select().single();
+
+    if (error) {
+        console.error('Error creating trip location:', error);
+        throw new Error(error.message);
+    }
+    return data;
+}
+
+/**
+ * Updates an existing trip location.
+ */
+export async function updateTripLocation(id: string, locationData: Partial<Omit<TripLocation, 'id' | 'created_at' | 'updated_at'>>) {
+    const supabase = createAdminClient();
+     const payload = {
+        location_name: locationData.locationName,
+        type: locationData.type,
+        city: locationData.city,
+        country: locationData.country,
+        latitude: locationData.latitude,
+        longitude: locationData.longitude,
+        state: locationData.state,
+        district: locationData.district,
+        code: locationData.code,
+        description: locationData.description,
+        address: locationData.address,
+        images: locationData.images,
+        status: locationData.status,
+        updated_at: new Date().toISOString(),
+    };
+
+    const { data, error } = await supabase.from('places').update(payload).eq('id', id).select().single();
+
+    if (error) {
+        console.error(`Error updating trip location ${id}:`, error);
+        throw new Error(error.message);
+    }
+    return data;
+}
+
+
+/**
+ * Deletes a trip location.
+ */
+export async function deleteTripLocation(id: string) {
+    const supabase = createAdminClient();
+    const { error } = await supabase.from('places').delete().eq('id', id);
+
+    if (error) {
+        console.error(`Error deleting trip location ${id}:`, error);
         throw new Error(error.message);
     }
     return { success: true };
