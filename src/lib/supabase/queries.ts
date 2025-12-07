@@ -60,7 +60,7 @@ export async function getTourPackages(): Promise<TourPackage[]> {
  * Fetches a single tour package by its ID from Supabase.
  */
 export async function getTourPackageById(id: string): Promise<TourPackage | null> {
-    const supabase = createBrowserClient();
+    const supabase = createAdminClient();
     const { data, error } = await supabase.from('tour_packages').select('*').eq('id', id).single()
 
     if (error) {
@@ -418,7 +418,7 @@ export async function getTripDays(): Promise<any[]> {
  * Fetches trip days for a specific tour package ID.
  */
 export async function getTripDaysForPackage(packageId: string): Promise<TripDay[]> {
-    const supabase = createBrowserClient();
+    const supabase = createAdminClient();
     const { data, error } = await supabase
         .from('trip_days')
         .select(`*, activities:trip_day_activities(*)`)
