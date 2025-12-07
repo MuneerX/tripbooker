@@ -98,7 +98,7 @@ export function ActivityFormModal({ children, activity, onSave }: ActivityFormMo
                                   </SelectContent></Select><FormMessage /></FormItem> )} />
                             </div>
                              <div className="grid md:grid-cols-2 gap-4">
-                                <FormField control={activityForm.control} name="activity_time" render={({ field }) => ( <FormItem><FormLabel>Time (24h)</FormLabel><FormControl><Input placeholder="e.g., 17:30:00" {...field} /></FormControl><FormMessage /></FormItem>)} />
+                                <FormField control={activityForm.control} name="activity_time" render={({ field }) => ( <FormItem><FormLabel>Time (HH:mm:ss)</FormLabel><FormControl><Input placeholder="e.g., 17:30:00" {...field} /></FormControl><FormMessage /></FormItem>)} />
                                 <FormField control={activityForm.control} name="duration_minutes" render={({ field }) => ( <FormItem><FormLabel>Duration (minutes)</FormLabel><FormControl><Input type="number" placeholder="e.g., 120" {...field} /></FormControl><FormMessage /></FormItem>)} />
                             </div>
                             <FormField control={activityForm.control} name="description" render={({ field }) => ( <FormItem><FormLabel>Description</FormLabel><FormControl><Textarea placeholder="Describe the activity" {...field} /></FormControl><FormMessage /></FormItem>)} />
