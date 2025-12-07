@@ -203,9 +203,11 @@ export async function updateTourPackage(id: string, formData: FormData) {
           const pathname = urlObject.pathname;
           const pathStartIndex = pathname.indexOf(pathSegment);
           if (pathStartIndex !== -1) {
-              // The actual path starts after the bucket name, which is part of the path segment.
               const bucketAndPath = pathname.substring(pathStartIndex + pathSegment.length);
-              return decodeURIComponent(bucketAndPath);
+              const pathParts = bucketAndPath.split('/');
+              // The first part is the bucket name, the rest is the path to the file.
+              const filePath = pathParts.slice(1).join('/');
+              return decodeURIComponent(filePath);
           }
           return null;
       } catch (e) {
@@ -221,7 +223,9 @@ export async function updateTourPackage(id: string, formData: FormData) {
   const originalFeaturedUrl = formData.get('original_featured_image_url') as string || null;
   
   const newGalleryFiles = formData.getAll('new_image_files').filter(f => f instanceof File && f.size > 0) as File[];
-  const newFeaturedFile = formData.get('new_featured_image_file') as File | null;
+  const newFeaturedFile = formData.get('new_featured_image_file') instanceof File && (formData.get('new_featured_image_file') as File).size > 0 
+    ? formData.get('new_featured_image_file') as File 
+    : null;
   
   // --- 2. HANDLE IMAGE DELETIONS ---
   const pathsToDelete: string[] = [];
@@ -236,10 +240,11 @@ export async function updateTourPackage(id: string, formData: FormData) {
 
   // Determine if the original featured image should be deleted.
   if (originalFeaturedUrl) {
-      const isReplaced = newFeaturedFile && newFeaturedFile.size > 0;
+      const isReplaced = !!newFeaturedFile;
       const isDeselected = !isFeatured;
-      const isRemovedManually = !isReplaced && !isDeselected && !formData.get('featured_image_url');
-      
+      // User manually removed it without replacing it, and isFeatured is still true
+      const isRemovedManually = !isReplaced && isFeatured && !formData.get('featured_image_url');
+
       if (isReplaced || isDeselected || isRemovedManually) {
           const path = getPathFromUrl(originalFeaturedUrl);
           if (path) pathsToDelete.push(path);
@@ -248,9 +253,11 @@ export async function updateTourPackage(id: string, formData: FormData) {
 
   // Execute deletion from storage
   if (pathsToDelete.length > 0) {
-      const { error: deleteError } = await supabase.storage.from('images').remove(pathsToDelete);
+      console.log('Attempting to delete paths:', pathsToDelete);
+      const { data: deleteData, error: deleteError } = await supabase.storage.from('images').remove(pathsToDelete);
       if (deleteError) {
           console.error("Failed to delete some images from storage:", deleteError.message);
+          // We don't throw here, just log, so the rest of the update can proceed
       }
   }
 
@@ -266,7 +273,7 @@ export async function updateTourPackage(id: string, formData: FormData) {
     uploadedImageUrls.push(publicUrl);
   }
 
-  if (newFeaturedFile && newFeaturedFile.size > 0) {
+  if (newFeaturedFile) {
     const filePath = `images/featured/${Date.now()}-${newFeaturedFile.name}`;
     const { error: uploadError } = await supabase.storage.from('images').upload(filePath, newFeaturedFile);
     if (uploadError) throw new Error(`Failed to upload featured image: ${uploadError.message}`);
@@ -318,3 +325,4 @@ export async function updateTourPackage(id: string, formData: FormData) {
 
   return data;
 }
+
