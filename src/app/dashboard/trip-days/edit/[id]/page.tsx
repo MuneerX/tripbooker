@@ -2,7 +2,7 @@
 "use client";
 
 import * as React from "react";
-import { useParams, useRouter, useSearchParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { useForm, useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -16,7 +16,7 @@ import { ArrowLeft, PlusCircle, Trash2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import type { TripDay } from "@/lib/types";
 import { getTripDayById, updateTripDay } from "@/lib/supabase/queries";
-import { ActivityFormModal, activitySchema, type ActivityFormValues } from "../create/_components/ActivityFormModal";
+import { ActivityFormModal, activitySchema } from "@/app/dashboard/trip-days/create/_components/ActivityFormModal";
 
 
 const tripDayEditSchema = z.object({
