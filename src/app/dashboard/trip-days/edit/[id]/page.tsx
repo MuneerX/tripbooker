@@ -40,7 +40,16 @@ export default function EditTripDayPage() {
 
   const form = useForm<TripDayEditFormValues>({
     resolver: zodResolver(tripDayEditSchema),
-    defaultValues: {},
+    defaultValues: {
+        day_name: "",
+        day_number: 1,
+        description: "",
+        title: "",
+        accommodation_type: "",
+        accommodation_name: "",
+        meals_included: [],
+        activities: [],
+    },
   });
 
   React.useEffect(() => {
@@ -57,15 +66,7 @@ export default function EditTripDayPage() {
             accommodation_type: day.accommodation_type || '',
             accommodation_name: day.accommodation_name || '',
             meals_included: day.meals_included || [],
-            activities: day.activities.map(a => ({
-                ...a,
-                title: a.title || a.name || '',
-                activity_time: a.activity_time || a.time || '',
-                duration_minutes: a.duration_minutes || (a.duration ? parseInt(a.duration) : 0),
-                activity_type: a.activity_type || a.type || 'sightseeing',
-                description: a.description ?? '',
-                special_instructions: a.special_instructions ?? '',
-            })) || []
+            activities: day.activities || []
           });
         } else {
           toast({ variant: "destructive", title: "Error", description: "Trip Day not found." });
@@ -158,7 +159,7 @@ export default function EditTripDayPage() {
           <CardContent className="space-y-4">
             {fields.length > 0 ? (
               fields.map((activity, index) => (
-                <Card key={activity.id} className="bg-muted/30 p-4">
+                <Card key={activity.id || `new-${index}`} className="bg-muted/30 p-4">
                     <div className="flex justify-between items-start">
                         <div className="grid gap-1">
                             <p className="font-semibold">{activity.title} <span className="text-xs font-normal text-muted-foreground capitalize">({activity.activity_type})</span></p>
