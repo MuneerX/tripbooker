@@ -152,10 +152,10 @@ export default function TripDayDetailPage() {
                           </div>
                         </div>
                         {activity.additional_cost && activity.additional_cost > 0 && (
-                          <div className="flex items-center text-sm gap-2 mt-2 text-amber-600">
-                            <DollarSign className="h-4 w-4" />
-                            <span>Additional Cost: {formatCurrency(activity.additional_cost)}</span>
-                          </div>
+                            <div className="flex items-center text-sm gap-2 mt-2 text-amber-600">
+                                <DollarSign className="h-4 w-4" />
+                                <span>Additional Cost: {formatCurrency(activity.additional_cost)}</span>
+                            </div>
                         )}
                         {activity.special_instructions && (
                           <div className="flex items-start text-sm gap-2 mt-2 text-sky-600">
