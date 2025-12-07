@@ -195,11 +195,19 @@ export async function updateTourPackage(id: string, formData: FormData) {
     if (!url) return '';
     try {
       const urlObject = new URL(url);
-      const bucketName = 'images'; // your bucket name
-      const pathPrefix = `/storage/v1/object/public/${bucketName}/`;
+      // Supabase public URL structure: https://<project-ref>.supabase.co/storage/v1/object/public/<bucket-name>/<file-path>
+      const pathSegment = '/storage/v1/object/public/';
+      const pathname = urlObject.pathname;
+      const pathStartIndex = pathname.indexOf(pathSegment);
 
-      if (urlObject.pathname.startsWith(pathPrefix)) {
-        return decodeURIComponent(urlObject.pathname.substring(pathPrefix.length));
+      if (pathStartIndex !== -1) {
+        // Find the start of the actual file path after the bucket name
+        const pathAfterPublic = pathname.substring(pathStartIndex + pathSegment.length);
+        const bucketAndPath = pathAfterPublic.split('/');
+        // bucketAndPath is like ['images', 'images', '1765087694994-IMG_8457.PNG']
+        // We need to remove the first element which is the bucket name
+        bucketAndPath.shift(); 
+        return decodeURIComponent(bucketAndPath.join('/'));
       }
       return '';
     } catch (e) {
@@ -216,9 +224,8 @@ export async function updateTourPackage(id: string, formData: FormData) {
 
   const galleryImagesToDelete = originalImageUrls.filter((url: string) => !existingImageUrls.includes(url));
   
-  // Determine if the featured image should be deleted
   const featuredImageWasRemoved = originalFeaturedUrl && !existingFeaturedUrl;
-  const featuredImageIsBeingReplaced = originalFeaturedUrl && formData.has('featured_image_file');
+  const featuredImageIsBeingReplaced = originalFeaturedUrl && formData.has('new_featured_image_file');
 
   const allImagesToDelete = [...galleryImagesToDelete];
   if ((featuredImageWasRemoved || featuredImageIsBeingReplaced) && originalFeaturedUrl) {
@@ -228,24 +235,22 @@ export async function updateTourPackage(id: string, formData: FormData) {
   if (allImagesToDelete.length > 0) {
     const pathsToDelete = allImagesToDelete.map(getPathFromUrl).filter(Boolean);
     if (pathsToDelete.length > 0) {
-        console.log('Deleting from storage:', pathsToDelete);
         const { error: deleteError } = await supabase.storage.from('images').remove(pathsToDelete);
         if (deleteError) {
             console.error("Failed to delete images from storage:", deleteError.message);
-            // Decide if you want to throw an error or just log it
         }
     }
   }
 
   // 2. Handle Image Uploads (if any new ones are provided)
-  const newImageFiles = formData.getAll('image_files') as File[];
-  const newFeaturedImageFile = formData.get('featured_image_file') as File | null;
+  const newImageFiles = formData.getAll('new_image_files') as File[];
+  const newFeaturedImageFile = formData.get('new_featured_image_file') as File | null;
   
   const newImageUrls: string[] = [];
   let newFeaturedImageUrl: string | undefined = undefined;
 
   // Upload new gallery images
-  if (newImageFiles.length > 0 && newImageFiles[0].size > 0) {
+  if (newImageFiles && newImageFiles.length > 0 && newImageFiles[0].size > 0) {
     for (const file of newImageFiles) {
       const filePath = `images/${Date.now()}-${file.name}`;
       const { error: uploadError } = await supabase.storage.from('images').upload(filePath, file);
@@ -311,3 +316,5 @@ export async function updateTourPackage(id: string, formData: FormData) {
 
   return data;
 }
+
+    
