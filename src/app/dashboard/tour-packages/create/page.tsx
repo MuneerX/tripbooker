@@ -79,6 +79,18 @@ export default function CreateTourPackagePage() {
   
   const imageFiles = form.watch("image_files");
 
+  const handleRemoveImage = (indexToRemove: number) => {
+    const currentFiles = form.getValues("image_files");
+    const newFiles = Array.from(currentFiles).filter((_, index) => index !== indexToRemove);
+    
+    // You might need a more sophisticated way to update the FileList
+    // For now, let's create a new DataTransfer object
+    const dataTransfer = new DataTransfer();
+    newFiles.forEach(file => dataTransfer.items.add(file as File));
+
+    form.setValue("image_files", dataTransfer.files, { shouldValidate: true });
+  };
+
   const onSubmit = async (data: TourPackageFormValues) => {
     const formData = new FormData();
     
@@ -174,6 +186,9 @@ export default function CreateTourPackagePage() {
                                                     <FileIcon className="h-4 w-4 text-muted-foreground" />
                                                     <span className="font-medium truncate max-w-xs">{file.name}</span>
                                                 </div>
+                                                <Button type="button" variant="ghost" size="icon" className="h-6 w-6 text-destructive" onClick={() => handleRemoveImage(index)}>
+                                                    <X className="h-4 w-4" />
+                                                </Button>
                                             </div>
                                         ))}
                                         </div>
@@ -237,3 +252,5 @@ export default function CreateTourPackagePage() {
     </div>
   )
 }
+
+    
