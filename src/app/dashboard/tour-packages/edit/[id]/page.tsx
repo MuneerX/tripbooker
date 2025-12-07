@@ -67,6 +67,8 @@ export default function EditTourPackagePage() {
     defaultValues: {},
   });
 
+  const isFeatured = form.watch("is_featured");
+
   React.useEffect(() => {
     if (id) {
       const fetchPackage = async () => {
@@ -88,6 +90,13 @@ export default function EditTourPackagePage() {
       fetchPackage();
     }
   }, [id, router, toast, form]);
+
+  React.useEffect(() => {
+    if (!isFeatured) {
+        form.setValue("featured_image_url", "");
+        form.setValue("new_featured_image_file", null);
+    }
+  }, [isFeatured, form]);
   
   const newImageFiles = form.watch("new_image_files");
   const newFeaturedImageFile = form.watch("new_featured_image_file");
@@ -120,7 +129,15 @@ export default function EditTourPackagePage() {
   const onSubmit = async (data: TourPackageFormValues) => {
     const formData = new FormData();
     
-    // Append all form data
+    // Pass original image urls to compare on server for deletion
+    if (tourPackage?.image_urls) {
+        formData.append('original_image_urls', JSON.stringify(tourPackage.image_urls));
+    }
+    if (tourPackage?.featured_image_url) {
+        formData.append('original_featured_image_url', tourPackage.featured_image_url);
+    }
+
+    // Append all other form data
     Object.entries(data).forEach(([key, value]) => {
       if (key === 'new_image_files' || key === 'new_featured_image_file' || key === 'image_urls' || key === 'featured_image_url') {
         // Handled separately
@@ -129,7 +146,7 @@ export default function EditTourPackagePage() {
       }
     });
 
-    // Append image files
+    // Append new image files
     if (data.new_image_files) {
         Array.from(data.new_image_files).forEach((file: any) => {
             formData.append('image_files', file);
@@ -139,7 +156,7 @@ export default function EditTourPackagePage() {
         formData.append('featured_image_file', data.new_featured_image_file[0]);
     }
 
-    // Append existing image urls
+    // Append remaining existing image urls
     formData.append('existing_image_urls', JSON.stringify(data.image_urls || []));
     formData.append('existing_featured_image_url', data.featured_image_url || '');
 
@@ -285,9 +302,9 @@ export default function EditTourPackagePage() {
                                     render={({ field }) => (
                                     <FormItem>
                                         <FormLabel>Featured Image</FormLabel>
-                                        {tourPackage.featured_image_url && !newFeaturedImageFile && (
+                                        {form.getValues("featured_image_url") && !newFeaturedImageFile && (
                                              <div className="relative group w-48">
-                                                <Image src={tourPackage.featured_image_url} alt="Featured image" width={192} height={108} className="rounded-md object-cover" />
+                                                <Image src={form.getValues("featured_image_url")!} alt="Featured image" width={192} height={108} className="rounded-md object-cover" />
                                                 <Button type="button" variant="destructive" size="icon" className="absolute top-1 right-1 h-6 w-6" onClick={() => form.setValue("featured_image_url", "", { shouldValidate: true })}>
                                                     <X className="h-4 w-4" />
                                                 </Button>

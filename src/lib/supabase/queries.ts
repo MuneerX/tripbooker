@@ -171,12 +171,54 @@ export async function uploadTourImages(formData: FormData) {
 }
 
 /**
- * Updates an existing tour package.
+ * Updates an existing tour package and handles image deletions.
  */
 export async function updateTourPackage(id: string, formData: FormData) {
   const supabase = createAdminClient();
 
-  // 1. Handle Image Uploads (if any new ones are provided)
+  // Helper to extract file path from URL
+  const getPathFromUrl = (url: string) => {
+    try {
+      const urlObject = new URL(url);
+      // Path is like /storage/v1/object/public/images/images/1765087694994-IMG_8457.PNG
+      // We need to remove the start of the path to get the bucket path
+      const bucketPath = 'images/';
+      const pathIndex = urlObject.pathname.indexOf(bucketPath);
+      return pathIndex > -1 ? urlObject.pathname.substring(pathIndex) : '';
+    } catch (e) {
+      console.error('Invalid URL for image deletion:', url);
+      return '';
+    }
+  };
+
+  // 1. Handle image deletions by comparing original and new lists
+  const originalImageUrls = JSON.parse(formData.get('original_image_urls') as string || '[]');
+  const existingImageUrls = JSON.parse(formData.get('existing_image_urls') as string || '[]');
+  const originalFeaturedUrl = formData.get('original_featured_image_url') as string || '';
+  const existingFeaturedUrl = formData.get('existing_featured_image_url') as string || '';
+
+  const galleryImagesToDelete = originalImageUrls.filter((url: string) => !existingImageUrls.includes(url));
+  const featuredImageToDelete = (originalFeaturedUrl && originalFeaturedUrl !== existingFeaturedUrl) ? originalFeaturedUrl : null;
+  
+  const allImagesToDelete = [...galleryImagesToDelete];
+  if (featuredImageToDelete) {
+    allImagesToDelete.push(featuredImageToDelete);
+  }
+
+  if (allImagesToDelete.length > 0) {
+    const pathsToDelete = allImagesToDelete.map(getPathFromUrl).filter(Boolean);
+    if (pathsToDelete.length > 0) {
+        console.log('Deleting from storage:', pathsToDelete);
+        const { error: deleteError } = await supabase.storage.from('images').remove(pathsToDelete);
+        if (deleteError) {
+            console.error("Failed to delete images from storage:", deleteError.message);
+            // Decide if you want to throw an error or just log it
+        }
+    }
+  }
+
+
+  // 2. Handle Image Uploads (if any new ones are provided)
   const newImageFiles = formData.getAll('image_files') as File[];
   const newFeaturedImageFile = formData.get('featured_image_file') as File | null;
   
@@ -203,11 +245,10 @@ export async function updateTourPackage(id: string, formData: FormData) {
     newFeaturedImageUrl = publicUrl;
   }
 
-  // 2. Construct the update object
-  const existingImageUrls = formData.get('existing_image_urls') as string | null;
-  const finalImageUrls = newImageUrls.concat(existingImageUrls ? JSON.parse(existingImageUrls) : []);
+  // 3. Construct the update object
+  const finalImageUrls = newImageUrls.concat(existingImageUrls);
   
-  const updateData: Partial<TourPackage> = {
+  const updateData: { [key: string]: any } = {
     name: formData.get('name') as string,
     package_type: formData.get('package_type') as TourPackage['package_type'],
     category: formData.get('category') as TourPackage['category'],
@@ -223,19 +264,19 @@ export async function updateTourPackage(id: string, formData: FormData) {
     terms_and_conditions: formData.get('terms_and_conditions') as string,
     is_featured: formData.get('is_featured') === 'true',
     is_active: formData.get('is_active') === 'true',
-    image_urls: finalImageUrls.length > 0 ? finalImageUrls : undefined,
-    featured_image_url: newFeaturedImageUrl ?? (formData.get('existing_featured_image_url') as string) || undefined,
+    image_urls: finalImageUrls,
+    featured_image_url: newFeaturedImageUrl ?? existingFeaturedUrl || null,
   };
   
    // Remove undefined keys so they don't overwrite existing values with null
    Object.keys(updateData).forEach(key => {
-     if ((updateData as any)[key] === undefined) {
-       delete (updateData as any)[key];
+     if (updateData[key] === undefined) {
+       delete updateData[key];
      }
    });
 
 
-  // 3. Update the database record
+  // 4. Update the database record
   const { data, error } = await supabase
     .from('tour_packages')
     .update(updateData)
