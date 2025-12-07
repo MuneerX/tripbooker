@@ -68,7 +68,6 @@ export function ActivityFormModal({ children, activity, onSave }: ActivityFormMo
     React.useEffect(() => {
         if (isOpen) {
             let valuesToSet = activity || defaultActivityValues;
-            // Trim seconds from time if they exist
             if (activity?.activity_time && activity.activity_time.length > 5) {
                 valuesToSet = {
                     ...activity,
@@ -80,6 +79,7 @@ export function ActivityFormModal({ children, activity, onSave }: ActivityFormMo
     }, [isOpen, activity, activityForm]);
 
     const handleSave = (data: ActivityFormValues) => {
+        console.log('Saving activity data:', data);
         onSave(data);
         setIsOpen(false);
     }
