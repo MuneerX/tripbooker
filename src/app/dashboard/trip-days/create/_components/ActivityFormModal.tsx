@@ -20,6 +20,8 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import type { Activity } from "@/lib/types";
+
 
 export const activitySchema = z.object({
     id: z.string().uuid().optional().or(z.literal('')),
@@ -42,7 +44,7 @@ export type ActivityFormValues = z.infer<typeof activitySchema>;
 
 type ActivityFormModalProps = {
     children: React.ReactNode;
-    activity?: ActivityFormValues;
+    activity?: Partial<Activity>;
     onSave: (data: ActivityFormValues) => void;
 }
 
@@ -88,9 +90,9 @@ export function ActivityFormModal({ children, activity, onSave }: ActivityFormMo
             <DialogTrigger asChild>{children}</DialogTrigger>
             <DialogContent className="sm:max-w-[600px]">
                  <Form {...activityForm}>
-                    <form onSubmit={activityForm.handleSubmit(handleSave)} className="space-y-6">
+                    <form onSubmit={(e) => e.preventDefault()} className="space-y-6">
                         <DialogHeader>
-                            <DialogTitle>{activity ? 'Edit' : 'Add'} Activity</DialogTitle>
+                            <DialogTitle>{activity?.id ? 'Edit' : 'Add'} Activity</DialogTitle>
                             <DialogDescription>Fill in the details for the activity.</DialogDescription>
                         </DialogHeader>
 
@@ -131,7 +133,7 @@ export function ActivityFormModal({ children, activity, onSave }: ActivityFormMo
 
                         <DialogFooter>
                             <Button type="button" variant="outline" onClick={() => setIsOpen(false)}>Cancel</Button>
-                            <Button type="submit">Save Activity</Button>
+                            <Button type="button" onClick={activityForm.handleSubmit(handleSave)}>Save Activity</Button>
                         </DialogFooter>
                     </form>
                 </Form>
