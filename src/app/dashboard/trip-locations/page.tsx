@@ -116,12 +116,12 @@ export default function TripLocationsPage() {
                     <span className="sr-only">Image</span>
                 </TableHead>
                 <TableHead>Location Name</TableHead>
-                <TableHead>Type</TableHead>
-                <TableHead className="hidden md:table-cell">City</TableHead>
-                <TableHead className="hidden md:table-cell">State</TableHead>
-                <TableHead className="hidden md:table-cell">District</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>
+                <TableHead className="w-[120px]">Type</TableHead>
+                <TableHead className="hidden md:table-cell w-[150px]">City</TableHead>
+                <TableHead className="hidden md:table-cell w-[150px]">State</TableHead>
+                <TableHead className="hidden md:table-cell w-[150px]">District</TableHead>
+                <TableHead className="w-[100px]">Status</TableHead>
+                <TableHead className="w-[80px]">
                     <span className="sr-only">Actions</span>
                 </TableHead>
                 </TableRow>
