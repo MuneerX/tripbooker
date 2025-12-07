@@ -398,7 +398,8 @@ export async function createTripDay(tripDayData: Partial<TripDay>) {
     if (activities && activities.length > 0) {
         const activitiesToInsert = activities.map(act => ({ 
             ...act,
-            activity_type: act.activity_type as any,
+            activity_type: act.activity_type ? act.activity_type.toLowerCase() : null,
+            id: undefined, // Ensure id is not passed on insert
             trip_day_id: newDay.id,
         }));
 
@@ -452,7 +453,6 @@ export async function updateTripDay(id: string, tripDayData: Partial<TripDay>) {
 
     if (deleteError) {
         console.error('Error deleting old activities:', deleteError);
-        // In a real production scenario, you might want to handle this with a transaction.
         throw new Error(`Failed to delete old activities: ${deleteError.message}`);
     }
 
@@ -462,8 +462,8 @@ export async function updateTripDay(id: string, tripDayData: Partial<TripDay>) {
             const { id: activityId, ...restOfAct } = act; // Exclude the old client-side ID
             return {
                 ...restOfAct,
-                activity_type: restOfAct.activity_type as any,
-                trip_day_id: id, // Ensure it's linked to the correct day
+                activity_type: restOfAct.activity_type ? restOfAct.activity_type.toLowerCase() : null,
+                trip_day_id: id,
             };
         });
 
