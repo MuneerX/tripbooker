@@ -195,19 +195,11 @@ export async function updateTourPackage(id: string, formData: FormData) {
     if (!url) return '';
     try {
       const urlObject = new URL(url);
-      // Supabase public URL structure: https://<project-ref>.supabase.co/storage/v1/object/public/<bucket-name>/<file-path>
-      const pathSegment = '/storage/v1/object/public/';
+      const pathSegment = '/storage/v1/object/public/images/';
       const pathname = urlObject.pathname;
       const pathStartIndex = pathname.indexOf(pathSegment);
-
       if (pathStartIndex !== -1) {
-        // Find the start of the actual file path after the bucket name
-        const pathAfterPublic = pathname.substring(pathStartIndex + pathSegment.length);
-        const bucketAndPath = pathAfterPublic.split('/');
-        // bucketAndPath is like ['images', 'images', '1765087694994-IMG_8457.PNG']
-        // We need to remove the first element which is the bucket name
-        bucketAndPath.shift(); 
-        return decodeURIComponent(bucketAndPath.join('/'));
+        return decodeURIComponent(pathname.substring(pathStartIndex + pathSegment.length));
       }
       return '';
     } catch (e) {
@@ -224,8 +216,9 @@ export async function updateTourPackage(id: string, formData: FormData) {
 
   const galleryImagesToDelete = originalImageUrls.filter((url: string) => !existingImageUrls.includes(url));
   
+  const newFeaturedImageFile = formData.get('featured_image_file') as File | null;
   const featuredImageWasRemoved = originalFeaturedUrl && !existingFeaturedUrl;
-  const featuredImageIsBeingReplaced = originalFeaturedUrl && formData.has('new_featured_image_file');
+  const featuredImageIsBeingReplaced = originalFeaturedUrl && newFeaturedImageFile && newFeaturedImageFile.size > 0;
 
   const allImagesToDelete = [...galleryImagesToDelete];
   if ((featuredImageWasRemoved || featuredImageIsBeingReplaced) && originalFeaturedUrl) {
@@ -242,33 +235,35 @@ export async function updateTourPackage(id: string, formData: FormData) {
     }
   }
 
-  // 2. Handle Image Uploads (if any new ones are provided)
-  const newImageFiles = formData.getAll('new_image_files') as File[];
-  const newFeaturedImageFile = formData.get('new_featured_image_file') as File | null;
-  
+  // 2. Handle Image Uploads
+  const newGalleryFiles = formData.getAll('image_files') as File[];
+  const newFeaturedFile = formData.get('featured_image_file') as File | null;
+
   const newImageUrls: string[] = [];
   let newFeaturedImageUrl: string | undefined = undefined;
 
   // Upload new gallery images
-  if (newImageFiles && newImageFiles.length > 0 && newImageFiles[0].size > 0) {
-    for (const file of newImageFiles) {
-      const filePath = `images/${Date.now()}-${file.name}`;
-      const { error: uploadError } = await supabase.storage.from('images').upload(filePath, file);
-      if (uploadError) throw new Error(`Failed to upload ${file.name}: ${uploadError.message}`);
-      const { data: { publicUrl } } = supabase.storage.from('images').getPublicUrl(filePath);
-      newImageUrls.push(publicUrl);
+  if (newGalleryFiles.length > 0) {
+    for (const file of newGalleryFiles) {
+      if (file && file.size > 0) {
+        const filePath = `images/${Date.now()}-${file.name}`;
+        const { error: uploadError } = await supabase.storage.from('images').upload(filePath, file);
+        if (uploadError) throw new Error(`Failed to upload ${file.name}: ${uploadError.message}`);
+        const { data: { publicUrl } } = supabase.storage.from('images').getPublicUrl(filePath);
+        newImageUrls.push(publicUrl);
+      }
     }
   }
-  
+
   // Upload new featured image
-  if (newFeaturedImageFile) {
-    const filePath = `images/featured/${Date.now()}-${newFeaturedImageFile.name}`;
-    const { error: uploadError } = await supabase.storage.from('images').upload(filePath, newFeaturedImageFile);
+  if (newFeaturedFile && newFeaturedFile.size > 0) {
+    const filePath = `images/featured/${Date.now()}-${newFeaturedFile.name}`;
+    const { error: uploadError } = await supabase.storage.from('images').upload(filePath, newFeaturedFile);
     if (uploadError) throw new Error(`Failed to upload featured image: ${uploadError.message}`);
     const { data: { publicUrl } } = supabase.storage.from('images').getPublicUrl(filePath);
     newFeaturedImageUrl = publicUrl;
   }
-
+  
   // 3. Construct the update object
   const finalImageUrls = [...existingImageUrls, ...newImageUrls];
   const finalFeaturedImageUrl = newFeaturedImageUrl ?? existingFeaturedUrl;
@@ -316,5 +311,3 @@ export async function updateTourPackage(id: string, formData: FormData) {
 
   return data;
 }
-
-    
