@@ -319,7 +319,7 @@ export async function getTripDays(): Promise<any[]> {
     const supabase = createBrowserClient();
     const { data, error } = await supabase
         .from('trip_days')
-        .select(`*`);
+        .select(`*, tour_package:package_id(name), trip_day_activities(count)`);
 
     if (error) {
         console.error('Error fetching trip days:', error);
@@ -336,7 +336,7 @@ export async function getTripDayById(id: string): Promise<TripDay | null> {
     const supabase = createBrowserClient();
     const { data, error } = await supabase
         .from('trip_days')
-        .select(`*`)
+        .select(`*, tour_package:package_id(name)`)
         .eq('id', id)
         .single();
     
@@ -377,7 +377,7 @@ export async function createTripDay(tripDayData: Partial<TripDay>) {
     }
 
     if (activities && activities.length > 0) {
-        const activitiesToInsert = activities.map(act => ({ ...act, trip_day_id: newDay.id, name: act.title }));
+        const activitiesToInsert = activities.map(act => ({ ...act, trip_day_id: newDay.id }));
         const { error: activitiesError } = await supabase
             .from('trip_day_activities')
             .insert(activitiesToInsert);
@@ -440,7 +440,7 @@ export async function updateTripDay(id: string, tripDayData: Partial<TripDay>) {
     }
 
     if (newActivities.length > 0) {
-        const activitiesToInsert = newActivities.map(act => ({ ...act, trip_day_id: id, name: act.title }));
+        const activitiesToInsert = newActivities.map(act => ({ ...act, trip_day_id: id }));
         const { error } = await supabase.from('trip_day_activities').insert(activitiesToInsert);
         if (error) console.error('Error inserting new activities:', error.message);
     }
