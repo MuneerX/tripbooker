@@ -8,40 +8,6 @@ import { cookies } from 'next/headers'
 
 import type { TourPackage, TripDay, Activity, TripLocation } from '@/lib/types'
 
-/**
- * Fetches all tour packages from Supabase.
- */
-export async function getTourPackages(): Promise<TourPackage[]> {
-  const supabase = createBrowserClient();
-  const { data, error } = await supabase.from('tour_packages').select('*').order('created_at', { ascending: false });
-  
-  if (error) {
-    console.error('Error fetching tour packages:', error)
-    return []
-  }
-  
-  return (data || []).map(pkg => ({
-    ...pkg,
-  })) as TourPackage[];
-}
-
-/**
- * Fetches a single tour package by its ID from Supabase.
- */
-export async function getTourPackageById(id: string): Promise<TourPackage | null> {
-    const supabase = createBrowserClient();
-    const { data, error } = await supabase.from('tour_packages').select('*').eq('id', id).single()
-
-    if (error) {
-      console.error(`Error fetching tour package ${id}:`, error)
-      return null
-    }
-
-    if (!data) return null;
-
-    return { ...data } as TourPackage;
-}
-
 // Function to create a Supabase client with admin privileges (service_role)
 function createAdminClient() {
   const cookieStore = cookies();
@@ -70,6 +36,41 @@ function createAdminClient() {
       },
     }
   );
+}
+
+
+/**
+ * Fetches all tour packages from Supabase using admin client to bypass RLS.
+ */
+export async function getTourPackages(): Promise<TourPackage[]> {
+  const supabase = createAdminClient();
+  const { data, error } = await supabase.from('tour_packages').select('*').order('created_at', { ascending: false });
+  
+  if (error) {
+    console.error('Error fetching tour packages:', error)
+    return []
+  }
+  
+  return (data || []).map(pkg => ({
+    ...pkg,
+  })) as TourPackage[];
+}
+
+/**
+ * Fetches a single tour package by its ID from Supabase.
+ */
+export async function getTourPackageById(id: string): Promise<TourPackage | null> {
+    const supabase = createBrowserClient();
+    const { data, error } = await supabase.from('tour_packages').select('*').eq('id', id).single()
+
+    if (error) {
+      console.error(`Error fetching tour package ${id}:`, error)
+      return null
+    }
+
+    if (!data) return null;
+
+    return { ...data } as TourPackage;
 }
 
 /**
@@ -779,6 +780,8 @@ export async function deleteTripLocation(id: string) {
     return { success: true };
 }
 
+
+    
 
     
 
