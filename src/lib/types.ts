@@ -120,5 +120,3 @@ export type NavItem = {
   icon: React.ComponentType<{ className?: string }>;
   subItems?: NavItem[];
 };
-
-    

@@ -187,17 +187,25 @@ export async function updateTourPackage(id: string, formData: FormData) {
     if (!url) return null;
     try {
         const urlObject = new URL(url);
-        const pathSegment = '/storage/v1/object/public/';
+        // Correctly find the start of the path after the bucket name
+        const pathSegment = '/storage/v1/object/public/images/';
         const pathname = urlObject.pathname;
         const pathStartIndex = pathname.indexOf(pathSegment);
-        if (pathStartIndex === -1) return null;
-
-        const bucketAndPath = pathname.substring(pathStartIndex + pathSegment.length);
-        const [bucketName, ...pathParts] = bucketAndPath.split('/');
-        if (!bucketName) return null;
         
-        const filePath = pathParts.join('/');
-        return decodeURIComponent(filePath);
+        if (pathStartIndex === -1) {
+            // Fallback for potentially different structures like featured images
+            const alternativeSegment = '/images/featured/';
+            const altIndex = pathname.indexOf(alternativeSegment);
+            if (altIndex !== -1) {
+                 return decodeURIComponent(pathname.substring(altIndex + 1));
+            }
+            console.warn('Could not determine storage path from URL:', url);
+            return null;
+        };
+
+        const filePath = pathname.substring(pathStartIndex + pathSegment.length);
+        return `images/${decodeURIComponent(filePath)}`;
+
     } catch (e) {
         console.error('Invalid URL for image deletion:', url, e);
         return null;
@@ -241,7 +249,7 @@ export async function updateTourPackage(id: string, formData: FormData) {
 
 
   if (pathsToDelete.length > 0) {
-      console.log('Deleting paths:', pathsToDelete);
+      console.log('Deleting paths from storage:', pathsToDelete);
       const { error: deleteError } = await supabase.storage.from('images').remove(pathsToDelete);
       if (deleteError) {
           console.error("Failed to delete some images from storage:", deleteError.message);
@@ -335,7 +343,7 @@ export async function getTripDays(): Promise<any[]> {
             day_number,
             status,
             activities ( count ),
-            tour_package:tour_packages ( name )
+            tour_package:tour_packages!inner( name )
         `)
         .order('tour_package_id')
         .order('day_number');
@@ -498,5 +506,3 @@ export async function deleteTripDay(id: string) {
     }
     return { success: true };
 }
-
-    
