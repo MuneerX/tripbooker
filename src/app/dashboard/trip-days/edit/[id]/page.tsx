@@ -70,6 +70,8 @@ export default function EditTripDayPage() {
             activities: (day.activities || []).map(act => ({
               ...act,
               activity_time: act.activity_time ? act.activity_time : "00:00:00",
+              description: act.description ?? '',
+              special_instructions: act.special_instructions ?? '',
             }))
           });
         } else {
@@ -199,7 +201,7 @@ export default function EditTripDayPage() {
 
                         <div className="flex items-center gap-2 pl-4">
                              <ActivityFormModal 
-                                activity={activity} 
+                                activity={fields[index]}
                                 onSave={(editedActivity) => update(index, editedActivity)}
                              >
                                 <Button type="button" variant="outline" size="sm">Edit</Button>

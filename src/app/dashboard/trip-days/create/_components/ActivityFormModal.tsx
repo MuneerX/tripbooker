@@ -19,16 +19,16 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-  DialogClose
 } from "@/components/ui/dialog";
 
 export const activitySchema = z.object({
     id: z.string().optional(),
+    trip_day_id: z.string().optional(),
     title: z.string().min(1, "Activity title is required"),
-    activity_type: z.enum(["food", "explore", "stay"]),
+    activity_type: z.enum(["trekking", "sightseeing", "meal", "transport", "accommodation", "adventure", "shopping", "leisure", "food", "explore", "stay"]),
     activity_time: z.string().regex(/^(0[0-9]|1[0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]$/, "Invalid time format (HH:mm:ss)"),
     duration_minutes: z.coerce.number().int().min(0, "Duration must be a positive number"),
-    description: z.string().min(1, "Description is required"),
+    description: z.string().optional(),
     additional_cost: z.coerce.number().min(0).default(0),
     cost_included: z.boolean().default(true),
     booking_required: z.boolean().default(false),
@@ -41,11 +41,11 @@ export type ActivityFormValues = z.infer<typeof activitySchema>;
 
 type ActivityFormModalProps = {
     children: React.ReactNode;
-    activity?: ActivityFormValues & {id?: string};
+    activity?: ActivityFormValues;
     onSave: (data: ActivityFormValues) => void;
 }
 
-const defaultActivityValues: ActivityFormValues = {
+const defaultActivityValues: Partial<ActivityFormValues> = {
   title: "",
   activity_type: "explore",
   activity_time: "00:00:00",
@@ -62,7 +62,7 @@ export function ActivityFormModal({ children, activity, onSave }: ActivityFormMo
     
     const activityForm = useForm<ActivityFormValues>({
         resolver: zodResolver(activitySchema),
-        defaultValues: activity || defaultActivityValues
+        defaultValues: activity || defaultActivityValues,
     });
 
     React.useEffect(() => {
@@ -95,6 +95,14 @@ export function ActivityFormModal({ children, activity, onSave }: ActivityFormMo
                                   <SelectItem value="food">Food</SelectItem>
                                   <SelectItem value="explore">Explore</SelectItem>
                                   <SelectItem value="stay">Stay</SelectItem>
+                                  <SelectItem value="trekking">Trekking</SelectItem>
+                                  <SelectItem value="sightseeing">Sightseeing</SelectItem>
+                                  <SelectItem value="meal">Meal</SelectItem>
+                                  <SelectItem value="transport">Transport</SelectItem>
+                                  <SelectItem value="accommodation">Accommodation</SelectItem>
+                                  <SelectItem value="adventure">Adventure</SelectItem>
+                                  <SelectItem value="shopping">Shopping</SelectItem>
+                                  <SelectItem value="leisure">Leisure</SelectItem>
                                   </SelectContent></Select><FormMessage /></FormItem> )} />
                             </div>
                              <div className="grid md:grid-cols-2 gap-4">
@@ -112,7 +120,7 @@ export function ActivityFormModal({ children, activity, onSave }: ActivityFormMo
                         </div>
 
                         <DialogFooter>
-                            <DialogClose asChild><Button type="button" variant="outline">Cancel</Button></DialogClose>
+                            <Button type="button" variant="outline" onClick={() => setIsOpen(false)}>Cancel</Button>
                             <Button type="submit">Save Activity</Button>
                         </DialogFooter>
                     </form>
