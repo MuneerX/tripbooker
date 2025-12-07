@@ -416,11 +416,11 @@ export async function createTripDay(tripDayData: Partial<TripDay>) {
 }
 
 /**
- * Updates a trip day and its activities.
+ * Updates a trip day and its activities using a "delete and replace" strategy.
  */
 export async function updateTripDay(id: string, tripDayData: Partial<TripDay>) {
     const supabase = createAdminClient();
-    const { activities: incomingActivities = [], ...dayData } = tripDayData;
+    const { activities, ...dayData } = tripDayData;
 
     // 1. Update the trip_day details
     const dayPayload = {
@@ -440,49 +440,36 @@ export async function updateTripDay(id: string, tripDayData: Partial<TripDay>) {
         console.error('Error updating trip day:', dayError);
         throw new Error(dayError.message);
     }
-
-    // 2. Fetch existing activities from the database for this trip day
-    const { data: existingActivities, error: fetchError } = await supabase
+    
+    // 2. Delete all existing activities for this trip day
+    const { error: deleteError } = await supabase
         .from('trip_day_activities')
-        .select('id')
+        .delete()
         .eq('trip_day_id', id);
 
-    if (fetchError) {
-        console.error('Error fetching existing activities:', fetchError);
-        throw new Error(fetchError.message);
+    if (deleteError) {
+        console.error('Error deleting old activities:', deleteError);
+        // We'll still try to insert the new ones, but this is a potential issue.
+        // In a real production scenario, you might want to handle this with a transaction.
     }
 
-    const existingIds = existingActivities.map(a => a.id);
-    const incomingIds = incomingActivities.map(a => a.id).filter(Boolean);
-    
-    // 3. Determine which activities to delete, update, and create
-    const idsToDelete = existingIds.filter(existingId => !incomingIds.includes(existingId));
-    const activitiesToUpdate = incomingActivities.filter(a => a.id);
-    const activitiesToInsert = incomingActivities.filter(a => !a.id);
+    // 3. Insert the new list of activities
+    if (activities && activities.length > 0) {
+        const activitiesToInsert = activities.map(act => {
+            const { id: activityId, ...restOfAct } = act; // Exclude the old client-side ID
+            return {
+                ...restOfAct,
+                trip_day_id: id, // Ensure it's linked to the correct day
+            };
+        });
 
-    // 4. Perform the database operations
-    if (idsToDelete.length > 0) {
-        const { error } = await supabase.from('trip_day_activities').delete().in('id', idsToDelete);
-        if (error) {
-            console.error('Error deleting activities:', error.message);
-            // Not throwing here to allow other operations to proceed, but logging it.
-        }
-    }
+        const { error: insertError } = await supabase
+            .from('trip_day_activities')
+            .insert(activitiesToInsert);
 
-    if (activitiesToUpdate.length > 0) {
-        const { error } = await supabase.from('trip_day_activities').upsert(activitiesToUpdate);
-        if (error) {
-            console.error('Error updating activities:', error.message);
-            // Not throwing here to allow other operations to proceed
-        }
-    }
-
-    if (activitiesToInsert.length > 0) {
-        const insertPayload = activitiesToInsert.map(act => ({ ...act, trip_day_id: id, id: undefined })); 
-        const { error } = await supabase.from('trip_day_activities').insert(insertPayload);
-        if (error) {
-            console.error('Error inserting new activities:', error.message);
-            // Not throwing here to allow other operations to proceed
+        if (insertError) {
+            console.error('Error inserting new activities:', insertError);
+            throw new Error(`Failed to save new activities: ${insertError.message}`);
         }
     }
 
