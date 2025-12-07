@@ -188,7 +188,7 @@ export default function EditTripDayPage() {
                                     {activity.booking_required ? <CheckCircle className="h-4 w-4 text-green-500" /> : <XCircle className="h-4 w-4 text-red-500" />}
                                     <span className="text-muted-foreground">Booking Required</span>
                                 </div>
-                                {activity.additional_cost && Number(activity.additional_cost) > 0 && (
+                                {Number(activity.additional_cost) > 0 && (
                                     <div className="flex items-center gap-1.5 text-amber-600">
                                         <DollarSign className="h-4 w-4" />
                                         <span className="text-muted-foreground">Extra: {formatCurrency(Number(activity.additional_cost))}</span>
