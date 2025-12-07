@@ -41,6 +41,7 @@ export default function TripDaysPage() {
     const fetchTripDays = async () => {
       setLoading(true);
       const days = await getTripDays();
+      console.log('Fetched Trip Days:', days);
       setAllTripDays(days as TripDayWithPackage[]);
       setLoading(false);
     };
@@ -66,7 +67,7 @@ export default function TripDaysPage() {
 
   const filteredTripDays = allTripDays.filter((day) =>
     day.day_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    day.tour_package?.name.toLowerCase().includes(searchTerm.toLowerCase())
+    (day.tour_package?.name && day.tour_package.name.toLowerCase().includes(searchTerm.toLowerCase()))
   );
   
   const totalDays = allTripDays.length;
@@ -191,5 +192,3 @@ export default function TripDaysPage() {
     </div>
   );
 }
-
-    
