@@ -57,6 +57,10 @@ export default function CreateTripDayPage() {
       special_instructions: "",
       package_id: "",
       activities: [],
+      title: "",
+      accommodation_type: "",
+      accommodation_name: "",
+      meals_included: [],
     },
   });
 

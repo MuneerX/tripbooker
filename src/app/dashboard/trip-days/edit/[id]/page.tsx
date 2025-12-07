@@ -51,20 +51,22 @@ export default function EditTripDayPage() {
         const day = await getTripDayById(id);
         if (day) {
           form.reset({
-            day_name: day.day_name,
+            day_name: day.day_name || '',
             day_number: day.day_number,
-            description: day.description,
-            title: day.title,
-            accommodation_type: day.accommodation_type,
-            accommodation_name: day.accommodation_name,
-            meals_included: day.meals_included,
-            special_instructions: day.special_instructions,
+            description: day.description || '',
+            title: day.title || '',
+            accommodation_type: day.accommodation_type || '',
+            accommodation_name: day.accommodation_name || '',
+            meals_included: day.meals_included || [],
+            special_instructions: day.special_instructions || '',
             activities: day.activities.map(a => ({
                 ...a,
                 title: a.title || a.name || '',
                 activity_time: a.activity_time || a.time || '',
                 duration_minutes: a.duration_minutes || (a.duration ? parseInt(a.duration) : 0),
-                activity_type: a.activity_type || a.type || 'sightseeing'
+                activity_type: a.activity_type || a.type || 'sightseeing',
+                description: a.description ?? '',
+                special_instructions: a.special_instructions ?? '',
             })) || []
           });
         } else {
