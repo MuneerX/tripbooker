@@ -1,15 +1,13 @@
 
-
 "use client";
 
 import * as React from "react";
 import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { PlusCircle, MoreHorizontal, FilePenLine, Trash2, View, CalendarDays } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import type { TripDay } from "@/lib/types";
@@ -34,18 +32,18 @@ type TripDayWithPackageAndCount = TripDay & {
 
 export default function TripDaysPage() {
   const router = useRouter();
-  const searchParams = useSearchParams();
   const { toast } = useToast();
   
   const [allTripDays, setAllTripDays] = React.useState<TripDayWithPackageAndCount[]>([]);
   const [loading, setLoading] = React.useState(true);
-  const [searchTerm, setSearchTerm] = React.useState(searchParams.get('search') || "");
+  const [searchTerm, setSearchTerm] = React.useState("");
   const [deletingId, setDeletingId] = React.useState<string | null>(null);
 
   React.useEffect(() => {
     async function fetchTripDays() {
       setLoading(true);
       const days = await getTripDays();
+      console.log('Fetched Trip Days:', days);
       setAllTripDays(days as TripDayWithPackageAndCount[]);
       setLoading(false);
     }
@@ -173,7 +171,7 @@ export default function TripDaysPage() {
                                 </AlertDialogHeader>
                                 <AlertDialogFooter>
                                 <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                <AlertDialogAction onClick={() => handleDelete(day.id, day.day_name)} className="bg-destructive hover:bg-destructive/90">
+                                <AlertDialogAction onClick={() => handleDelete(day.id, day.day_name || '')} className="bg-destructive hover:bg-destructive/90">
                                   {deletingId === day.id ? "Deleting..." : "Delete"}
                                 </AlertDialogAction>
                                 </AlertDialogFooter>
