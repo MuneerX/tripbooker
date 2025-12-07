@@ -26,7 +26,7 @@ export default function TourPackageDetailPage() {
   const { id } = params as { id: string };
 
   const [tourPackage, setTourPackage] = React.useState<TourPackage | null>(null);
-  const [status, setStatus] = React.useState(tourPackage?.status);
+  const [status, setStatus] = React.useState<boolean | undefined>();
   
   // NOTE: Related data is still coming from mock data.
   // This would need to be fetched from Supabase as well in a real application.
@@ -40,7 +40,7 @@ export default function TourPackageDetailPage() {
         const pkg = await getTourPackageById(id);
         setTourPackage(pkg);
         if (pkg) {
-          setStatus(pkg.status);
+          setStatus(pkg.is_active);
           // Filter related mock data
           setBookingsForPackage(mockData.bookings.filter(b => b.tourPackageId === pkg.id));
           setTripDaysForPackage(mockData.tripDays.filter(d => d.tourPackageId === pkg.id));
@@ -60,7 +60,7 @@ export default function TourPackageDetailPage() {
     );
   }
 
-  const handleStatusChange = (newStatus: "active" | "inactive") => {
+  const handleStatusChange = (newStatus: boolean) => {
     // In a real app, you would call a function to update this in Supabase
     setStatus(newStatus);
     console.log(`TODO: Update package ${tourPackage.id} status to ${newStatus}`);
@@ -68,10 +68,10 @@ export default function TourPackageDetailPage() {
 
   const detailItems = [
     { icon: <Clock />, label: "Duration", value: `${tourPackage.days} Days / ${tourPackage.nights} Nights` },
-    { icon: <Users />, label: "Maximum Permitted Booking", value: tourPackage.maxPermittedBooking },
-    { icon: <Calendar />, label: "Introduced", value: format(new Date(tourPackage.introductionDate), "PPP") },
-    { icon: <Calendar />, label: "Starts On", value: tourPackage.withdrawalDate ? format(new Date(tourPackage.withdrawalDate), "PPP") : 'N/A' },
-    { icon: <Check className="text-green-500" />, label: "Featured", value: tourPackage.isFeatured ? 'Yes' : 'No' },
+    { icon: <Users />, label: "Maximum Permitted Booking", value: tourPackage.max_guests },
+    { icon: <Calendar />, label: "Introduced", value: format(new Date(tourPackage.created_at), "PPP") },
+    { icon: <Calendar />, label: "Withdrawal Date", value: tourPackage.withdrawalDate ? format(new Date(tourPackage.withdrawalDate), "PPP") : 'N/A' },
+    { icon: <Check className="text-green-500" />, label: "Featured", value: tourPackage.is_featured ? 'Yes' : 'No' },
   ];
 
   return (
@@ -82,7 +82,7 @@ export default function TourPackageDetailPage() {
                 <span className="sr-only">Back</span>
             </Button>
             <h1 className="flex-1 shrink-0 whitespace-nowrap text-xl font-semibold tracking-tight sm:grow-0">
-                {tourPackage.tourName}
+                {tourPackage.name}
             </h1>
             <div className="inline-flex items-center rounded-md bg-muted p-1 text-muted-foreground">
                 <Button 
@@ -90,9 +90,9 @@ export default function TourPackageDetailPage() {
                     size="sm" 
                     className={cn(
                         "px-3 py-1 h-auto text-xs",
-                        status === 'active' ? "bg-green-500/10 text-green-700 shadow-sm hover:bg-green-500/20 hover:text-green-700" : "hover:bg-muted"
+                        status === true ? "bg-green-500/10 text-green-700 shadow-sm hover:bg-green-500/20 hover:text-green-700" : "hover:bg-muted"
                     )} 
-                    onClick={() => handleStatusChange('active')}>
+                    onClick={() => handleStatusChange(true)}>
                     Active
                 </Button>
                 <Button 
@@ -100,9 +100,9 @@ export default function TourPackageDetailPage() {
                     size="sm" 
                     className={cn(
                         "px-3 py-1 h-auto text-xs",
-                        status === 'inactive' ? "bg-red-500/10 text-red-700 shadow-sm hover:bg-red-500/20 hover:text-red-700" : "hover:bg-muted"
+                        status === false ? "bg-red-500/10 text-red-700 shadow-sm hover:bg-red-500/20 hover:text-red-700" : "hover:bg-muted"
                     )} 
-                    onClick={() => handleStatusChange('inactive')}>
+                    onClick={() => handleStatusChange(false)}>
                     Inactive
                 </Button>
             </div>
@@ -136,10 +136,10 @@ export default function TourPackageDetailPage() {
                                 <div className="space-y-6">
                                     <Carousel className="w-full">
                                         <CarouselContent>
-                                            {[tourPackage.imageUrl, tourPackage.featuredImageUrl, ...[...Array(2)].map((_, i) => `https://picsum.photos/seed/${tourPackage.id}-${i}/800/600`)].filter(Boolean).map((img, index) => (
+                                            {(tourPackage.image_urls || []).concat(tourPackage.featured_image_url ? [tourPackage.featured_image_url] : []).filter(Boolean).map((img, index) => (
                                                 <CarouselItem key={index}>
                                                     <Image
-                                                        alt={`${tourPackage.tourName} image ${index + 1}`}
+                                                        alt={`${tourPackage.name} image ${index + 1}`}
                                                         className="aspect-video w-full rounded-md object-cover"
                                                         height={450}
                                                         src={img}
@@ -153,11 +153,11 @@ export default function TourPackageDetailPage() {
                                     </Carousel>
                                     
                                     <div className="space-y-2">
-                                        <h2 className="text-2xl font-bold">{tourPackage.tourName}</h2>
+                                        <h2 className="text-2xl font-bold">{tourPackage.name}</h2>
                                         <p className="text-muted-foreground">{tourPackage.description}</p>
                                     </div>
                                     <div className="flex items-center gap-4">
-                                        <Badge variant="secondary" className="capitalize">{tourPackage.tourType}</Badge>
+                                        <Badge variant="secondary" className="capitalize">{tourPackage.package_type}</Badge>
                                         <Badge variant="outline" className="capitalize">{tourPackage.category}</Badge>
                                     </div>
 
@@ -167,7 +167,7 @@ export default function TourPackageDetailPage() {
                                     <div className="rounded-lg border bg-card text-card-foreground p-6 space-y-4">
                                         <div className="flex justify-between items-baseline">
                                             <span className="text-muted-foreground">Base Price</span>
-                                            <span className="text-3xl font-bold text-primary">{formatCurrency(tourPackage.basePrice)}</span>
+                                            <span className="text-3xl font-bold text-primary">{formatCurrency(tourPackage.base_price)}</span>
                                         </div>
                                         <div className="grid grid-cols-2 gap-4 text-sm">
                                             {detailItems.map(item => (
@@ -213,29 +213,27 @@ export default function TourPackageDetailPage() {
                                 </div>
                                 <div className="space-y-4">
                                     <h3 className="text-lg font-semibold flex items-center gap-2"><Check className="text-green-500"/> Inclusions</h3>
-                                    <ul className="space-y-2 text-muted-foreground">
-                                        {tourPackage.inclusions.map((item, i) => <li key={i} className="flex items-start gap-2"><span className="mt-1.5 h-1.5 w-1.5 rounded-full bg-green-500" /><span>{item}</span></li>)}
-                                    </ul>
+                                     <p className="text-sm text-muted-foreground leading-relaxed">{tourPackage.inclusion}</p>
                                 </div>
                                 <div className="space-y-4">
                                     <h3 className="text-lg font-semibold flex items-center gap-2"><X className="text-red-500"/> Exclusions</h3>
-                                    <ul className="space-y-2 text-muted-foreground">
-                                        {tourPackage.exclusions.map((item, i) => <li key={i} className="flex items-start gap-2"><span className="mt-1.5 h-1.5 w-1.5 rounded-full bg-destructive" /><span>{item}</span></li>)}
-                                    </ul>
+                                     <p className="text-sm text-muted-foreground leading-relaxed">{tourPackage.exclusion}</p>
                                 </div>
                             </div>
                             
                             <Separator className="my-8" />
 
                             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                                {(['booking', 'cancellation', 'termsAndConditions'] as const).map(policyType => {
-                                    const titleMap = { booking: 'Booking Policies', cancellation: 'Cancellation Policies', termsAndConditions: 'Terms & Conditions' };
-                                    const content = policyType === 'termsAndConditions' ? tourPackage.termsAndConditions : tourPackage[`${policyType}Policies`];
-                                    if (!content) return null;
+                                {([
+                                    { title: 'Booking Policies', content: tourPackage.booking_policy },
+                                    { title: 'Cancellation Policies', content: tourPackage.cancellation_policy },
+                                    { title: 'Terms & Conditions', content: tourPackage.terms_and_conditions },
+                                ]).map(policy => {
+                                    if (!policy.content) return null;
                                     return (
-                                        <div key={policyType} className="space-y-3">
-                                            <h3 className="text-lg font-semibold flex items-center gap-2"><Info /> {titleMap[policyType]}</h3>
-                                            <p className="text-sm text-muted-foreground leading-relaxed">{content}</p>
+                                        <div key={policy.title} className="space-y-3">
+                                            <h3 className="text-lg font-semibold flex items-center gap-2"><Info /> {policy.title}</h3>
+                                            <p className="text-sm text-muted-foreground leading-relaxed">{policy.content}</p>
                                         </div>
                                     )
                                 })}
@@ -387,3 +385,5 @@ export default function TourPackageDetailPage() {
     </div>
   );
 }
+
+    
