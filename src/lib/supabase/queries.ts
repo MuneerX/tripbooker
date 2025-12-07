@@ -325,16 +325,22 @@ export async function deleteTourPackage(pkg: TourPackage) {
     urlsToDelete.push(pkg.featured_image_url);
   }
 
-  const pathsToDelete: string[] = urlsToDelete.map(url => {
+  const pathsToDelete: string[] = [];
+  for (const url of urlsToDelete) {
+    if (!url) continue;
     try {
-      const urlObject = new URL(url);
-      const path = urlObject.pathname.split('/images/').pop();
-      return `images/${path}`;
+        const urlObject = new URL(url);
+        // Assuming the path is like /storage/v1/object/public/images/images/1720...
+        const pathSegments = urlObject.pathname.split('/');
+        const imagesIndex = pathSegments.indexOf('images');
+        if (imagesIndex !== -1 && imagesIndex < pathSegments.length - 1) {
+            const storagePath = pathSegments.slice(imagesIndex + 1).join('/');
+            pathsToDelete.push(storagePath);
+        }
     } catch (e) {
-      console.warn(`Invalid URL found, skipping deletion: ${url}`);
-      return null;
+        console.warn(`Invalid URL found, skipping deletion: ${url}`);
     }
-  }).filter((path): path is string => path !== null);
+  }
 
   // 2. Delete images from storage if any paths were found
   if (pathsToDelete.length > 0) {

@@ -26,14 +26,17 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { getTourPackages } from "@/lib/supabase/queries";
+import { getTourPackages, deleteTourPackage } from "@/lib/supabase/queries";
+import { useToast } from "@/hooks/use-toast";
 
 export default function TourPackagesPage() {
   const router = useRouter();
+  const { toast } = useToast();
   const [searchTerm, setSearchTerm] = React.useState("");
   const [currentPage, setCurrentPage] = React.useState(1);
   const [allPackages, setAllPackages] = React.useState<TourPackage[]>([]);
   const [loading, setLoading] = React.useState(true);
+  const [deletingId, setDeletingId] = React.useState<string | null>(null);
   const rowsPerPage = 10;
 
   React.useEffect(() => {
@@ -46,6 +49,27 @@ export default function TourPackagesPage() {
     };
     fetchPackages();
   }, []);
+
+  const handleDelete = async (pkg: TourPackage) => {
+    setDeletingId(pkg.id);
+    try {
+      await deleteTourPackage(pkg);
+      toast({
+        title: "Success",
+        description: `Tour package "${pkg.name}" has been deleted.`,
+      });
+      setAllPackages(prev => prev.filter(p => p.id !== pkg.id));
+    } catch (error: any) {
+      toast({
+        variant: "destructive",
+        title: "Error deleting package",
+        description: error.message,
+      });
+    } finally {
+      setDeletingId(null);
+    }
+  };
+
 
   const filteredPackages = allPackages.filter((pkg) =>
     pkg.name?.toLowerCase().includes(searchTerm.toLowerCase())
@@ -168,7 +192,9 @@ export default function TourPackagesPage() {
                             </AlertDialogHeader>
                             <AlertDialogFooter>
                               <AlertDialogCancel>Cancel</AlertDialogCancel>
-                              <AlertDialogAction className="bg-destructive hover:bg-destructive/90">Delete</AlertDialogAction>
+                              <AlertDialogAction onClick={() => handleDelete(pkg)} className="bg-destructive hover:bg-destructive/90">
+                                {deletingId === pkg.id ? 'Deleting...' : 'Delete'}
+                              </AlertDialogAction>
                             </AlertDialogFooter>
                           </AlertDialogContent>
                         </AlertDialog>
