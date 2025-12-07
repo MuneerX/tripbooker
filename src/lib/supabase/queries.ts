@@ -1,4 +1,5 @@
 
+
 "use server"
 
 import { createServerClient } from '@supabase/ssr'
@@ -320,7 +321,10 @@ export async function getTripDays(): Promise<any[]> {
     const { data, error } = await supabase
         .from('trip_days')
         .select(`
-            *, 
+            id,
+            day_number,
+            day_name,
+            title,
             tour_package:package_id(name), 
             trip_day_activities(count)
         `)
@@ -361,6 +365,7 @@ export async function getTripDayById(id: string): Promise<TripDay | null> {
         console.error(`Error fetching activities for trip day ${id}:`, activitiesError);
     }
 
+    console.log('Fetched Trip Day:', { ...data, activities: activities || [] });
     return { ...data, activities: activities || [] } as TripDay;
 }
 
@@ -394,7 +399,6 @@ export async function createTripDay(tripDayData: Partial<TripDay>) {
         const activitiesToInsert = activities.map(act => ({ 
             ...act, 
             trip_day_id: newDay.id,
-            id: undefined // Ensure ID is not set for insert
         }));
         const { error: activitiesError } = await supabase
             .from('trip_day_activities')
@@ -472,7 +476,7 @@ export async function updateTripDay(id: string, tripDayData: Partial<TripDay>) {
     }
 
     if (activitiesToInsert.length > 0) {
-        const insertPayload = activitiesToInsert.map(act => ({ ...act, trip_day_id: id, id: undefined })); 
+        const insertPayload = activitiesToInsert.map(act => ({ ...act, trip_day_id: id })); 
         const { error } = await supabase.from('trip_day_activities').insert(insertPayload);
         if (error) {
             console.error('Error inserting new activities:', error.message);
