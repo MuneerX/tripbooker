@@ -365,7 +365,7 @@ export async function getTripDayById(id: string): Promise<TripDay | null> {
         console.error(`Error fetching activities for trip day ${id}:`, activitiesError);
     }
 
-    console.log('Fetched Trip Day:', { ...data, activities: activities || [] });
+    console.log('Fetched Trip Day with Activities:', { ...data, activities: activities || [] });
     return { ...data, activities: activities || [] } as TripDay;
 }
 
@@ -376,7 +376,6 @@ export async function createTripDay(tripDayData: Partial<TripDay>) {
     const supabase = createAdminClient();
     const { activities, ...dayData } = tripDayData;
 
-    // Make sure optional fields that are empty strings are set to null for the DB
     const dayPayload = {
       ...dayData,
       title: dayData.title || null,
@@ -397,16 +396,17 @@ export async function createTripDay(tripDayData: Partial<TripDay>) {
 
     if (activities && activities.length > 0) {
         const activitiesToInsert = activities.map(act => ({ 
-            ...act, 
+            ...act,
             trip_day_id: newDay.id,
         }));
+
         const { error: activitiesError } = await supabase
             .from('trip_day_activities')
             .insert(activitiesToInsert);
 
         if (activitiesError) {
             console.error('Error creating activities:', activitiesError);
-            // Rollback the trip day creation if activities fail
+            // Attempt to rollback the trip day creation if activities fail
             await supabase.from('trip_days').delete().eq('id', newDay.id);
             throw new Error(`Failed to create activities: ${activitiesError.message}`);
         }
@@ -420,7 +420,7 @@ export async function createTripDay(tripDayData: Partial<TripDay>) {
  */
 export async function updateTripDay(id: string, tripDayData: Partial<TripDay>) {
     const supabase = createAdminClient();
-    const { activities, ...dayData } = tripDayData;
+    const { activities: incomingActivities = [], ...dayData } = tripDayData;
 
     // 1. Update the trip_day details
     const dayPayload = {
@@ -441,7 +441,7 @@ export async function updateTripDay(id: string, tripDayData: Partial<TripDay>) {
         throw new Error(dayError.message);
     }
 
-    // 2. Get the current activities from the database for this trip day
+    // 2. Fetch existing activities from the database for this trip day
     const { data: existingActivities, error: fetchError } = await supabase
         .from('trip_day_activities')
         .select('id')
@@ -453,18 +453,19 @@ export async function updateTripDay(id: string, tripDayData: Partial<TripDay>) {
     }
 
     const existingIds = existingActivities.map(a => a.id);
-    const incomingIds = (activities || []).map(a => a.id).filter(Boolean); // IDs from the form
+    const incomingIds = incomingActivities.map(a => a.id).filter(Boolean);
     
     // 3. Determine which activities to delete, update, and create
     const idsToDelete = existingIds.filter(existingId => !incomingIds.includes(existingId));
-    const activitiesToUpdate = (activities || []).filter(a => a.id);
-    const activitiesToInsert = (activities || []).filter(a => !a.id);
+    const activitiesToUpdate = incomingActivities.filter(a => a.id);
+    const activitiesToInsert = incomingActivities.filter(a => !a.id);
 
     // 4. Perform the database operations
     if (idsToDelete.length > 0) {
         const { error } = await supabase.from('trip_day_activities').delete().in('id', idsToDelete);
         if (error) {
             console.error('Error deleting activities:', error.message);
+            // Not throwing here to allow other operations to proceed, but logging it.
         }
     }
 
@@ -472,14 +473,16 @@ export async function updateTripDay(id: string, tripDayData: Partial<TripDay>) {
         const { error } = await supabase.from('trip_day_activities').upsert(activitiesToUpdate);
         if (error) {
             console.error('Error updating activities:', error.message);
+            // Not throwing here to allow other operations to proceed
         }
     }
 
     if (activitiesToInsert.length > 0) {
-        const insertPayload = activitiesToInsert.map(act => ({ ...act, trip_day_id: id })); 
+        const insertPayload = activitiesToInsert.map(act => ({ ...act, trip_day_id: id, id: undefined })); 
         const { error } = await supabase.from('trip_day_activities').insert(insertPayload);
         if (error) {
             console.error('Error inserting new activities:', error.message);
+            // Not throwing here to allow other operations to proceed
         }
     }
 
