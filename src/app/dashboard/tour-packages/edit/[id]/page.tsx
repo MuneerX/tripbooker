@@ -67,8 +67,6 @@ export default function EditTourPackagePage() {
     defaultValues: {},
   });
 
-  const isFeatured = form.watch("is_featured");
-
   React.useEffect(() => {
     if (id) {
       const fetchPackage = async () => {
@@ -90,13 +88,6 @@ export default function EditTourPackagePage() {
       fetchPackage();
     }
   }, [id, router, toast, form]);
-
-  React.useEffect(() => {
-    if (!isFeatured) {
-        form.setValue("featured_image_url", "");
-        form.setValue("new_featured_image_file", null);
-    }
-  }, [isFeatured, form]);
   
   const newImageFiles = form.watch("new_image_files");
   const newFeaturedImageFile = form.watch("new_featured_image_file");
@@ -149,11 +140,11 @@ export default function EditTourPackagePage() {
     // Append new image files
     if (data.new_image_files) {
         Array.from(data.new_image_files).forEach((file: any) => {
-            formData.append('image_files', file);
+            formData.append('new_image_files', file);
         });
     }
     if (data.new_featured_image_file && data.new_featured_image_file.length > 0) {
-        formData.append('featured_image_file', data.new_featured_image_file[0]);
+        formData.append('new_featured_image_file', data.new_featured_image_file[0]);
     }
 
     // Append remaining existing image urls
