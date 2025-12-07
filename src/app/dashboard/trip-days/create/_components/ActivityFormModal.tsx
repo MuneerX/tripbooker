@@ -82,7 +82,7 @@ export function ActivityFormModal({ children, activity, onSave }: ActivityFormMo
             <DialogTrigger asChild>{children}</DialogTrigger>
             <DialogContent className="sm:max-w-[600px]">
                  <Form {...activityForm}>
-                    <form onSubmit={activityForm.handleSubmit(handleSave)}>
+                    <form onSubmit={(e) => { e.preventDefault(); e.stopPropagation(); activityForm.handleSubmit(handleSave)(); }}>
                         <DialogHeader>
                             <DialogTitle>{activity ? 'Edit' : 'Add'} Activity</DialogTitle>
                             <DialogDescription>Fill in the details for the activity.</DialogDescription>
@@ -113,7 +113,7 @@ export function ActivityFormModal({ children, activity, onSave }: ActivityFormMo
 
                         <DialogFooter>
                             <DialogClose asChild><Button type="button" variant="outline">Cancel</Button></DialogClose>
-                            <Button type="submit">Save Activity</Button>
+                            <Button type="button" onClick={activityForm.handleSubmit(handleSave)}>Save Activity</Button>
                         </DialogFooter>
                     </form>
                 </Form>
