@@ -13,10 +13,10 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { ArrowLeft, PlusCircle, Trash2, DollarSign, CheckCircle, XCircle, AlertTriangle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { getTripDayById, updateTripDay } from "@/lib/supabase/queries";
+import { getTripDayById, updateTripDay, getTripDaysForPackage } from "@/lib/supabase/queries";
 import { ActivityFormModal, activitySchema } from "@/app/dashboard/trip-days/create/_components/ActivityFormModal";
 import { formatCurrency } from "@/lib/utils";
-
+import type { TripDay } from "@/lib/types";
 
 const tripDayEditSchema = z.object({
   day_name: z.string().min(1, "Day name is required"),
@@ -25,6 +25,7 @@ const tripDayEditSchema = z.object({
   activities: z.array(activitySchema).optional(),
   title: z.string().optional(),
   meals_included: z.array(z.string()).optional(),
+  package_id: z.string(), // Keep this for fetching related data
 });
 
 type TripDayEditFormValues = z.infer<typeof tripDayEditSchema>;
@@ -36,9 +37,21 @@ export default function EditTripDayPage() {
   const { toast } = useToast();
   const [loading, setLoading] = React.useState(true);
   const [isSubmitting, setIsSubmitting] = React.useState(false);
+  const [existingDayNumbers, setExistingDayNumbers] = React.useState<number[]>([]);
+  const [originalDayNumber, setOriginalDayNumber] = React.useState<number | null>(null);
 
+  const formSchema = tripDayEditSchema.superRefine(({ day_number }, ctx) => {
+    if (day_number !== originalDayNumber && existingDayNumbers.includes(day_number)) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "This day number already exists for this package.",
+        path: ["day_number"],
+      });
+    }
+  });
+  
   const form = useForm<TripDayEditFormValues>({
-    resolver: zodResolver(tripDayEditSchema),
+    resolver: zodResolver(formSchema),
     defaultValues: {
         day_name: "",
         day_number: 1,
@@ -46,6 +59,7 @@ export default function EditTripDayPage() {
         title: "",
         meals_included: [],
         activities: [],
+        package_id: "",
     },
   });
 
@@ -54,13 +68,18 @@ export default function EditTripDayPage() {
       const fetchDay = async () => {
         setLoading(true);
         const day = await getTripDayById(id);
-        if (day) {
+        if (day && day.package_id) {
+          const existingDays = await getTripDaysForPackage(day.package_id);
+          setExistingDayNumbers(existingDays.map(d => d.day_number));
+          setOriginalDayNumber(day.day_number);
+
           form.reset({
             day_name: day.day_name || '',
             day_number: day.day_number,
             description: day.description || '',
             title: day.title || '',
             meals_included: day.meals_included || [],
+            package_id: day.package_id,
             activities: (day.activities || []).map(act => ({
               ...act,
               activity_time: act.activity_time ? act.activity_time : "00:00:00",
@@ -69,7 +88,7 @@ export default function EditTripDayPage() {
             }))
           });
         } else {
-          toast({ variant: "destructive", title: "Error", description: "Trip Day not found." });
+          toast({ variant: "destructive", title: "Error", description: "Trip Day not found or is not associated with a package." });
           router.push('/dashboard/trip-days');
         }
         setLoading(false);
@@ -85,8 +104,10 @@ export default function EditTripDayPage() {
 
   const onSubmit = async (data: TripDayEditFormValues) => {
     setIsSubmitting(true);
+    // Exclude package_id from the final submission data
+    const { package_id, ...submissionData } = data;
     try {
-      await updateTripDay(id, data);
+      await updateTripDay(id, submissionData);
        toast({
         title: "Success!",
         description: `Day ${data.day_number}: ${data.day_name} has been updated.`,

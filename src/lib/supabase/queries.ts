@@ -510,7 +510,7 @@ export async function getTripDayById(id: string): Promise<TripDay | null> {
 /**
  * Creates a new trip day and its activities.
  */
-export async function createTripDay(tripDayData: Partial<Omit<TripDay, 'accommodation_name' | 'accommodation_type'>>) {
+export async function createTripDay(tripDayData: Partial<Omit<TripDay, 'id'>>) {
     const supabase = createAdminClient();
     const { activities, ...dayData } = tripDayData;
 
@@ -558,7 +558,7 @@ export async function createTripDay(tripDayData: Partial<Omit<TripDay, 'accommod
 /**
  * Updates a trip day and its activities using a "delete and replace" strategy.
  */
-export async function updateTripDay(id: string, tripDayData: Partial<Omit<TripDay, 'accommodation_name' | 'accommodation_type'>>) {
+export async function updateTripDay(id: string, tripDayData: Partial<Omit<TripDay, 'id'>>) {
     const supabase = createAdminClient();
     const { activities, ...dayData } = tripDayData;
 
