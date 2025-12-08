@@ -9,6 +9,14 @@ import * as z from 'zod';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import { Eye, EyeOff } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import Image from 'next/image';
@@ -105,15 +113,7 @@ export default function LoginPage() {
                 name="password"
                 render={({ field }) => (
                   <FormItem>
-                    <div className="flex items-center">
-                      <FormLabel>Password</FormLabel>
-                      <Link
-                        href="#"
-                        className="ml-auto inline-block text-sm underline"
-                      >
-                        Forgot your password?
-                      </Link>
-                    </div>
+                    <FormLabel>Password</FormLabel>
                     <FormControl>
                       <div className="relative">
                         <Input type={showPassword ? 'text' : 'password'} {...field} />
@@ -138,13 +138,39 @@ export default function LoginPage() {
           </Form>
            <div className="mt-4 text-center text-sm">
             By continuing, you agree to our{" "}
-            <Link href="#" className="underline">
-              Terms of Service
-            </Link>{" "}
-            and{" "}
-            <Link href="#" className="underline">
-              Privacy Policy
-            </Link>
+            <Dialog>
+              <DialogTrigger asChild>
+                <button className="underline">Terms of Service</button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Terms of Service</DialogTitle>
+                  <DialogDescription>
+                    This is the placeholder for your Terms of Service.
+                  </DialogDescription>
+                </DialogHeader>
+                <p>
+                  Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+                </p>
+              </DialogContent>
+            </Dialog>
+            {" "}and{" "}
+            <Dialog>
+              <DialogTrigger asChild>
+                <button className="underline">Privacy Policy</button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Privacy Policy</DialogTitle>
+                  <DialogDescription>
+                    This is the placeholder for your Privacy Policy.
+                  </DialogDescription>
+                </DialogHeader>
+                 <p>
+                  Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+                </p>
+              </DialogContent>
+            </Dialog>
             .
           </div>
         </div>
