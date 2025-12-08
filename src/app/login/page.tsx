@@ -144,14 +144,21 @@ export default function LoginPage() {
               </DialogTrigger>
               <DialogContent>
                 <DialogHeader>
-                  <DialogTitle>Terms of Service</DialogTitle>
+                  <DialogTitle>Yes To Go Terms of Service</DialogTitle>
                   <DialogDescription>
-                    This is the placeholder for your Terms of Service.
+                    These terms and conditions outline the rules and regulations for the use of Yes To Go's Admin Dashboard.
                   </DialogDescription>
                 </DialogHeader>
-                <p>
-                  Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
-                </p>
+                <div className="space-y-4 text-sm text-muted-foreground max-h-[60vh] overflow-y-auto pr-4">
+                    <p>Welcome to Yes To Go! By accessing this dashboard, we assume you accept these terms and conditions. Do not continue to use Yes To Go if you do not agree to all of the terms and conditions stated on this page.</p>
+                    <h3 className="font-semibold text-foreground">1. License to Use Dashboard</h3>
+                    <p>Unless otherwise stated, Yes To Go and/or its licensors own the intellectual property rights for all material on Yes To Go. You may access this from Yes To Go for your own personal and business use subjected to restrictions set in these terms and conditions.</p>
+                    <p>You must not: Republish material from Yes To Go, sell, rent or sub-license material from Yes To Go, or reproduce, duplicate or copy material from Yes To Go.</p>
+                    <h3 className="font-semibold text-foreground">2. User Accounts</h3>
+                    <p>You are responsible for maintaining the security of your account, and you are fully responsible for all activities that occur under the account and any other actions taken in connection with it. You must immediately notify us of any unauthorized uses of your account or any other breaches of security.</p>
+                    <h3 className="font-semibold text-foreground">3. Disclaimer</h3>
+                    <p>The materials on Yes To Go's dashboard are provided on an 'as is' basis. Yes To Go makes no warranties, expressed or implied, and hereby disclaims and negates all other warranties including, without limitation, implied warranties or conditions of merchantability, fitness for a particular purpose, or non-infringement of intellectual property or other violation of rights.</p>
+                </div>
               </DialogContent>
             </Dialog>
             {" "}and{" "}
@@ -161,14 +168,23 @@ export default function LoginPage() {
               </DialogTrigger>
               <DialogContent>
                 <DialogHeader>
-                  <DialogTitle>Privacy Policy</DialogTitle>
+                  <DialogTitle>Yes To Go Privacy Policy</DialogTitle>
                   <DialogDescription>
-                    This is the placeholder for your Privacy Policy.
+                    This Privacy Policy describes how your personal information is collected, used, and shared when you use the Yes To Go Admin Dashboard.
                   </DialogDescription>
                 </DialogHeader>
-                 <p>
-                  Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
-                </p>
+                <div className="space-y-4 text-sm text-muted-foreground max-h-[60vh] overflow-y-auto pr-4">
+                    <h3 className="font-semibold text-foreground">1. Personal Information We Collect</h3>
+                    <p>When you register for an account, we collect certain information from you, including your name, email address, and password. We refer to this information as “Account Information”.</p>
+                    <h3 className="font-semibold text-foreground">2. How Do We Use Your Personal Information?</h3>
+                    <p>We use the Account Information that we collect generally to fulfill our services to you. Additionally, we use this Account Information to: communicate with you, screen for potential risk or fraud, and when in line with the preferences you have shared with us, provide you with information or advertising relating to our products or services.</p>
+                    <h3 className="font-semibold text-foreground">3. Sharing Your Personal Information</h3>
+                    <p>We do not sell, trade, or otherwise transfer to outside parties your personally identifiable information. This does not include trusted third parties who assist us in operating our website, conducting our business, or servicing you, so long as those parties agree to keep this information confidential.</p>
+                    <h3 className="font-semibold text-foreground">4. Data Retention</h3>
+                    <p>When you create an account through the Site, we will maintain your Account Information for our records unless and until you ask us to delete this information.</p>
+                     <h3 className="font-semibold text-foreground">5. Changes</h3>
+                    <p>We may update this privacy policy from time to time in order to reflect, for example, changes to our practices or for other operational, legal or regulatory reasons.</p>
+                </div>
               </DialogContent>
             </Dialog>
             .
