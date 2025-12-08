@@ -74,8 +74,7 @@ export default function LoginPage() {
         title: "Login Successful",
         description: "Redirecting to your dashboard...",
       });
-      router.push('/dashboard');
-      router.refresh(); // This is important to re-fetch server components with new auth state
+      window.location.href = '/dashboard';
     }
   };
 
