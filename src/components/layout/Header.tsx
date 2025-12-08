@@ -52,8 +52,8 @@ export function AppHeader() {
       
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-           <Button variant="outline" size="icon" className="overflow-hidden rounded-full h-9 w-9">
-            <Avatar className="h-9 w-9">
+           <Button variant="outline" size="icon" className="h-9 w-9">
+            <Avatar className="h-8 w-8">
               <AvatarImage src="https://i.pravatar.cc/150?u=a042581f4e29026704d" alt="Admin" />
               <AvatarFallback>AD</AvatarFallback>
             </Avatar>
