@@ -17,7 +17,7 @@ import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import Link from "next/link";
-import { getTourPackageById, deleteTourPackage, updateTourPackageStatus } from "@/lib/supabase/queries";
+import { getTourPackageById, deleteTourPackage, updateTourPackageStatus, getTripDaysForPackage } from "@/lib/supabase/queries";
 import type { TourPackage, Booking, TripDay, Review, Activity } from "@/lib/types";
 import mockData from "@/lib/data"; // Still needed for bookings, reviews
 import {
@@ -444,3 +444,5 @@ export default function TourPackageDetailPage() {
     </div>
   );
 }
+
+    
