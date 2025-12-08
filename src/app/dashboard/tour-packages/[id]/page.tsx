@@ -119,6 +119,18 @@ export default function TourPackageDetailPage() {
     { icon: <Calendar />, label: "Withdrawal Date", value: tourPackage.withdrawalDate ? format(new Date(tourPackage.withdrawalDate), "PPP") : 'N/A' },
     { icon: <Check className="text-green-500" />, label: "Featured", value: tourPackage.is_featured ? 'Yes' : 'No' },
   ];
+  
+  const renderPointList = (text: string | null | undefined) => {
+    if (!text) return <p className="text-sm text-muted-foreground leading-relaxed">N/A</p>;
+    const points = text.split(/[,-\n]/).map(p => p.trim()).filter(p => p);
+    return (
+      <ul className="list-disc list-inside space-y-1 text-sm text-muted-foreground leading-relaxed">
+        {points.map((point, index) => (
+          <li key={index}>{point}</li>
+        ))}
+      </ul>
+    );
+  };
 
   return (
     <div className="space-y-6">
@@ -260,15 +272,15 @@ export default function TourPackageDetailPage() {
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                                 <div className="space-y-4">
                                     <h3 className="text-lg font-semibold flex items-center gap-2"><Plus className="text-blue-500"/> Highlights</h3>
-                                    <p className="text-sm text-muted-foreground leading-relaxed">{tourPackage.highlights}</p>
+                                    {renderPointList(tourPackage.highlights)}
                                 </div>
                                 <div className="space-y-4">
                                     <h3 className="text-lg font-semibold flex items-center gap-2"><Check className="text-green-500"/> Inclusions</h3>
-                                     <p className="text-sm text-muted-foreground leading-relaxed">{tourPackage.inclusion}</p>
+                                    {renderPointList(tourPackage.inclusion)}
                                 </div>
                                 <div className="space-y-4">
                                     <h3 className="text-lg font-semibold flex items-center gap-2"><X className="text-red-500"/> Exclusions</h3>
-                                     <p className="text-sm text-muted-foreground leading-relaxed">{tourPackage.exclusion}</p>
+                                    {renderPointList(tourPackage.exclusion)}
                                 </div>
                             </div>
                             
