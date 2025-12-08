@@ -461,11 +461,11 @@ export async function getTripDays(): Promise<any[]> {
 /**
  * Fetches trip days for a specific tour package ID.
  */
-export async function getTripDaysForPackage(packageId: string): Promise<TripDay[]> {
+export async function getTripDaysForPackage(packageId: string): Promise<{ day_number: number }[]> {
     const supabase = createAdminClient();
     const { data, error } = await supabase
         .from('trip_days')
-        .select(`*, activities:trip_day_activities(*)`)
+        .select(`day_number`)
         .eq('package_id', packageId)
         .order('day_number', { ascending: true });
 
@@ -474,7 +474,7 @@ export async function getTripDaysForPackage(packageId: string): Promise<TripDay[
         return [];
     }
 
-    return (data || []) as TripDay[];
+    return (data || []) as { day_number: number }[];
 }
 
 
@@ -510,7 +510,7 @@ export async function getTripDayById(id: string): Promise<TripDay | null> {
 /**
  * Creates a new trip day and its activities.
  */
-export async function createTripDay(tripDayData: Partial<TripDay>) {
+export async function createTripDay(tripDayData: Partial<Omit<TripDay, 'accommodation_name' | 'accommodation_type'>>) {
     const supabase = createAdminClient();
     const { activities, ...dayData } = tripDayData;
 
@@ -558,7 +558,7 @@ export async function createTripDay(tripDayData: Partial<TripDay>) {
 /**
  * Updates a trip day and its activities using a "delete and replace" strategy.
  */
-export async function updateTripDay(id: string, tripDayData: Partial<TripDay>) {
+export async function updateTripDay(id: string, tripDayData: Partial<Omit<TripDay, 'accommodation_name' | 'accommodation_type'>>) {
     const supabase = createAdminClient();
     const { activities, ...dayData } = tripDayData;
 

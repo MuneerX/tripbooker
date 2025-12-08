@@ -14,7 +14,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useRouter } from "next/navigation"
 import { useToast } from "@/hooks/use-toast"
 import { PlusCircle, Trash2 } from "lucide-react"
-import { createTripDay, getTourPackages } from "@/lib/supabase/queries"
+import { createTripDay, getTourPackages, getTripDaysForPackage } from "@/lib/supabase/queries"
 import type { TourPackage } from "@/lib/types"
 import { ActivityFormModal, activitySchema } from "./_components/ActivityFormModal"
 
@@ -62,6 +62,24 @@ export default function CreateTripDayPage() {
     control: form.control,
     name: "activities"
   });
+
+  const selectedPackageId = form.watch("package_id");
+
+  React.useEffect(() => {
+    const setNextDayNumber = async () => {
+      if (selectedPackageId) {
+        const existingDays = await getTripDaysForPackage(selectedPackageId);
+        const existingDayNumbers = existingDays.map(day => day.day_number);
+        
+        let nextDay = 1;
+        while (existingDayNumbers.includes(nextDay)) {
+            nextDay++;
+        }
+        form.setValue("day_number", nextDay);
+      }
+    };
+    setNextDayNumber();
+  }, [selectedPackageId, form]);
 
   const onSubmit = async (data: TripDayFormValues) => {
     setIsSubmitting(true);
