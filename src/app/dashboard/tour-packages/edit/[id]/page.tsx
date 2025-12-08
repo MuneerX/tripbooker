@@ -1,4 +1,5 @@
 
+
 "use client"
 
 import * as React from "react"
@@ -51,6 +52,7 @@ const tourPackageSchema = z.object({
   
   is_featured: z.boolean().default(false),
   is_active: z.boolean().default(true),
+  is_pay_in_parts_enabled: z.boolean().default(false),
   
   image_urls: z.array(z.string()).optional(),
   featured_image_url: z.string().optional().nullable(),
@@ -80,6 +82,7 @@ export default function EditTourPackagePage() {
   });
 
   const isFeatured = form.watch('is_featured');
+  const isPayInPartsEnabled = form.watch('is_pay_in_parts_enabled');
   
   React.useEffect(() => {
     if (id) {
@@ -93,6 +96,7 @@ export default function EditTourPackagePage() {
             base_price: pkg.base_price ?? 0,
             max_guests: pkg.max_guests ?? 10,
             pay_in_parts: pkg.pay_in_parts || [],
+            is_pay_in_parts_enabled: !!pkg.pay_in_parts && pkg.pay_in_parts.length > 0,
           });
         } else {
           toast({ variant: "destructive", title: "Error", description: "Tour package not found." });
@@ -141,6 +145,12 @@ export default function EditTourPackagePage() {
 
   const onSubmit = async (data: TourPackageFormValues) => {
     const formData = new FormData();
+
+    // If pay in parts is disabled, don't send the data
+    const finalData = {
+      ...data,
+      pay_in_parts: data.is_pay_in_parts_enabled ? data.pay_in_parts : []
+    }
     
     // Pass original image urls to compare on server for deletion
     if (tourPackage?.image_urls) {
@@ -151,7 +161,7 @@ export default function EditTourPackagePage() {
     }
 
     // Append all other form data
-    Object.entries(data).forEach(([key, value]) => {
+    Object.entries(finalData).forEach(([key, value]) => {
       if (key === 'new_image_files' || key === 'new_featured_image_file' || key === 'image_urls' || key === 'featured_image_url' || key === 'pay_in_parts') {
         // Handled separately
       } else if (value !== undefined && value !== null) {
@@ -159,23 +169,23 @@ export default function EditTourPackagePage() {
       }
     });
 
-    if (data.pay_in_parts) {
-      formData.append('pay_in_parts', JSON.stringify(data.pay_in_parts));
+    if (finalData.pay_in_parts) {
+      formData.append('pay_in_parts', JSON.stringify(finalData.pay_in_parts));
     }
 
     // Append new image files
-    if (data.new_image_files) {
-        Array.from(data.new_image_files).forEach((file: any) => {
+    if (finalData.new_image_files) {
+        Array.from(finalData.new_image_files).forEach((file: any) => {
             formData.append('new_image_files', file);
         });
     }
-    if (data.new_featured_image_file && data.new_featured_image_file.length > 0) {
-        formData.append('new_featured_image_file', data.new_featured_image_file[0]);
+    if (finalData.new_featured_image_file && finalData.new_featured_image_file.length > 0) {
+        formData.append('new_featured_image_file', finalData.new_featured_image_file[0]);
     }
 
     // Append remaining existing image urls
-    formData.append('image_urls', JSON.stringify(data.image_urls || []));
-    formData.append('featured_image_url', data.featured_image_url || '');
+    formData.append('image_urls', JSON.stringify(finalData.image_urls || []));
+    formData.append('featured_image_url', finalData.featured_image_url || '');
 
     try {
       await updateTourPackage(id, formData);
@@ -294,10 +304,26 @@ export default function EditTourPackagePage() {
                         </CardContent>
                     </Card>
                      <Card>
-                        <CardHeader><CardTitle>Pay in Parts</CardTitle><CardDescription>Define payment plans for this package.</CardDescription></CardHeader>
-                        <CardContent>
-                            <PayInPartsForm />
-                        </CardContent>
+                        <CardHeader>
+                            <FormField 
+                                control={form.control} 
+                                name="is_pay_in_parts_enabled" 
+                                render={({ field }) => ( 
+                                    <FormItem className="flex flex-row items-center justify-between rounded-lg p-0">
+                                        <div className="space-y-0.5">
+                                            <FormLabel className="text-base">Enable Pay in Parts</FormLabel>
+                                            <FormDescription>Allow customers to pay in installments.</FormDescription>
+                                        </div>
+                                        <FormControl><Switch checked={field.value} onCheckedChange={field.onChange} /></FormControl>
+                                    </FormItem>
+                                )} 
+                            />
+                        </CardHeader>
+                        {isPayInPartsEnabled && (
+                            <CardContent>
+                                <PayInPartsForm />
+                            </CardContent>
+                        )}
                     </Card>
                 </div>
 
@@ -380,5 +406,3 @@ export default function EditTourPackagePage() {
     </div>
   )
 }
-
-    

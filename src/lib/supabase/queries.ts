@@ -97,6 +97,7 @@ export async function createTourPackage(pkg: Partial<TourPackage>) {
     terms_and_conditions: pkg.terms_and_conditions,
     is_featured: pkg.is_featured,
     is_active: pkg.is_active,
+    is_pay_in_parts_enabled: pkg.is_pay_in_parts_enabled,
     image_urls: pkg.image_urls,
     featured_image_url: pkg.featured_image_url,
   };
@@ -109,7 +110,7 @@ export async function createTourPackage(pkg: Partial<TourPackage>) {
     throw new Error(error.message);
   }
 
-  if (pay_in_parts && pay_in_parts.length > 0) {
+  if (pkg.is_pay_in_parts_enabled && pay_in_parts && pay_in_parts.length > 0) {
     const partsToInsert = pay_in_parts.map(part => ({ ...part, package_id: newPackage.id }));
     const { error: partsError } = await supabase.from('pay_in_parts').insert(partsToInsert);
     if (partsError) {
@@ -186,6 +187,7 @@ export async function uploadTourImages(formData: FormData) {
     terms_and_conditions: formData.get('terms_and_conditions') as string,
     is_featured: formData.get('is_featured') === 'true',
     is_active: formData.get('is_active') === 'true',
+    is_pay_in_parts_enabled: formData.get('is_pay_in_parts_enabled') === 'true',
     image_urls: imageUrls,
     featured_image_url: featuredImageUrl,
     pay_in_parts: payInParts,
@@ -222,6 +224,7 @@ export async function updateTourPackage(id: string, formData: FormData) {
     };
 
     const isFeatured = formData.get('is_featured') === 'true';
+    const isPayInPartsEnabled = formData.get('is_pay_in_parts_enabled') === 'true';
     const originalImageUrls: string[] = JSON.parse(formData.get('original_image_urls') as string || '[]');
     const keptImageUrls: string[] = JSON.parse(formData.get('image_urls') as string || '[]');
     const originalFeaturedUrl = formData.get('original_featured_image_url') as string || null;
@@ -309,6 +312,7 @@ export async function updateTourPackage(id: string, formData: FormData) {
       terms_and_conditions: formData.get('terms_and_conditions') as string,
       is_featured: isFeatured,
       is_active: formData.get('is_active') === 'true',
+      is_pay_in_parts_enabled: isPayInPartsEnabled,
       image_urls: finalImageUrls,
       featured_image_url: finalFeaturedImageUrl,
       updated_at: new Date().toISOString(),
@@ -326,24 +330,27 @@ export async function updateTourPackage(id: string, formData: FormData) {
       throw new Error(error.message);
     }
 
-    const payInParts = JSON.parse(formData.get('pay_in_parts') as string || '[]') as PayInPart[];
     // Delete existing parts
     const { error: deletePartsError } = await supabase.from('pay_in_parts').delete().eq('package_id', id);
     if (deletePartsError) {
       console.error('Error deleting pay_in_parts:', deletePartsError);
       throw new Error(deletePartsError.message);
     }
-    // Insert new parts
-    if (payInParts.length > 0) {
-      const partsToInsert = payInParts.map(part => {
-        const { id: partId, ...rest } = part;
-        return { ...rest, package_id: id };
-      });
-      const { error: partsError } = await supabase.from('pay_in_parts').insert(partsToInsert);
-      if (partsError) {
-        console.error('Error updating pay_in_parts:', partsError);
-        throw new Error(partsError.message);
-      }
+    
+    if (isPayInPartsEnabled) {
+        const payInParts = JSON.parse(formData.get('pay_in_parts') as string || '[]') as PayInPart[];
+        // Insert new parts
+        if (payInParts.length > 0) {
+          const partsToInsert = payInParts.map(part => {
+            const { id: partId, ...rest } = part;
+            return { ...rest, package_id: id };
+          });
+          const { error: partsError } = await supabase.from('pay_in_parts').insert(partsToInsert);
+          if (partsError) {
+            console.error('Error updating pay_in_parts:', partsError);
+            throw new Error(partsError.message);
+          }
+        }
     }
 
 
@@ -817,10 +824,3 @@ export async function deleteTripLocation(id: string) {
     }
     return { success: true };
 }
-
-
-    
-
-    
-
-    

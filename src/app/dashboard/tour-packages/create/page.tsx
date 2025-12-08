@@ -23,6 +23,7 @@ const MAX_FILE_SIZE = 2 * 1024 * 1024; // 2MB
 const ACCEPTED_IMAGE_TYPES = ["image/jpeg", "image/jpg", "image/png", "image/webp"];
 
 const payInPartSchema = z.object({
+  id: z.string().optional(),
   plan_name: z.string().min(1, "Plan name is required"),
   months: z.coerce.number().int().min(0),
   monthly_payment: z.coerce.number().min(0),
@@ -48,6 +49,7 @@ const tourPackageSchema = z.object({
   
   is_featured: z.boolean().default(false),
   is_active: z.boolean().default(true),
+  is_pay_in_parts_enabled: z.boolean().default(false),
   
   image_files: z.any()
     .refine((files) => files?.length >= 1, "At least one gallery image is required.")
@@ -85,6 +87,7 @@ export default function CreateTourPackagePage() {
       terms_and_conditions: "",
       is_featured: false,
       is_active: true,
+      is_pay_in_parts_enabled: false,
       pay_in_parts: [],
     },
   });
@@ -120,7 +123,13 @@ export default function CreateTourPackagePage() {
   const onSubmit = async (data: TourPackageFormValues) => {
     const formData = new FormData();
     
-    Object.entries(data).forEach(([key, value]) => {
+    // If pay in parts is disabled, don't send the data
+    const finalData = {
+      ...data,
+      pay_in_parts: data.is_pay_in_parts_enabled ? data.pay_in_parts : []
+    }
+
+    Object.entries(finalData).forEach(([key, value]) => {
       if (key === 'image_files' || key === 'featured_image_file' || key === 'pay_in_parts') {
         // Skip file and array fields for now
       } else if (value !== undefined && value !== null) {
@@ -128,18 +137,18 @@ export default function CreateTourPackagePage() {
       }
     });
     
-    if (data.image_files) {
-        Array.from(data.image_files).forEach((file: any) => {
+    if (finalData.image_files) {
+        Array.from(finalData.image_files).forEach((file: any) => {
             formData.append('image_files', file);
         });
     }
 
-    if (data.featured_image_file && data.featured_image_file.length > 0) {
-        formData.append('featured_image_file', data.featured_image_file[0]);
+    if (finalData.featured_image_file && finalData.featured_image_file.length > 0) {
+        formData.append('featured_image_file', finalData.featured_image_file[0]);
     }
 
-    if (data.pay_in_parts) {
-      formData.append('pay_in_parts', JSON.stringify(data.pay_in_parts));
+    if (finalData.pay_in_parts) {
+      formData.append('pay_in_parts', JSON.stringify(finalData.pay_in_parts));
     }
 
     try {
@@ -157,6 +166,8 @@ export default function CreateTourPackagePage() {
       });
     }
   };
+
+  const isPayInPartsEnabled = form.watch('is_pay_in_parts_enabled');
 
   return (
     <div className="space-y-6">
@@ -229,11 +240,27 @@ export default function CreateTourPackagePage() {
                             />
                         </CardContent>
                     </Card>
-                    <Card>
-                        <CardHeader><CardTitle>Pay in Parts</CardTitle><CardDescription>Define payment plans for this package.</CardDescription></CardHeader>
-                        <CardContent>
-                            <PayInPartsForm />
-                        </CardContent>
+                     <Card>
+                        <CardHeader>
+                            <FormField 
+                                control={form.control} 
+                                name="is_pay_in_parts_enabled" 
+                                render={({ field }) => ( 
+                                    <FormItem className="flex flex-row items-center justify-between rounded-lg p-0">
+                                        <div className="space-y-0.5">
+                                            <FormLabel className="text-base">Enable Pay in Parts</FormLabel>
+                                            <FormDescription>Allow customers to pay in installments.</FormDescription>
+                                        </div>
+                                        <FormControl><Switch checked={field.value} onCheckedChange={field.onChange} /></FormControl>
+                                    </FormItem>
+                                )} 
+                            />
+                        </CardHeader>
+                        {isPayInPartsEnabled && (
+                            <CardContent>
+                                <PayInPartsForm />
+                            </CardContent>
+                        )}
                     </Card>
                 </div>
 
@@ -308,5 +335,3 @@ export default function CreateTourPackagePage() {
     </div>
   )
 }
-
-    

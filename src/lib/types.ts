@@ -37,6 +37,7 @@ export type TourPackage = {
   is_featured: boolean;
   featured_image_url: string | null;
   is_active: boolean;
+  is_pay_in_parts_enabled: boolean;
   updated_at: string;
 };
 
