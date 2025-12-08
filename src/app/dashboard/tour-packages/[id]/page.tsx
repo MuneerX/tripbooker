@@ -296,7 +296,7 @@ export default function TourPackageDetailPage() {
                                     return (
                                         <div key={policy.title} className="space-y-3">
                                             <h3 className="text-lg font-semibold flex items-center gap-2"><Info /> {policy.title}</h3>
-                                            <p className="text-sm text-muted-foreground leading-relaxed">{policy.content}</p>
+                                            {renderPointList(policy.content)}
                                         </div>
                                     )
                                 })}
