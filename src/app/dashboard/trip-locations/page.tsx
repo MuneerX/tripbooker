@@ -5,7 +5,7 @@ import * as React from "react";
 import Link from "next/link";
 import { PlusCircle, MoreHorizontal, FilePenLine, Trash2, View, MapPin } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
@@ -36,6 +36,8 @@ export default function TripLocationsPage() {
   const [allLocations, setAllLocations] = React.useState<TripLocation[]>([]);
   const [loading, setLoading] = React.useState(true);
   const [deletingId, setDeletingId] = React.useState<string | null>(null);
+  const [currentPage, setCurrentPage] = React.useState(1);
+  const rowsPerPage = 10;
 
   React.useEffect(() => {
     async function fetchLocations() {
@@ -69,6 +71,12 @@ export default function TripLocationsPage() {
 
   const filteredLocations = allLocations.filter((location) =>
     location.name && location.name.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  const totalPages = Math.ceil(filteredLocations.length / rowsPerPage);
+  const paginatedLocations = filteredLocations.slice(
+    (currentPage - 1) * rowsPerPage,
+    currentPage * rowsPerPage
   );
   
   const totalLocations = allLocations.length;
@@ -131,8 +139,8 @@ export default function TripLocationsPage() {
                     <TableRow>
                         <TableCell colSpan={8} className="h-24 text-center">Loading...</TableCell>
                     </TableRow>
-                ) : filteredLocations.length > 0 ? (
-                filteredLocations.map((location: TripLocation) => (
+                ) : paginatedLocations.length > 0 ? (
+                paginatedLocations.map((location: TripLocation) => (
                     <TableRow key={location.id}>
                     <TableCell className="hidden sm:table-cell">
                         <Image
@@ -205,6 +213,29 @@ export default function TripLocationsPage() {
             </TableBody>
             </Table>
         </CardContent>
+        <CardFooter>
+            <div className="text-xs text-muted-foreground">
+                Showing <strong>{(currentPage - 1) * rowsPerPage + 1}-{(currentPage - 1) * rowsPerPage + paginatedLocations.length}</strong> of <strong>{filteredLocations.length}</strong> locations
+            </div>
+            <div className="ml-auto flex items-center gap-2">
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
+                disabled={currentPage === 1}
+              >
+                Previous
+              </Button>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => setCurrentPage((prev) => Math.min(totalPages, prev + 1))}
+                disabled={currentPage === totalPages}
+              >
+                Next
+              </Button>
+            </div>
+        </CardFooter>
         </Card>
     </div>
   );
