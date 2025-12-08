@@ -1,3 +1,4 @@
+
 import { AppHeader } from "@/components/layout/Header";
 import { AppSidebar } from "@/components/layout/Sidebar";
 import { SidebarProvider } from "@/components/ui/sidebar";
