@@ -1,4 +1,5 @@
 
+
 "use client"
 
 import * as React from "react"
@@ -36,6 +37,7 @@ export default function CreateTripDayPage() {
   const { toast } = useToast();
   const [tourPackages, setTourPackages] = React.useState<TourPackage[]>([]);
   const [isSubmitting, setIsSubmitting] = React.useState(false);
+  const [existingDayNumbers, setExistingDayNumbers] = React.useState<number[]>([]);
 
   React.useEffect(() => {
     const fetchPackages = async () => {
@@ -45,8 +47,19 @@ export default function CreateTripDayPage() {
     fetchPackages();
   }, []);
 
+  const formSchema = tripDaySchema.superRefine(({ day_number }, ctx) => {
+    if (existingDayNumbers.includes(day_number)) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "This day number already exists for the selected package.",
+        path: ["day_number"],
+      });
+    }
+  });
+
+
   const form = useForm<TripDayFormValues>({
-    resolver: zodResolver(tripDaySchema),
+    resolver: zodResolver(formSchema),
     defaultValues: {
       day_name: "",
       day_number: 1,
@@ -69,13 +82,17 @@ export default function CreateTripDayPage() {
     const setNextDayNumber = async () => {
       if (selectedPackageId) {
         const existingDays = await getTripDaysForPackage(selectedPackageId);
-        const existingDayNumbers = existingDays.map(day => day.day_number);
+        const days = existingDays.map(day => day.day_number);
+        setExistingDayNumbers(days);
         
         let nextDay = 1;
-        while (existingDayNumbers.includes(nextDay)) {
+        while (days.includes(nextDay)) {
             nextDay++;
         }
         form.setValue("day_number", nextDay);
+        form.trigger("day_number"); // Re-trigger validation
+      } else {
+        setExistingDayNumbers([]);
       }
     };
     setNextDayNumber();
