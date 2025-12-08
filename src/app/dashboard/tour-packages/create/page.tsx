@@ -41,7 +41,7 @@ const tourPackageSchema = z.object({
   max_guests: z.coerce.number().int().min(1, "Must be at least 1"),
   
   description: z.string().min(1, "Description is required"),
-  highlights: z.string().optional(),
+  highlights: z.string().min(1, "Highlights are required"),
   inclusion: z.string().min(1, "Inclusions are required"),
   exclusion: z.string().min(1, "Exclusions are required"),
   booking_policy: z.string().optional(),
@@ -334,3 +334,5 @@ export default function CreateTourPackagePage() {
     </div>
   )
 }
+
+    

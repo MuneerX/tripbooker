@@ -44,7 +44,7 @@ const tourPackageSchema = z.object({
   max_guests: z.coerce.number().int().min(1, "Must be at least 1"),
   
   description: z.string().min(1, "Description is required"),
-  highlights: z.string().optional().nullable(),
+  highlights: z.string().min(1, "Highlights are required"),
   inclusion: z.string().min(1, "Inclusions are required"),
   exclusion: z.string().min(1, "Exclusions are required"),
   booking_policy: z.string().optional(),
@@ -101,6 +101,7 @@ export default function EditTourPackagePage() {
             base_price: pkg.base_price ?? 0,
             max_guests: pkg.max_guests ?? 10,
             pay_in_parts: pkg.pay_in_parts || [],
+            highlights: pkg.highlights ?? '',
           });
         } else {
           toast({ variant: "destructive", title: "Error", description: "Tour package not found." });
@@ -405,3 +406,5 @@ export default function EditTourPackagePage() {
     </div>
   )
 }
+
+    
