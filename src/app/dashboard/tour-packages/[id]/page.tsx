@@ -122,7 +122,7 @@ export default function TourPackageDetailPage() {
   
   const renderPointList = (text: string | null | undefined) => {
     if (!text) return <p className="text-sm text-muted-foreground leading-relaxed">N/A</p>;
-    const points = text.split(/[,-\n]/).map(p => p.trim()).filter(p => p);
+    const points = text.split(/[,\\-\n]/).map(p => p.trim()).filter(p => p);
     return (
       <ul className="list-disc list-inside space-y-1 text-sm text-muted-foreground leading-relaxed">
         {points.map((point, index) => (
