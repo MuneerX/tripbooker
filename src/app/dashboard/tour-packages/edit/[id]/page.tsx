@@ -44,6 +44,7 @@ const tourPackageSchema = z.object({
   max_guests: z.coerce.number().int().min(1, "Must be at least 1"),
   
   description: z.string().min(1, "Description is required"),
+  highlights: z.string().optional().nullable(),
   inclusion: z.string().min(1, "Inclusions are required"),
   exclusion: z.string().min(1, "Exclusions are required"),
   booking_policy: z.string().optional(),
@@ -82,6 +83,11 @@ export default function EditTourPackagePage() {
   });
 
   const isFeatured = form.watch('is_featured');
+  const payInPartsValue = form.watch("pay_in_parts");
+
+  React.useEffect(() => {
+    setIsPayInPartsEnabled(!!payInPartsValue && payInPartsValue.length > 0);
+  }, [payInPartsValue]);
   
   React.useEffect(() => {
     if (id) {
@@ -96,7 +102,6 @@ export default function EditTourPackagePage() {
             max_guests: pkg.max_guests ?? 10,
             pay_in_parts: pkg.pay_in_parts || [],
           });
-          setIsPayInPartsEnabled(!!pkg.pay_in_parts && pkg.pay_in_parts.length > 0);
         } else {
           toast({ variant: "destructive", title: "Error", description: "Tour package not found." });
           router.push('/dashboard/tour-packages');
@@ -327,6 +332,7 @@ export default function EditTourPackagePage() {
                         <CardHeader><CardTitle>Tour Information</CardTitle></CardHeader>
                         <CardContent className="space-y-6">
                             <FormField control={form.control} name="description" render={({ field }) => ( <FormItem><FormLabel>Tour Description</FormLabel><FormControl><Textarea placeholder="A detailed description of the tour package." {...field} rows={5} /></FormControl><FormMessage /></FormItem> )} />
+                            <FormField control={form.control} name="highlights" render={({ field }) => ( <FormItem><FormLabel>Highlights</FormLabel><FormControl><Textarea placeholder="e.g., Breathtaking mountain views, Rich cultural experiences, ..." {...field} /></FormControl><FormDescription>Enter comma-separated highlights for the tour.</FormDescription><FormMessage /></FormItem> )} />
                             <FormField control={form.control} name="inclusion" render={({ field }) => ( <FormItem><FormLabel>Inclusions</FormLabel><FormControl><Textarea placeholder="e.g., Accommodation, Meals, Guide, ..." {...field} /></FormControl><FormMessage /></FormItem> )} />
                             <FormField control={form.control} name="exclusion" render={({ field }) => ( <FormItem><FormLabel>Exclusions</FormLabel><FormControl><Textarea placeholder="e.g., International flights, Visa fees, ..." {...field} /></FormControl><FormMessage /></FormItem> )} />
                             <FormField control={form.control} name="booking_policy" render={({ field }) => ( <FormItem><FormLabel>Booking Policies</FormLabel><FormControl><Textarea placeholder="Define the booking policies." {...field} /></FormControl><FormMessage /></FormItem> )} />

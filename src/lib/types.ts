@@ -28,7 +28,7 @@ export type TourPackage = {
   image_urls: string[];
   pay_in_parts: PayInPart[];
   description: string;
-  highlights: string[];
+  highlights: string | null;
   inclusion: string;
   exclusion: string;
   booking_policy: string;

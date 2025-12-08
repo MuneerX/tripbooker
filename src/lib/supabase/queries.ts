@@ -90,6 +90,7 @@ export async function createTourPackage(pkg: Partial<TourPackage>) {
     nights: pkg.nights,
     max_guests: pkg.max_guests,
     description: pkg.description,
+    highlights: pkg.highlights,
     inclusion: pkg.inclusion,
     exclusion: pkg.exclusion,
     booking_policy: pkg.booking_policy,
@@ -132,7 +133,8 @@ export async function uploadTourImages(formData: FormData) {
 
   const imageFiles = formData.getAll('image_files') as File[];
   const featuredImageFile = formData.get('featured_image_file') as File | null;
-  const payInParts = JSON.parse(formData.get('pay_in_parts') as string || '[]') as PayInPart[];
+  const payInPartsRaw = formData.get('pay_in_parts');
+  const payInParts = payInPartsRaw ? JSON.parse(payInPartsRaw as string) : [];
 
 
   const imageUrls: string[] = [];
@@ -179,6 +181,7 @@ export async function uploadTourImages(formData: FormData) {
     nights: Number(formData.get('nights')),
     max_guests: Number(formData.get('max_guests')),
     description: formData.get('description') as string,
+    highlights: formData.get('highlights') as string,
     inclusion: formData.get('inclusion') as string,
     exclusion: formData.get('exclusion') as string,
     booking_policy: formData.get('booking_policy') as string,
@@ -303,6 +306,7 @@ export async function updateTourPackage(id: string, formData: FormData) {
       nights: Number(formData.get('nights')),
       max_guests: Number(formData.get('max_guests')),
       description: formData.get('description') as string,
+      highlights: formData.get('highlights') as string,
       inclusion: formData.get('inclusion') as string,
       exclusion: formData.get('exclusion') as string,
       booking_policy: formData.get('booking_policy') as string,
@@ -335,10 +339,11 @@ export async function updateTourPackage(id: string, formData: FormData) {
     }
     
     if (isPayInPartsEnabled) {
-        const payInParts = JSON.parse(formData.get('pay_in_parts') as string || '[]') as PayInPart[];
+        const payInPartsRaw = formData.get('pay_in_parts');
+        const payInParts = payInPartsRaw ? JSON.parse(payInPartsRaw as string) : [];
         // Insert new parts
         if (payInParts.length > 0) {
-          const partsToInsert = payInParts.map(part => {
+          const partsToInsert = payInParts.map((part: PayInPart) => {
             const { id: partId, ...rest } = part;
             return { ...rest, package_id: id };
           });
