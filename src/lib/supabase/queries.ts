@@ -517,8 +517,6 @@ export async function createTripDay(tripDayData: Partial<TripDay>) {
     const dayPayload = {
       ...dayData,
       title: dayData.title || null,
-      accommodation_type: dayData.accommodation_type || null,
-      accommodation_name: dayData.accommodation_name || null,
       meals_included: dayData.meals_included || [],
     };
 
@@ -568,8 +566,6 @@ export async function updateTripDay(id: string, tripDayData: Partial<TripDay>) {
     const dayPayload = {
       ...dayData,
       title: dayData.title || null,
-      accommodation_type: dayData.accommodation_type || null,
-      accommodation_name: dayData.accommodation_name || null,
       meals_included: dayData.meals_included || [],
       updated_at: new Date().toISOString(),
     };

@@ -24,8 +24,6 @@ const tripDayEditSchema = z.object({
   description: z.string().min(1, "Description is required"),
   activities: z.array(activitySchema).optional(),
   title: z.string().optional(),
-  accommodation_type: z.string().optional(),
-  accommodation_name: z.string().optional(),
   meals_included: z.array(z.string()).optional(),
 });
 
@@ -46,8 +44,6 @@ export default function EditTripDayPage() {
         day_number: 1,
         description: "",
         title: "",
-        accommodation_type: "",
-        accommodation_name: "",
         meals_included: [],
         activities: [],
     },
@@ -64,8 +60,6 @@ export default function EditTripDayPage() {
             day_number: day.day_number,
             description: day.description || '',
             title: day.title || '',
-            accommodation_type: day.accommodation_type || '',
-            accommodation_name: day.accommodation_name || '',
             meals_included: day.meals_included || [],
             activities: (day.activities || []).map(act => ({
               ...act,
@@ -145,8 +139,6 @@ export default function EditTripDayPage() {
             <FormField control={form.control} name="day_number" render={({ field }) => ( <FormItem><FormLabel>Day Number</FormLabel><FormControl><Input type="number" {...field} /></FormControl><FormMessage /></FormItem> )} />
             <FormField control={form.control} name="title" render={({ field }) => ( <FormItem className="md:col-span-2"><FormLabel>Title</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem> )} />
             <FormField control={form.control} name="description" render={({ field }) => ( <FormItem className="md:col-span-2"><FormLabel>Day's Description</FormLabel><FormControl><Textarea {...field} /></FormControl><FormMessage /></FormItem> )} />
-            <FormField control={form.control} name="accommodation_type" render={({ field }) => ( <FormItem><FormLabel>Accommodation Type</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem> )} />
-            <FormField control={form.control} name="accommodation_name" render={({ field }) => ( <FormItem><FormLabel>Accommodation Name</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem> )} />
           </CardContent>
         </Card>
 
