@@ -1,4 +1,5 @@
 
+
 "use client"
 
 import * as React from "react"
@@ -15,6 +16,7 @@ import { useToast } from "@/hooks/use-toast"
 import { MapPin, Upload, File as FileIcon, X } from "lucide-react"
 import { createTripLocationWithImages } from "@/lib/supabase/queries"
 import { Switch } from "@/components/ui/switch"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 
 const MAX_FILE_SIZE = 2 * 1024 * 1024; // 2MB
 const ACCEPTED_IMAGE_TYPES = ["image/jpeg", "image/jpg", "image/png", "image/webp"];
@@ -42,6 +44,18 @@ const tripLocationSchema = z.object({
 });
 
 type TripLocationFormValues = z.infer<typeof tripLocationSchema>;
+
+const locationTypeOptions = [
+  "Tourist places", "national parks", "beaches", "mountain and hiking trails", 
+  "lakes and rivers", "museums and galleries", "histrocal landmarks", 
+  "temples churches & mosques", "UNISCO world heritage sites", "major cites", 
+  "shopping districts", "entertainment zones", "local markets", 
+  "theme/amusement parks", "adventure sports location", "wildlife reserves", 
+  "zoo and aquarium", "food markets", "famous restaurants", "street food area", 
+  "spas and wellness retreats", "beach resorts", "countryside retreats", 
+  "yoga centers", "cultural festivals", "music and art estivals", 
+  "seasonals events", "sporting events"
+];
 
 export default function CreateTripLocationPage() {
   const router = useRouter();
@@ -157,11 +171,20 @@ export default function CreateTripLocationPage() {
                             name="place_type"
                             render={({ field }) => (
                                 <FormItem>
-                                <FormLabel>Location Type</FormLabel>
-                                 <FormControl>
-                                    <Input placeholder="e.g., destination" {...field} />
-                                </FormControl>
-                                <FormMessage />
+                                    <FormLabel>Location Type</FormLabel>
+                                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                        <FormControl>
+                                            <SelectTrigger>
+                                                <SelectValue placeholder="Select a location type" />
+                                            </SelectTrigger>
+                                        </FormControl>
+                                        <SelectContent>
+                                            {locationTypeOptions.map(option => (
+                                                <SelectItem key={option} value={option}>{option}</SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                    <FormMessage />
                                 </FormItem>
                             )}
                         />
