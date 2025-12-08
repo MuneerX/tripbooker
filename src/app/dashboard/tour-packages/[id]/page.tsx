@@ -16,7 +16,7 @@ import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import Link from "next/link";
-import { getTourPackageById, deleteTourPackage, updateTourPackageStatus, getTripDaysForPackage } from "@/lib/supabase/queries";
+import { getTourPackageById, deleteTourPackage, getTripDaysForPackage } from "@/lib/supabase/queries";
 import type { TourPackage, Booking, TripDay, Review, Activity } from "@/lib/types";
 import mockData from "@/lib/data"; // Still needed for bookings, reviews
 import {
@@ -65,6 +65,23 @@ export default function TourPackageDetailPage() {
     }
   }, [id]);
 
+  const allImages = React.useMemo(() => {
+    if (!tourPackage) return [];
+    const images = new Set<string>();
+    if (tourPackage.featured_image_url) {
+      images.add(tourPackage.featured_image_url);
+    }
+    if (tourPackage.image_urls) {
+      tourPackage.image_urls.forEach(url => {
+        if (url !== tourPackage.featured_image_url) { // Ensure no duplicates if featured is also in gallery
+            images.add(url);
+        }
+      });
+    }
+    return Array.from(images);
+  }, [tourPackage]);
+
+
    const handleDelete = async () => {
     if (!tourPackage) return;
     try {
@@ -93,24 +110,6 @@ export default function TourPackageDetailPage() {
     );
   }
 
-  const handleStatusChange = async (newStatus: boolean) => {
-    if (!tourPackage) return;
-    try {
-        await updateTourPackageStatus(tourPackage.id, newStatus);
-        setTourPackage(prev => prev ? { ...prev, is_active: newStatus } : null);
-        toast({
-            title: "Status Updated",
-            description: `Package is now ${newStatus ? 'active' : 'inactive'}.`,
-        });
-    } catch (error: any) {
-        toast({
-            variant: "destructive",
-            title: "Error updating status",
-            description: error.message || "An unexpected error occurred.",
-        });
-    }
-  };
-
   const detailItems = [
     { icon: <Clock />, label: "Duration", value: `${tourPackage.days} Days / ${tourPackage.nights} Nights` },
     { icon: <Users />, label: "Maximum Guests", value: tourPackage.max_guests },
@@ -121,7 +120,7 @@ export default function TourPackageDetailPage() {
   
   const renderPointList = (text: string | null | undefined) => {
     if (!text) return <p className="text-sm text-muted-foreground leading-relaxed">N/A</p>;
-    const points = text.split(/[\n,-]+/).map(p => p.trim()).filter(p => p);
+    const points = text.split(/[\n,]+/).map(p => p.trim()).filter(p => p);
     return (
       <ul className="list-disc list-inside space-y-1 text-sm text-muted-foreground leading-relaxed">
         {points.map((point, index) => (
@@ -130,18 +129,6 @@ export default function TourPackageDetailPage() {
       </ul>
     );
   };
-  
-  const allImages = React.useMemo(() => {
-    if (!tourPackage) return [];
-    const images = new Set<string>();
-    if (tourPackage.featured_image_url) {
-      images.add(tourPackage.featured_image_url);
-    }
-    if (tourPackage.image_urls) {
-      tourPackage.image_urls.forEach(url => images.add(url));
-    }
-    return Array.from(images);
-  }, [tourPackage]);
 
   return (
     <div className="space-y-6">
@@ -455,6 +442,3 @@ export default function TourPackageDetailPage() {
     </div>
   );
 }
-
-    
-    
