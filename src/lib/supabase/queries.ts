@@ -97,7 +97,6 @@ export async function createTourPackage(pkg: Partial<TourPackage>) {
     terms_and_conditions: pkg.terms_and_conditions,
     is_featured: pkg.is_featured,
     is_active: pkg.is_active,
-    is_pay_in_parts_enabled: pkg.is_pay_in_parts_enabled,
     image_urls: pkg.image_urls,
     featured_image_url: pkg.featured_image_url,
   };
@@ -110,7 +109,7 @@ export async function createTourPackage(pkg: Partial<TourPackage>) {
     throw new Error(error.message);
   }
 
-  if (pkg.is_pay_in_parts_enabled && pay_in_parts && pay_in_parts.length > 0) {
+  if (pay_in_parts && pay_in_parts.length > 0) {
     const partsToInsert = pay_in_parts.map(part => ({ ...part, package_id: newPackage.id }));
     const { error: partsError } = await supabase.from('pay_in_parts').insert(partsToInsert);
     if (partsError) {
@@ -187,7 +186,6 @@ export async function uploadTourImages(formData: FormData) {
     terms_and_conditions: formData.get('terms_and_conditions') as string,
     is_featured: formData.get('is_featured') === 'true',
     is_active: formData.get('is_active') === 'true',
-    is_pay_in_parts_enabled: formData.get('is_pay_in_parts_enabled') === 'true',
     image_urls: imageUrls,
     featured_image_url: featuredImageUrl,
     pay_in_parts: payInParts,
@@ -312,7 +310,6 @@ export async function updateTourPackage(id: string, formData: FormData) {
       terms_and_conditions: formData.get('terms_and_conditions') as string,
       is_featured: isFeatured,
       is_active: formData.get('is_active') === 'true',
-      is_pay_in_parts_enabled: isPayInPartsEnabled,
       image_urls: finalImageUrls,
       featured_image_url: finalFeaturedImageUrl,
       updated_at: new Date().toISOString(),

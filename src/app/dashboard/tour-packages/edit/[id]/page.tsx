@@ -52,7 +52,6 @@ const tourPackageSchema = z.object({
   
   is_featured: z.boolean().default(false),
   is_active: z.boolean().default(true),
-  is_pay_in_parts_enabled: z.boolean().default(false),
   
   image_urls: z.array(z.string()).optional(),
   featured_image_url: z.string().optional().nullable(),
@@ -75,6 +74,7 @@ export default function EditTourPackagePage() {
   const { toast } = useToast();
   const [tourPackage, setTourPackage] = React.useState<TourPackage | null>(null);
   const [loading, setLoading] = React.useState(true);
+  const [isPayInPartsEnabled, setIsPayInPartsEnabled] = React.useState(false);
 
   const form = useForm<TourPackageFormValues>({
     resolver: zodResolver(tourPackageSchema),
@@ -82,7 +82,6 @@ export default function EditTourPackagePage() {
   });
 
   const isFeatured = form.watch('is_featured');
-  const isPayInPartsEnabled = form.watch('is_pay_in_parts_enabled');
   
   React.useEffect(() => {
     if (id) {
@@ -96,8 +95,8 @@ export default function EditTourPackagePage() {
             base_price: pkg.base_price ?? 0,
             max_guests: pkg.max_guests ?? 10,
             pay_in_parts: pkg.pay_in_parts || [],
-            is_pay_in_parts_enabled: !!pkg.pay_in_parts && pkg.pay_in_parts.length > 0,
           });
+          setIsPayInPartsEnabled(!!pkg.pay_in_parts && pkg.pay_in_parts.length > 0);
         } else {
           toast({ variant: "destructive", title: "Error", description: "Tour package not found." });
           router.push('/dashboard/tour-packages');
@@ -149,7 +148,7 @@ export default function EditTourPackagePage() {
     // If pay in parts is disabled, don't send the data
     const finalData = {
       ...data,
-      pay_in_parts: data.is_pay_in_parts_enabled ? data.pay_in_parts : []
+      pay_in_parts: isPayInPartsEnabled ? data.pay_in_parts : []
     }
     
     // Pass original image urls to compare on server for deletion
@@ -172,6 +171,7 @@ export default function EditTourPackagePage() {
     if (finalData.pay_in_parts) {
       formData.append('pay_in_parts', JSON.stringify(finalData.pay_in_parts));
     }
+    formData.append('is_pay_in_parts_enabled', String(isPayInPartsEnabled));
 
     // Append new image files
     if (finalData.new_image_files) {
@@ -305,19 +305,13 @@ export default function EditTourPackagePage() {
                     </Card>
                      <Card>
                         <CardHeader>
-                            <FormField 
-                                control={form.control} 
-                                name="is_pay_in_parts_enabled" 
-                                render={({ field }) => ( 
-                                    <FormItem className="flex flex-row items-center justify-between rounded-lg p-0">
-                                        <div className="space-y-0.5">
-                                            <FormLabel className="text-base">Enable Pay in Parts</FormLabel>
-                                            <FormDescription>Allow customers to pay in installments.</FormDescription>
-                                        </div>
-                                        <FormControl><Switch checked={field.value} onCheckedChange={field.onChange} /></FormControl>
-                                    </FormItem>
-                                )} 
-                            />
+                                <FormItem className="flex flex-row items-center justify-between rounded-lg p-0">
+                                    <div className="space-y-0.5">
+                                        <FormLabel className="text-base">Enable Pay in Parts</FormLabel>
+                                        <FormDescription>Allow customers to pay in installments.</FormDescription>
+                                    </div>
+                                    <FormControl><Switch checked={isPayInPartsEnabled} onCheckedChange={setIsPayInPartsEnabled} /></FormControl>
+                                </FormItem>
                         </CardHeader>
                         {isPayInPartsEnabled && (
                             <CardContent>
