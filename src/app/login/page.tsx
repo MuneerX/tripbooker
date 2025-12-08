@@ -116,7 +116,7 @@ export default function LoginPage() {
                     <FormLabel>Password</FormLabel>
                     <FormControl>
                       <div className="relative">
-                        <Input type={showPassword ? 'text' : 'password'} {...field} />
+                        <Input type={showPassword ? 'text' : 'password'} placeholder="••••••••" {...field} />
                         <button
                           type="button"
                           onClick={() => setShowPassword(!showPassword)}
