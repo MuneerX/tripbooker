@@ -225,7 +225,6 @@ export async function updateTourPackage(id: string, formData: FormData) {
     };
 
     const isFeatured = formData.get('is_featured') === 'true';
-    const isPayInPartsEnabled = formData.get('is_pay_in_parts_enabled') === 'true';
     const originalImageUrls: string[] = JSON.parse(formData.get('original_image_urls') as string || '[]');
     const keptImageUrls: string[] = JSON.parse(formData.get('image_urls') as string || '[]');
     const originalFeaturedUrl = formData.get('original_featured_image_url') as string || null;
@@ -338,21 +337,19 @@ export async function updateTourPackage(id: string, formData: FormData) {
       throw new Error(deletePartsError.message);
     }
     
-    if (isPayInPartsEnabled) {
-        const payInPartsRaw = formData.get('pay_in_parts');
-        const payInParts = payInPartsRaw ? JSON.parse(payInPartsRaw as string) : [];
-        // Insert new parts
-        if (payInParts.length > 0) {
-          const partsToInsert = payInParts.map((part: PayInPart) => {
-            const { id: partId, ...rest } = part;
-            return { ...rest, package_id: id };
-          });
-          const { error: partsError } = await supabase.from('pay_in_parts').insert(partsToInsert);
-          if (partsError) {
-            console.error('Error updating pay_in_parts:', partsError);
-            throw new Error(partsError.message);
-          }
-        }
+    const payInPartsRaw = formData.get('pay_in_parts');
+    const payInParts = payInPartsRaw ? JSON.parse(payInPartsRaw as string) : [];
+    // Insert new parts
+    if (payInParts.length > 0) {
+      const partsToInsert = payInParts.map((part: PayInPart) => {
+        const { id: partId, ...rest } = part;
+        return { ...rest, package_id: id };
+      });
+      const { error: partsError } = await supabase.from('pay_in_parts').insert(partsToInsert);
+      if (partsError) {
+        console.error('Error updating pay_in_parts:', partsError);
+        throw new Error(partsError.message);
+      }
     }
 
 
@@ -448,7 +445,7 @@ export async function getTripDays(): Promise<any[]> {
             day_name,
             title,
             tour_package:package_id(name), 
-            trip_day_activities(count)
+            activities:trip_day_activities(additional_cost)
         `)
         .order('day_number', { ascending: true });
 

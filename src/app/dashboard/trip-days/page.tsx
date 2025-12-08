@@ -10,7 +10,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
-import type { TripDay } from "@/lib/types";
+import type { TripDay, Activity } from "@/lib/types";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -25,17 +25,18 @@ import {
 import { StatCard } from "@/components/dashboard/StatCard";
 import { getTripDays, deleteTripDay } from "@/lib/supabase/queries";
 import { useToast } from "@/hooks/use-toast";
+import { formatCurrency } from "@/lib/utils";
 
-type TripDayWithPackageAndCount = TripDay & { 
+type TripDayWithPackageAndActivities = TripDay & { 
   tour_package: { name: string } | null;
-  trip_day_activities: { count: number }[];
+  activities: { additional_cost: number | null }[];
 };
 
 export default function TripDaysPage() {
   const router = useRouter();
   const { toast } = useToast();
   
-  const [allTripDays, setAllTripDays] = React.useState<TripDayWithPackageAndCount[]>([]);
+  const [allTripDays, setAllTripDays] = React.useState<TripDayWithPackageAndActivities[]>([]);
   const [loading, setLoading] = React.useState(true);
   const [searchTerm, setSearchTerm] = React.useState("");
   const [deletingId, setDeletingId] = React.useState<string | null>(null);
@@ -44,7 +45,7 @@ export default function TripDaysPage() {
     async function fetchTripDays() {
       setLoading(true);
       const days = await getTripDays();
-      setAllTripDays(days as TripDayWithPackageAndCount[]);
+      setAllTripDays(days as TripDayWithPackageAndActivities[]);
       setLoading(false);
     }
     fetchTripDays();
@@ -116,6 +117,7 @@ export default function TripDaysPage() {
                 <TableHead className="hidden md:table-cell">Package Name</TableHead>
                 <TableHead className="hidden sm:table-cell w-[80px]">Day</TableHead>
                 <TableHead className="hidden md:table-cell text-center">No. of Activities</TableHead>
+                <TableHead className="hidden md:table-cell text-right">Price</TableHead>
                 <TableHead>
                     <span className="sr-only">Actions</span>
                 </TableHead>
@@ -124,19 +126,21 @@ export default function TripDaysPage() {
             <TableBody>
                 {loading ? (
                   <TableRow>
-                    <TableCell colSpan={5} className="h-24 text-center">
+                    <TableCell colSpan={6} className="h-24 text-center">
                       Loading...
                     </TableCell>
                   </TableRow>
                 ) : filteredTripDays.length > 0 ? (
                 filteredTripDays.map((day) => {
-                    const activityCount = day.trip_day_activities[0]?.count || 0;
+                    const activityCount = day.activities?.length || 0;
+                    const totalCost = day.activities?.reduce((sum, act) => sum + (Number(act.additional_cost) || 0), 0) || 0;
                     return (
                     <TableRow key={day.id}>
                         <TableCell className="font-medium">{day.title || day.day_name}</TableCell>
                         <TableCell className="hidden md:table-cell">{day.tour_package?.name || 'N/A'}</TableCell>
                         <TableCell className="hidden sm:table-cell">{day.day_number}</TableCell>
                         <TableCell className="hidden md:table-cell text-center">{activityCount}</TableCell>
+                        <TableCell className="hidden md:table-cell text-right">{formatCurrency(totalCost)}</TableCell>
                         <TableCell>
                           <AlertDialog>
                             <DropdownMenu>
@@ -182,7 +186,7 @@ export default function TripDaysPage() {
                 })
                 ) : (
                 <TableRow>
-                    <TableCell colSpan={5} className="h-24 text-center">
+                    <TableCell colSpan={6} className="h-24 text-center">
                     No results found.
                     </TableCell>
                 </TableRow>
