@@ -115,9 +115,9 @@ export default function TripDaysPage() {
                 <TableRow>
                 <TableHead>Title</TableHead>
                 <TableHead className="hidden md:table-cell">Package Name</TableHead>
+                <TableHead className="hidden md:table-cell text-right">Price</TableHead>
                 <TableHead className="hidden sm:table-cell w-[80px]">Day</TableHead>
                 <TableHead className="hidden md:table-cell text-center">No. of Activities</TableHead>
-                <TableHead className="hidden md:table-cell text-right">Price</TableHead>
                 <TableHead>
                     <span className="sr-only">Actions</span>
                 </TableHead>
@@ -138,9 +138,9 @@ export default function TripDaysPage() {
                     <TableRow key={day.id}>
                         <TableCell className="font-medium">{day.title || day.day_name}</TableCell>
                         <TableCell className="hidden md:table-cell">{day.tour_package?.name || 'N/A'}</TableCell>
+                        <TableCell className="hidden md:table-cell text-right">{formatCurrency(totalCost)}</TableCell>
                         <TableCell className="hidden sm:table-cell">{day.day_number}</TableCell>
                         <TableCell className="hidden md:table-cell text-center">{activityCount}</TableCell>
-                        <TableCell className="hidden md:table-cell text-right">{formatCurrency(totalCost)}</TableCell>
                         <TableCell>
                           <AlertDialog>
                             <DropdownMenu>
