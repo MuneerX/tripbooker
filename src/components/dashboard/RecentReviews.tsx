@@ -1,3 +1,4 @@
+
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Star } from 'lucide-react';
@@ -19,7 +20,7 @@ export function RecentReviews({ reviews }: { reviews: Review[] }) {
             <div key={review.id} className="flex items-start gap-4">
               <Avatar className="h-10 w-10 border">
                 <AvatarImage src={`https://i.pravatar.cc/150?u=${review.user_id}`} />
-                <AvatarFallback>{review.customer_name.charAt(0)}</AvatarFallback>
+                <AvatarFallback>{review.customer_name?.charAt(0) ?? 'A'}</AvatarFallback>
               </Avatar>
               <div className="grid gap-1.5 flex-1">
                 <div className="flex items-center justify-between">

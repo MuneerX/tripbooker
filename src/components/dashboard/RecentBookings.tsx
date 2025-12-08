@@ -1,3 +1,4 @@
+
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -44,7 +45,7 @@ export function RecentBookings({ bookings }: { bookings: Booking[] }) {
                   <div className="flex items-center gap-3">
                     <Avatar className="hidden h-9 w-9 sm:flex">
                       <AvatarImage src={`https://i.pravatar.cc/150?u=${booking.user_id}`} alt="Avatar" />
-                      <AvatarFallback>{booking.customer_name.charAt(0)}</AvatarFallback>
+                      <AvatarFallback>{booking.customer_name?.charAt(0) ?? 'A'}</AvatarFallback>
                     </Avatar>
                     <div className="grid gap-0.5">
                         <div className="font-medium">{booking.customer_name}</div>
