@@ -17,7 +17,7 @@ import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import Link from "next/link";
-import { getTourPackageById, getTripDaysForPackage, deleteTourPackage, updateTourPackageStatus } from "@/lib/supabase/queries";
+import { getTourPackageById, deleteTourPackage, updateTourPackageStatus } from "@/lib/supabase/queries";
 import type { TourPackage, Booking, TripDay, Review, Activity } from "@/lib/types";
 import mockData from "@/lib/data"; // Still needed for bookings, reviews
 import {
@@ -143,28 +143,9 @@ export default function TourPackageDetailPage() {
             <h1 className="flex-1 shrink-0 whitespace-nowrap text-xl font-semibold tracking-tight sm:grow-0">
                 {tourPackage.name}
             </h1>
-            <div className="inline-flex items-center rounded-md bg-muted p-1 text-muted-foreground">
-                <Button 
-                    variant="ghost"
-                    size="sm" 
-                    className={cn(
-                        "px-3 py-1 h-auto text-xs",
-                        tourPackage.is_active === true ? "bg-green-500/10 text-green-700 shadow-sm hover:bg-green-500/20 hover:text-green-700" : "hover:bg-muted"
-                    )} 
-                    onClick={() => handleStatusChange(true)}>
-                    Active
-                </Button>
-                <Button 
-                    variant="ghost"
-                    size="sm" 
-                    className={cn(
-                        "px-3 py-1 h-auto text-xs",
-                        tourPackage.is_active === false ? "bg-red-500/10 text-red-700 shadow-sm hover:bg-red-500/20 hover:text-red-700" : "hover:bg-muted"
-                    )} 
-                    onClick={() => handleStatusChange(false)}>
-                    Inactive
-                </Button>
-            </div>
+            <Badge variant="outline" className={cn("capitalize", getStatusBadgeColor(tourPackage.is_active ? 'active' : 'inactive'))}>
+                {tourPackage.is_active ? 'Active' : 'Inactive'}
+            </Badge>
             <div className="ml-auto flex items-center gap-2">
                 <AlertDialogTrigger asChild>
                   <Button variant="outline" size="sm">
