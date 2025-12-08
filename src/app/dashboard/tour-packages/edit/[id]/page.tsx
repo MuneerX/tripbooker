@@ -176,8 +176,7 @@ export default function EditTourPackagePage() {
     if (finalData.pay_in_parts) {
       formData.append('pay_in_parts', JSON.stringify(finalData.pay_in_parts));
     }
-    formData.append('is_pay_in_parts_enabled', String(isPayInPartsEnabled));
-
+    
     // Append new image files
     if (finalData.new_image_files) {
         Array.from(finalData.new_image_files).forEach((file: any) => {
@@ -332,7 +331,7 @@ export default function EditTourPackagePage() {
                         <CardHeader><CardTitle>Tour Information</CardTitle></CardHeader>
                         <CardContent className="space-y-6">
                             <FormField control={form.control} name="description" render={({ field }) => ( <FormItem><FormLabel>Tour Description</FormLabel><FormControl><Textarea placeholder="A detailed description of the tour package." {...field} rows={5} /></FormControl><FormMessage /></FormItem> )} />
-                            <FormField control={form.control} name="highlights" render={({ field }) => ( <FormItem><FormLabel>Highlights</FormLabel><FormControl><Textarea placeholder="e.g., Breathtaking mountain views, Rich cultural experiences, ..." {...field} /></FormControl><FormDescription>Enter comma-separated highlights for the tour.</FormDescription><FormMessage /></FormItem> )} />
+                            <FormField control={form.control} name="highlights" render={({ field }) => ( <FormItem><FormLabel>Highlights</FormLabel><FormControl><Textarea placeholder="e.g., Breathtaking mountain views, Rich cultural experiences, ..." {...field} /></FormControl><FormMessage /></FormItem> )} />
                             <FormField control={form.control} name="inclusion" render={({ field }) => ( <FormItem><FormLabel>Inclusions</FormLabel><FormControl><Textarea placeholder="e.g., Accommodation, Meals, Guide, ..." {...field} /></FormControl><FormMessage /></FormItem> )} />
                             <FormField control={form.control} name="exclusion" render={({ field }) => ( <FormItem><FormLabel>Exclusions</FormLabel><FormControl><Textarea placeholder="e.g., International flights, Visa fees, ..." {...field} /></FormControl><FormMessage /></FormItem> )} />
                             <FormField control={form.control} name="booking_policy" render={({ field }) => ( <FormItem><FormLabel>Booking Policies</FormLabel><FormControl><Textarea placeholder="Define the booking policies." {...field} /></FormControl><FormMessage /></FormItem> )} />

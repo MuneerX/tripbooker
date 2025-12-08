@@ -8,7 +8,7 @@ import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Edit, Trash2, Calendar, Users, Clock, Check, X, Plus, Info, Star, CheckCircle, XCircle, ArrowUpRight } from "lucide-react";
+import { ArrowLeft, Edit, Trash2, Calendar, Users, Clock, Check, X, Plus, Info, Star, CheckCircle, XCircle, ArrowUpRight, Sun, Moon } from "lucide-react";
 import { formatCurrency, getStatusBadgeColor, cn } from "@/lib/utils";
 import { Separator } from "@/components/ui/separator";
 import { format } from "date-fns";
@@ -208,17 +208,6 @@ export default function TourPackageDetailPage() {
                                         <p className="text-muted-foreground">{tourPackage.description}</p>
                                     </div>
 
-                                    {tourPackage.highlights && (
-                                        <div className="space-y-3">
-                                            <h3 className="font-semibold text-base">Highlights</h3>
-                                            <div className="flex flex-wrap gap-2">
-                                                {tourPackage.highlights.split(',').map((highlight, index) => (
-                                                    <Badge key={index} variant="secondary">{highlight.trim()}</Badge>
-                                                ))}
-                                            </div>
-                                        </div>
-                                    )}
-
                                     <div className="flex items-center gap-4">
                                         <Badge variant="secondary" className="capitalize">{tourPackage.package_type}</Badge>
                                         <Badge variant="outline" className="capitalize">{tourPackage.category}</Badge>
@@ -266,6 +255,13 @@ export default function TourPackageDetailPage() {
                                 </div>
                             </div>
                             
+                            <Separator className="my-8" />
+                            
+                            <div className="space-y-4">
+                                <h3 className="text-lg font-semibold flex items-center gap-2"><Sun className="text-yellow-500"/> Highlights</h3>
+                                <p className="text-sm text-muted-foreground leading-relaxed">{tourPackage.highlights}</p>
+                            </div>
+
                             <Separator className="my-8" />
 
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
