@@ -257,14 +257,11 @@ export default function TourPackageDetailPage() {
                             
                             <Separator className="my-8" />
                             
-                            <div className="space-y-4">
-                                <h3 className="text-lg font-semibold flex items-center gap-2"><Sun className="text-yellow-500"/> Highlights</h3>
-                                <p className="text-sm text-muted-foreground leading-relaxed">{tourPackage.highlights}</p>
-                            </div>
-
-                            <Separator className="my-8" />
-
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                                <div className="space-y-4">
+                                    <h3 className="text-lg font-semibold flex items-center gap-2"><Plus className="text-blue-500"/> Highlights</h3>
+                                    <p className="text-sm text-muted-foreground leading-relaxed">{tourPackage.highlights}</p>
+                                </div>
                                 <div className="space-y-4">
                                     <h3 className="text-lg font-semibold flex items-center gap-2"><Check className="text-green-500"/> Inclusions</h3>
                                      <p className="text-sm text-muted-foreground leading-relaxed">{tourPackage.inclusion}</p>
