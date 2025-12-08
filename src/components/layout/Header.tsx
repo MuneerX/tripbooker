@@ -59,9 +59,6 @@ export function AppHeader() {
         <DropdownMenuContent align="end">
           <DropdownMenuLabel>My Account</DropdownMenuLabel>
           <DropdownMenuSeparator />
-          <DropdownMenuItem asChild><Link href="#">Profile</Link></DropdownMenuItem>
-          <DropdownMenuItem asChild><Link href="/dashboard/settings">Settings</Link></DropdownMenuItem>
-          <DropdownMenuSeparator />
           <ThemeToggle />
           <DropdownMenuSeparator />
           <DropdownMenuItem>Logout</DropdownMenuItem>
