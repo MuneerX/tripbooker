@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import * as React from 'react';
@@ -9,33 +10,40 @@ import { RecentReviews } from '@/components/dashboard/RecentReviews';
 import { formatCurrency } from '@/lib/utils';
 import { DollarSign, Package, Book, Star, PlusCircle } from 'lucide-react';
 import Link from 'next/link';
-import { getTourPackages } from '@/lib/supabase/queries';
-import mockData from '@/lib/data';
-import type { TourPackage } from '@/lib/types';
+import { getTourPackages, getBookings, getReviews } from '@/lib/supabase/queries';
+import type { TourPackage, Booking, Review } from '@/lib/types';
 
 export default function DashboardPage() {
   const [packages, setPackages] = React.useState<TourPackage[]>([]);
+  const [bookings, setBookings] = React.useState<Booking[]>([]);
+  const [reviews, setReviews] = React.useState<Review[]>([]);
   const [loading, setLoading] = React.useState(true);
 
   React.useEffect(() => {
-    const fetchPackages = async () => {
+    const fetchDashboardData = async () => {
       setLoading(true);
-      const fetchedPackages = await getTourPackages();
+      const [fetchedPackages, fetchedBookings, fetchedReviews] = await Promise.all([
+        getTourPackages(),
+        getBookings(),
+        getReviews()
+      ]);
       setPackages(fetchedPackages);
+      setBookings(fetchedBookings);
+      setReviews(fetchedReviews);
       setLoading(false);
     };
-    fetchPackages();
+    fetchDashboardData();
   }, []);
 
-  const totalRevenue = mockData.bookings
+  const totalRevenue = bookings
     .filter(b => b.status === 'confirmed' || b.status === 'completed')
-    .reduce((sum, b) => sum + b.paidAmount, 0);
+    .reduce((sum, b) => sum + b.paid_amount, 0);
 
   const stats = [
     { label: 'Total Revenue', value: formatCurrency(totalRevenue), icon: <DollarSign className="h-4 w-4" /> },
-    { label: 'Total Bookings', value: mockData.bookings.length, icon: <Book className="h-4 w-4" /> },
+    { label: 'Total Bookings', value: bookings.length, icon: <Book className="h-4 w-4" /> },
     { label: 'Total Tours', value: packages.length, icon: <Package className="h-4 w-4" /> },
-    { label: 'Total Reviews', value: mockData.reviews.length, icon: <Star className="h-4 w-4" /> },
+    { label: 'Total Reviews', value: reviews.length, icon: <Star className="h-4 w-4" /> },
   ];
 
   const quickActions = [
@@ -93,10 +101,10 @@ export default function DashboardPage() {
 
         <div className="grid gap-4 md:gap-8 lg:grid-cols-2 xl:grid-cols-3">
           <div className="xl:col-span-2">
-            <RecentBookings />
+            <RecentBookings bookings={bookings} />
           </div>
           <div className="xl:col-span-1">
-            <RecentReviews />
+            <RecentReviews reviews={reviews} />
           </div>
         </div>
       </div>

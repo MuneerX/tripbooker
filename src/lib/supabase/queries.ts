@@ -6,7 +6,7 @@ import { createServerClient } from '@supabase/ssr'
 import { createClient as createBrowserClient } from './client'
 import { cookies } from 'next/headers'
 
-import type { TourPackage, TripDay, Activity, TripLocation, PayInPart } from '@/lib/types'
+import type { TourPackage, TripDay, Activity, TripLocation, PayInPart, Booking, Review } from '@/lib/types'
 
 // Function to create a Supabase client with admin privileges (service_role)
 function createAdminClient() {
@@ -818,4 +818,33 @@ export async function deleteTripLocation(id: string) {
         throw new Error(error.message);
     }
     return { success: true };
+}
+
+
+// --- Booking and Review Functions ---
+
+/**
+ * Fetches all bookings from Supabase.
+ */
+export async function getBookings(): Promise<Booking[]> {
+  const supabase = createAdminClient();
+  const { data, error } = await supabase.from('bookings').select('*').order('created_at', { ascending: false });
+  if (error) {
+    console.error('Error fetching bookings:', error);
+    return [];
+  }
+  return data as Booking[];
+}
+
+/**
+ * Fetches all reviews from Supabase.
+ */
+export async function getReviews(): Promise<Review[]> {
+  const supabase = createAdminClient();
+  const { data, error } = await supabase.from('reviews').select('*').order('created_at', { ascending: false });
+  if (error) {
+    console.error('Error fetching reviews:', error);
+    return [];
+  }
+  return data as Review[];
 }

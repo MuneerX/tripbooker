@@ -16,9 +16,8 @@ import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import Link from "next/link";
-import { getTourPackageById, deleteTourPackage, getTripDaysForPackage } from "@/lib/supabase/queries";
+import { getTourPackageById, deleteTourPackage, getTripDaysForPackage, getBookings, getReviews } from "@/lib/supabase/queries";
 import type { TourPackage, Booking, TripDay, Review, Activity } from "@/lib/types";
-import mockData from "@/lib/data"; // Still needed for bookings, reviews
 import {
   AlertDialog,
   AlertDialogAction,
@@ -41,7 +40,6 @@ export default function TourPackageDetailPage() {
 
   const [tourPackage, setTourPackage] = React.useState<TourPackage | null>(null);
   
-  // NOTE: Bookings and reviews are still from mock data.
   const [bookingsForPackage, setBookingsForPackage] = React.useState<Booking[]>([]);
   const [tripDaysForPackage, setTripDaysForPackage] = React.useState<TripDay[]>([]);
   const [reviewsForPackage, setReviewsForPackage] = React.useState<Review[]>([]);
@@ -56,9 +54,11 @@ export default function TourPackageDetailPage() {
           const tripDays = await getTripDaysForPackage(pkg.id);
           setTripDaysForPackage(tripDays);
 
-          // Filter mock data for bookings and reviews
-          setBookingsForPackage(mockData.bookings.filter(b => b.tourPackageId === pkg.id));
-          setReviewsForPackage(mockData.reviews.filter(r => r.tourPackageId === pkg.id));
+          const allBookings = await getBookings();
+          const allReviews = await getReviews();
+
+          setBookingsForPackage(allBookings.filter(b => b.tour_package_id === pkg.id));
+          setReviewsForPackage(allReviews.filter(r => r.tour_package_id === pkg.id));
         }
       };
       fetchPackageAndRelatedData();
@@ -309,14 +309,14 @@ export default function TourPackageDetailPage() {
                                     <TableRow key={booking.id}>
                                       <TableCell className="font-mono text-xs">{booking.id}</TableCell>
                                       <TableCell>
-                                        <div className="font-medium">{booking.customerName}</div>
-                                        <div className="text-sm text-muted-foreground hidden md:inline">{booking.customerEmail}</div>
+                                        <div className="font-medium">{booking.customer_name}</div>
+                                        <div className="text-sm text-muted-foreground hidden md:inline">{booking.customer_email}</div>
                                       </TableCell>
-                                      <TableCell>{format(new Date(booking.reservationDate), "PPP")}</TableCell>
-                                      <TableCell className="font-mono text-xs">{booking.transactionId}</TableCell>
-                                      <TableCell className="capitalize">{booking.paymentType}</TableCell>
-                                      <TableCell>{formatCurrency(booking.totalAmount)}</TableCell>
-                                      <TableCell>{booking.referralCode || 'N/A'}</TableCell>
+                                      <TableCell>{format(new Date(booking.reservation_date), "PPP")}</TableCell>
+                                      <TableCell className="font-mono text-xs">{booking.transaction_id}</TableCell>
+                                      <TableCell className="capitalize">{booking.payment_type}</TableCell>
+                                      <TableCell>{formatCurrency(booking.total_amount)}</TableCell>
+                                      <TableCell>{booking.referral_code || 'N/A'}</TableCell>
                                       <TableCell>
                                         <Badge variant="outline" className={getStatusBadgeColor(booking.status)}>
                                           {booking.status}
@@ -399,12 +399,12 @@ export default function TourPackageDetailPage() {
                             {reviewsForPackage.length > 0 ? reviewsForPackage.map(review => (
                             <div key={review.id} className="flex items-start gap-4">
                                 <Avatar className="h-10 w-10 border">
-                                <AvatarImage src={`https://i.pravatar.cc/150?u=${review.userId}`} />
-                                <AvatarFallback>{review.customerName.charAt(0)}</AvatarFallback>
+                                <AvatarImage src={`https://i.pravatar.cc/150?u=${review.user_id}`} />
+                                <AvatarFallback>{review.customer_name.charAt(0)}</AvatarFallback>
                                 </Avatar>
                                 <div className="grid gap-1.5 flex-1">
                                 <div className="flex items-center justify-between">
-                                    <p className="font-semibold">{review.customerName}</p>
+                                    <p className="font-semibold">{review.customer_name}</p>
                                     <div className="flex items-center gap-0.5 text-muted-foreground">
                                     {[...Array(5)].map((_, i) => (
                                         <Star
@@ -414,8 +414,8 @@ export default function TourPackageDetailPage() {
                                     ))}
                                     </div>
                                 </div>
-                                <p className="text-sm text-muted-foreground">{review.reviewText}</p>
-                                <p className="text-xs text-muted-foreground mt-1">{format(new Date(review.createdAt), "PPP")}</p>
+                                <p className="text-sm text-muted-foreground">{review.review_text}</p>
+                                <p className="text-xs text-muted-foreground mt-1">{format(new Date(review.created_at), "PPP")}</p>
                                 </div>
                             </div>
                             )) : <div className="text-center text-muted-foreground py-8 h-24">No reviews yet for this package.</div>}

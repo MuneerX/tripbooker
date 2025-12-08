@@ -94,30 +94,30 @@ export type TripLocation = {
 
 export type Booking = {
   id: string;
-  tourPackageId: string;
-  userId: string;
-  customerName: string;
-  customerEmail: string;
+  tour_package_id: string;
+  user_id: string;
+  customer_name: string;
+  customer_email: string;
   status: 'pending' | 'confirmed' | 'cancelled' | 'completed';
-  paymentType: 'full' | 'partial';
-  transactionId: string;
-  reservationDate: Date;
-  travelDate: Date;
-  referralCode: string;
-  totalAmount: number;
-  paidAmount: number;
-  numberOfTravelers: number;
-  createdAt: Date;
+  payment_type: 'full' | 'partial';
+  transaction_id: string;
+  reservation_date: string;
+  travel_date: string;
+  referral_code: string | null;
+  total_amount: number;
+  paid_amount: number;
+  number_of_travelers: number;
+  created_at: string;
 };
 
 export type Review = {
   id: string;
-  tourPackageId: string;
-  userId: string;
-  customerName: string;
+  tour_package_id: string;
+  user_id: string;
+  customer_name: string;
   rating: number;
-  reviewText: string;
-  createdAt: Date;
+  review_text: string;
+  created_at: string;
 };
 
 // For stats cards

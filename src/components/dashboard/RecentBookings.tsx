@@ -2,17 +2,15 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import mockData from '@/lib/data';
 import { formatCurrency, getStatusBadgeColor } from '@/lib/utils';
 import type { Booking } from '@/lib/types';
 import Link from 'next/link';
 import { Button } from '../ui/button';
 import { ArrowUpRight } from 'lucide-react';
+import { format } from 'date-fns';
 
-export function RecentBookings() {
-  const recentBookings = [...mockData.bookings]
-    .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
-    .slice(0, 5);
+export function RecentBookings({ bookings }: { bookings: Booking[] }) {
+  const recentBookings = bookings.slice(0, 5);
 
   return (
     <Card>
@@ -39,18 +37,19 @@ export function RecentBookings() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {recentBookings.map((booking: Booking) => (
+            {recentBookings.length > 0 ? (
+              recentBookings.map((booking: Booking) => (
               <TableRow key={booking.id}>
                 <TableCell>
                   <div className="flex items-center gap-3">
                     <Avatar className="hidden h-9 w-9 sm:flex">
-                      <AvatarImage src={`https://i.pravatar.cc/150?u=${booking.userId}`} alt="Avatar" />
-                      <AvatarFallback>{booking.customerName.charAt(0)}</AvatarFallback>
+                      <AvatarImage src={`https://i.pravatar.cc/150?u=${booking.user_id}`} alt="Avatar" />
+                      <AvatarFallback>{booking.customer_name.charAt(0)}</AvatarFallback>
                     </Avatar>
                     <div className="grid gap-0.5">
-                        <div className="font-medium">{booking.customerName}</div>
+                        <div className="font-medium">{booking.customer_name}</div>
                         <div className="hidden text-sm text-muted-foreground md:inline">
-                            {booking.customerEmail}
+                            {booking.customer_email}
                         </div>
                     </div>
                   </div>
@@ -61,11 +60,18 @@ export function RecentBookings() {
                   </Badge>
                 </TableCell>
                 <TableCell className="hidden sm:table-cell">
-                  {booking.createdAt.toLocaleDateString()}
+                  {format(new Date(booking.created_at), "PPP")}
                 </TableCell>
-                <TableCell className="text-right">{formatCurrency(booking.totalAmount)}</TableCell>
+                <TableCell className="text-right">{formatCurrency(booking.total_amount)}</TableCell>
               </TableRow>
-            ))}
+            ))
+            ) : (
+              <TableRow>
+                <TableCell colSpan={4} className="h-24 text-center">
+                  No recent bookings found.
+                </TableCell>
+              </TableRow>
+            )}
           </TableBody>
         </Table>
       </CardContent>
