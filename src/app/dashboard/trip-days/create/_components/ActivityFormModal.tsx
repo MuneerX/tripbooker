@@ -96,7 +96,7 @@ export function ActivityFormModal({ children, activity, onSave }: ActivityFormMo
                             <DialogDescription>Fill in the details for the activity.</DialogDescription>
                         </DialogHeader>
 
-                        <div className="grid gap-4 py-4 max-h-[70vh] overflow-y-auto pr-4">
+                        <div className="grid gap-4 py-4 max-h-[70vh] overflow-y-auto px-4">
                             <FormField control={activityForm.control} name="title" render={({ field }) => ( <FormItem><FormLabel>Activity Title</FormLabel><FormControl><Input placeholder="e.g., Sunset Cruise" {...field} /></FormControl><FormMessage /></FormItem>)} />
                             
                             <div className="grid md:grid-cols-2 gap-4">
