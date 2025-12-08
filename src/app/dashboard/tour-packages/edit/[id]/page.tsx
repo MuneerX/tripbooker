@@ -18,7 +18,7 @@ import { getTourPackageById, updateTourPackage } from "@/lib/supabase/queries"
 import { Upload, File as FileIcon, X, Image as ImageIcon } from "lucide-react"
 import type { TourPackage } from "@/lib/types"
 import Image from "next/image"
-import { PayInPartsForm } from "../create/_components/PayInPartsForm"
+import { PayInPartsForm } from "@/app/dashboard/tour-packages/create/_components/PayInPartsForm"
 
 const MAX_FILE_SIZE = 2 * 1024 * 1024; // 2MB
 const ACCEPTED_IMAGE_TYPES = ["image/jpeg", "image/jpg", "image/png", "image/webp"];
@@ -380,3 +380,5 @@ export default function EditTourPackagePage() {
     </div>
   )
 }
+
+    
