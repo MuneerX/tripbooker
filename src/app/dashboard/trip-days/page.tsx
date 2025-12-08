@@ -6,7 +6,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { PlusCircle, MoreHorizontal, FilePenLine, Trash2, View, CalendarDays } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
@@ -22,7 +22,6 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { StatCard } from "@/components/dashboard/StatCard";
 import { getTripDays, deleteTripDay } from "@/lib/supabase/queries";
 import { useToast } from "@/hooks/use-toast";
 import { formatCurrency } from "@/lib/utils";
@@ -40,6 +39,8 @@ export default function TripDaysPage() {
   const [loading, setLoading] = React.useState(true);
   const [searchTerm, setSearchTerm] = React.useState("");
   const [deletingId, setDeletingId] = React.useState<string | null>(null);
+  const [currentPage, setCurrentPage] = React.useState(1);
+  const rowsPerPage = 10;
 
   React.useEffect(() => {
     async function fetchTripDays() {
@@ -76,17 +77,14 @@ export default function TripDaysPage() {
     (day.tour_package?.name && day.tour_package.name.toLowerCase().includes(searchTerm.toLowerCase()))
   );
   
-  const totalDays = allTripDays.length;
-
-  const stats = [
-    { label: "Total Days", value: totalDays, icon: <CalendarDays className="h-4 w-4" /> },
-  ];
+  const totalPages = Math.ceil(filteredTripDays.length / rowsPerPage);
+  const paginatedTripDays = filteredTripDays.slice(
+    (currentPage - 1) * rowsPerPage,
+    currentPage * rowsPerPage
+  );
 
   return (
     <div className="flex flex-col gap-6">
-        <div className="grid gap-4 md:grid-cols-3">
-            <StatCard card={stats[0]} />
-        </div>
         <Card>
         <CardHeader>
             <div className="flex items-center justify-between">
@@ -100,6 +98,7 @@ export default function TripDaysPage() {
                     name="search"
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
+                    className="w-full md:w-64"
                 />
                 <Button asChild>
                 <Link href="/dashboard/trip-days/create">
@@ -130,8 +129,8 @@ export default function TripDaysPage() {
                       Loading...
                     </TableCell>
                   </TableRow>
-                ) : filteredTripDays.length > 0 ? (
-                filteredTripDays.map((day) => {
+                ) : paginatedTripDays.length > 0 ? (
+                paginatedTripDays.map((day) => {
                     const activityCount = day.activities?.length || 0;
                     const totalCost = day.activities?.reduce((sum, act) => sum + (Number(act.additional_cost) || 0), 0) || 0;
                     return (
@@ -194,6 +193,29 @@ export default function TripDaysPage() {
             </TableBody>
             </Table>
         </CardContent>
+         <CardFooter>
+            <div className="text-xs text-muted-foreground">
+                Showing <strong>{(currentPage - 1) * rowsPerPage + 1}-{(currentPage - 1) * rowsPerPage + paginatedTripDays.length}</strong> of <strong>{filteredTripDays.length}</strong> days
+            </div>
+            <div className="ml-auto flex items-center gap-2">
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
+                disabled={currentPage === 1}
+              >
+                Previous
+              </Button>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => setCurrentPage((prev) => Math.min(totalPages, prev + 1))}
+                disabled={currentPage === totalPages}
+              >
+                Next
+              </Button>
+            </div>
+        </CardFooter>
         </Card>
     </div>
   );
