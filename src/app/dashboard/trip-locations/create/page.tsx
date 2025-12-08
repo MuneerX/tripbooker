@@ -46,15 +46,15 @@ const tripLocationSchema = z.object({
 type TripLocationFormValues = z.infer<typeof tripLocationSchema>;
 
 const locationTypeOptions = [
-  "Tourist places", "national parks", "beaches", "mountain and hiking trails", 
-  "lakes and rivers", "museums and galleries", "histrocal landmarks", 
-  "temples churches & mosques", "UNISCO world heritage sites", "major cites", 
-  "shopping districts", "entertainment zones", "local markets", 
-  "theme/amusement parks", "adventure sports location", "wildlife reserves", 
-  "zoo and aquarium", "food markets", "famous restaurants", "street food area", 
-  "spas and wellness retreats", "beach resorts", "countryside retreats", 
-  "yoga centers", "cultural festivals", "music and art estivals", 
-  "seasonals events", "sporting events"
+  "Tourist Places", "National Parks", "Beaches", "Mountain and Hiking Trails",
+  "Lakes and Rivers", "Museums and Galleries", "Historical Landmarks",
+  "Temples, Churches & Mosques", "UNESCO World Heritage Sites", "Major Cities",
+  "Shopping Districts", "Entertainment Zones", "Local Markets",
+  "Theme/Amusement Parks", "Adventure Sports Location", "Wildlife Reserves",
+  "Zoo and Aquarium", "Food Markets", "Famous Restaurants", "Street Food Area",
+  "Spas and Wellness Retreats", "Beach Resorts", "Countryside Retreats",
+  "Yoga Centers", "Cultural Festivals", "Music and Art Festivals",
+  "Seasonal Events", "Sporting Events"
 ];
 
 export default function CreateTripLocationPage() {
@@ -66,7 +66,7 @@ export default function CreateTripLocationPage() {
     resolver: zodResolver(tripLocationSchema),
     defaultValues: {
       name: "",
-      place_type: "destination",
+      place_type: "Tourist Places",
       city: "",
       country: "India",
       state: "",
@@ -323,4 +323,5 @@ export default function CreateTripLocationPage() {
   )
 }
 
+    
     
