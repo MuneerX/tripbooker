@@ -18,9 +18,20 @@ import { getTourPackageById, updateTourPackage } from "@/lib/supabase/queries"
 import { Upload, File as FileIcon, X, Image as ImageIcon } from "lucide-react"
 import type { TourPackage } from "@/lib/types"
 import Image from "next/image"
+import { PayInPartsForm } from "../create/_components/PayInPartsForm"
 
 const MAX_FILE_SIZE = 2 * 1024 * 1024; // 2MB
 const ACCEPTED_IMAGE_TYPES = ["image/jpeg", "image/jpg", "image/png", "image/webp"];
+
+const payInPartSchema = z.object({
+  id: z.string().optional(),
+  package_id: z.string().optional(),
+  plan_name: z.string().min(1, "Plan name is required"),
+  months: z.coerce.number().int().min(0),
+  monthly_payment: z.coerce.number().min(0),
+  total_amount: z.coerce.number().min(0),
+  processing_fee: z.coerce.number().min(0).optional().nullable(),
+});
 
 const tourPackageSchema = z.object({
   name: z.string().min(1, "Tour name is required"),
@@ -49,7 +60,8 @@ const tourPackageSchema = z.object({
     .refine((files) => !files || Array.from(files).every((file: any) => file.size <= MAX_FILE_SIZE), `Max file size is 2MB.`)
     .refine((files) => !files || Array.from(files).every((file: any) => ACCEPTED_IMAGE_TYPES.includes(file.type)), ".jpg, .jpeg, .png and .webp files are accepted."),
   
-  new_featured_image_file: z.any().optional()
+  new_featured_image_file: z.any().optional(),
+  pay_in_parts: z.array(payInPartSchema).optional(),
 });
 
 type TourPackageFormValues = z.infer<typeof tourPackageSchema>;
@@ -80,6 +92,7 @@ export default function EditTourPackagePage() {
             ...pkg,
             base_price: pkg.base_price ?? 0,
             max_guests: pkg.max_guests ?? 10,
+            pay_in_parts: pkg.pay_in_parts || [],
           });
         } else {
           toast({ variant: "destructive", title: "Error", description: "Tour package not found." });
@@ -139,12 +152,16 @@ export default function EditTourPackagePage() {
 
     // Append all other form data
     Object.entries(data).forEach(([key, value]) => {
-      if (key === 'new_image_files' || key === 'new_featured_image_file' || key === 'image_urls' || key === 'featured_image_url') {
+      if (key === 'new_image_files' || key === 'new_featured_image_file' || key === 'image_urls' || key === 'featured_image_url' || key === 'pay_in_parts') {
         // Handled separately
       } else if (value !== undefined && value !== null) {
         formData.append(key, String(value));
       }
     });
+
+    if (data.pay_in_parts) {
+      formData.append('pay_in_parts', JSON.stringify(data.pay_in_parts));
+    }
 
     // Append new image files
     if (data.new_image_files) {
@@ -274,6 +291,12 @@ export default function EditTourPackagePage() {
                                 </FormItem>
                                 )}
                             />
+                        </CardContent>
+                    </Card>
+                     <Card>
+                        <CardHeader><CardTitle>Pay in Parts</CardTitle><CardDescription>Define payment plans for this package.</CardDescription></CardHeader>
+                        <CardContent>
+                            <PayInPartsForm />
                         </CardContent>
                     </Card>
                 </div>

@@ -6,7 +6,7 @@ import { createServerClient } from '@supabase/ssr'
 import { createClient as createBrowserClient } from './client'
 import { cookies } from 'next/headers'
 
-import type { TourPackage, TripDay, Activity, TripLocation } from '@/lib/types'
+import type { TourPackage, TripDay, Activity, TripLocation, PayInPart } from '@/lib/types'
 
 // Function to create a Supabase client with admin privileges (service_role)
 function createAdminClient() {
@@ -61,7 +61,7 @@ export async function getTourPackages(): Promise<TourPackage[]> {
  */
 export async function getTourPackageById(id: string): Promise<TourPackage | null> {
     const supabase = createAdminClient();
-    const { data, error } = await supabase.from('tour_packages').select('*').eq('id', id).single()
+    const { data, error } = await supabase.from('tour_packages').select('*, pay_in_parts(*)').eq('id', id).single()
 
     if (error) {
       console.error(`Error fetching tour package ${id}:`, error)
@@ -78,8 +78,10 @@ export async function getTourPackageById(id: string): Promise<TourPackage | null
  */
 export async function createTourPackage(pkg: Partial<TourPackage>) {
   const supabase = createAdminClient();
-  // Ensure we are not sending undefined fields that might cause issues.
+  const { pay_in_parts, ...tourPackageData } = pkg;
+
   const insertData = {
+    ...tourPackageData,
     name: pkg.name,
     package_type: pkg.package_type,
     category: pkg.category,
@@ -100,14 +102,26 @@ export async function createTourPackage(pkg: Partial<TourPackage>) {
   };
 
 
-  const { data, error } = await supabase.from('tour_packages').insert([insertData]).select().single();
+  const { data: newPackage, error } = await supabase.from('tour_packages').insert([insertData]).select().single();
 
   if (error) {
     console.error('Error creating tour package:', error);
     throw new Error(error.message);
   }
 
-  return data;
+  if (pay_in_parts && pay_in_parts.length > 0) {
+    const partsToInsert = pay_in_parts.map(part => ({ ...part, package_id: newPackage.id }));
+    const { error: partsError } = await supabase.from('pay_in_parts').insert(partsToInsert);
+    if (partsError) {
+      console.error('Error creating pay_in_parts:', partsError);
+      // Rollback package creation
+      await supabase.from('tour_packages').delete().eq('id', newPackage.id);
+      throw new Error(partsError.message);
+    }
+  }
+
+
+  return newPackage;
 }
 
 /**
@@ -118,6 +132,8 @@ export async function uploadTourImages(formData: FormData) {
 
   const imageFiles = formData.getAll('image_files') as File[];
   const featuredImageFile = formData.get('featured_image_file') as File | null;
+  const payInParts = JSON.parse(formData.get('pay_in_parts') as string || '[]') as PayInPart[];
+
 
   const imageUrls: string[] = [];
   let featuredImageUrl: string | undefined = undefined;
@@ -172,6 +188,7 @@ export async function uploadTourImages(formData: FormData) {
     is_active: formData.get('is_active') === 'true',
     image_urls: imageUrls,
     featured_image_url: featuredImageUrl,
+    pay_in_parts: payInParts,
   };
   
   return createTourPackage(tourPackageData);
@@ -308,6 +325,27 @@ export async function updateTourPackage(id: string, formData: FormData) {
       console.error('Error updating tour package:', error);
       throw new Error(error.message);
     }
+
+    const payInParts = JSON.parse(formData.get('pay_in_parts') as string || '[]') as PayInPart[];
+    // Delete existing parts
+    const { error: deletePartsError } = await supabase.from('pay_in_parts').delete().eq('package_id', id);
+    if (deletePartsError) {
+      console.error('Error deleting pay_in_parts:', deletePartsError);
+      throw new Error(deletePartsError.message);
+    }
+    // Insert new parts
+    if (payInParts.length > 0) {
+      const partsToInsert = payInParts.map(part => {
+        const { id: partId, ...rest } = part;
+        return { ...rest, package_id: id };
+      });
+      const { error: partsError } = await supabase.from('pay_in_parts').insert(partsToInsert);
+      if (partsError) {
+        console.error('Error updating pay_in_parts:', partsError);
+        throw new Error(partsError.message);
+      }
+    }
+
 
     return data;
 }

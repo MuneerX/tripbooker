@@ -233,17 +233,18 @@ export default function TourPackageDetailPage() {
                                         </div>
                                     </div>
 
-                                    {tourPackage.payInParts && tourPackage.payInParts.length > 0 && (
+                                    {tourPackage.pay_in_parts && tourPackage.pay_in_parts.length > 0 && (
                                         <div>
                                             <h3 className="font-semibold mb-2">Pay in Parts</h3>
                                             <Table>
-                                                <TableHeader><TableRow><TableHead>Name</TableHead><TableHead>Duration</TableHead><TableHead className="text-right">Price</TableHead></TableRow></TableHeader>
+                                                <TableHeader><TableRow><TableHead>Plan Name</TableHead><TableHead>Months</TableHead><TableHead>Monthly Payment</TableHead><TableHead className="text-right">Total</TableHead></TableRow></TableHeader>
                                                 <TableBody>
-                                                    {tourPackage.payInParts.map((part, i) => (
+                                                    {tourPackage.pay_in_parts.map((part, i) => (
                                                         <TableRow key={i}>
-                                                            <TableCell>{part.partName}</TableCell>
-                                                            <TableCell>{part.durationMonths} months</TableCell>
-                                                            <TableCell className="text-right">{formatCurrency(part.price)}</TableCell>
+                                                            <TableCell>{part.plan_name}</TableCell>
+                                                            <TableCell>{part.months}</TableCell>
+                                                            <TableCell>{formatCurrency(part.monthly_payment)}</TableCell>
+                                                            <TableCell className="text-right">{formatCurrency(part.total_amount)}</TableCell>
                                                         </TableRow>
                                                     ))}
                                                 </TableBody>

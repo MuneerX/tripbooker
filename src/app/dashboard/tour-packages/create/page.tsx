@@ -1,4 +1,5 @@
 
+
 "use client"
 
 import * as React from "react"
@@ -16,9 +17,18 @@ import { useToast } from "@/hooks/use-toast"
 import { Switch } from "@/components/ui/switch"
 import { uploadTourImages } from "@/lib/supabase/queries"
 import { Upload, File as FileIcon, X } from "lucide-react"
+import { PayInPartsForm } from "./_components/PayInPartsForm";
 
 const MAX_FILE_SIZE = 2 * 1024 * 1024; // 2MB
 const ACCEPTED_IMAGE_TYPES = ["image/jpeg", "image/jpg", "image/png", "image/webp"];
+
+const payInPartSchema = z.object({
+  plan_name: z.string().min(1, "Plan name is required"),
+  months: z.coerce.number().int().min(0),
+  monthly_payment: z.coerce.number().min(0),
+  total_amount: z.coerce.number().min(0),
+  processing_fee: z.coerce.number().min(0).optional().nullable(),
+});
 
 const tourPackageSchema = z.object({
   name: z.string().min(1, "Tour name is required"),
@@ -47,7 +57,8 @@ const tourPackageSchema = z.object({
       ".jpg, .jpeg, .png and .webp files are accepted."
     ),
   featured_image_file: z.any()
-    .optional()
+    .optional(),
+  pay_in_parts: z.array(payInPartSchema).optional(),
 });
 
 type TourPackageFormValues = z.infer<typeof tourPackageSchema>;
@@ -74,6 +85,7 @@ export default function CreateTourPackagePage() {
       terms_and_conditions: "",
       is_featured: false,
       is_active: true,
+      pay_in_parts: [],
     },
   });
   
@@ -109,8 +121,8 @@ export default function CreateTourPackagePage() {
     const formData = new FormData();
     
     Object.entries(data).forEach(([key, value]) => {
-      if (key === 'image_files' || key === 'featured_image_file') {
-        // Skip file fields for now
+      if (key === 'image_files' || key === 'featured_image_file' || key === 'pay_in_parts') {
+        // Skip file and array fields for now
       } else if (value !== undefined && value !== null) {
         formData.append(key, String(value));
       }
@@ -124,6 +136,10 @@ export default function CreateTourPackagePage() {
 
     if (data.featured_image_file && data.featured_image_file.length > 0) {
         formData.append('featured_image_file', data.featured_image_file[0]);
+    }
+
+    if (data.pay_in_parts) {
+      formData.append('pay_in_parts', JSON.stringify(data.pay_in_parts));
     }
 
     try {
@@ -211,6 +227,12 @@ export default function CreateTourPackagePage() {
                                 </FormItem>
                                 )}
                             />
+                        </CardContent>
+                    </Card>
+                    <Card>
+                        <CardHeader><CardTitle>Pay in Parts</CardTitle><CardDescription>Define payment plans for this package.</CardDescription></CardHeader>
+                        <CardContent>
+                            <PayInPartsForm />
                         </CardContent>
                     </Card>
                 </div>

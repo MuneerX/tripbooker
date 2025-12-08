@@ -2,6 +2,17 @@
 
 import type { Timestamp } from 'firebase/firestore';
 
+export type PayInPart = {
+  id?: string;
+  package_id?: string;
+  plan_name: string;
+  months: number;
+  monthly_payment: number;
+  processing_fee?: number | null;
+  total_amount: number;
+  is_active?: boolean;
+};
+
 export type TourPackage = {
   id: string;
   name: string;
@@ -15,7 +26,7 @@ export type TourPackage = {
   max_guests: number;
   itineraryId: string;
   image_urls: string[];
-  payInParts: Array<{ partName: string; durationMonths: number; price: number }>;
+  pay_in_parts: PayInPart[];
   description: string;
   highlights: string[];
   inclusion: string;
