@@ -20,7 +20,6 @@ import {
 import { Eye, EyeOff } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import Image from 'next/image';
-import Link from 'next/link';
 import { useTheme } from 'next-themes';
 import { createClient } from '@/lib/supabase/client';
 
@@ -74,7 +73,9 @@ export default function LoginPage() {
         title: "Login Successful",
         description: "Redirecting to your dashboard...",
       });
-      window.location.href = '/dashboard';
+      // Use router.push for client-side navigation and then refresh to ensure server session is picked up.
+      router.push('/dashboard');
+      router.refresh();
     }
   };
 
