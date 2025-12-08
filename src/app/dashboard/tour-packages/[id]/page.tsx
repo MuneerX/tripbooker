@@ -1,5 +1,4 @@
 
-
 "use client";
 
 import * as React from "react";
@@ -122,7 +121,7 @@ export default function TourPackageDetailPage() {
   
   const renderPointList = (text: string | null | undefined) => {
     if (!text) return <p className="text-sm text-muted-foreground leading-relaxed">N/A</p>;
-    const points = text.split(/[\n,-]/).map(p => p.trim()).filter(p => p);
+    const points = text.split(/[\n,-]+/).map(p => p.trim()).filter(p => p);
     return (
       <ul className="list-disc list-inside space-y-1 text-sm text-muted-foreground leading-relaxed">
         {points.map((point, index) => (
@@ -131,6 +130,18 @@ export default function TourPackageDetailPage() {
       </ul>
     );
   };
+  
+  const allImages = React.useMemo(() => {
+    if (!tourPackage) return [];
+    const images = new Set<string>();
+    if (tourPackage.featured_image_url) {
+      images.add(tourPackage.featured_image_url);
+    }
+    if (tourPackage.image_urls) {
+      tourPackage.image_urls.forEach(url => images.add(url));
+    }
+    return Array.from(images);
+  }, [tourPackage]);
 
   return (
     <div className="space-y-6">
@@ -180,7 +191,7 @@ export default function TourPackageDetailPage() {
                                 <div className="space-y-6">
                                     <Carousel className="w-full">
                                         <CarouselContent>
-                                            {(tourPackage.image_urls || []).concat(tourPackage.featured_image_url ? [tourPackage.featured_image_url] : []).filter(Boolean).map((img, index) => (
+                                            {allImages.map((img, index) => (
                                                 <CarouselItem key={index}>
                                                     <Image
                                                         alt={`${tourPackage.name} image ${index + 1}`}
@@ -445,4 +456,5 @@ export default function TourPackageDetailPage() {
   );
 }
 
+    
     
