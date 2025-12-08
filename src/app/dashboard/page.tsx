@@ -1,13 +1,32 @@
+
+'use client';
+
+import * as React from 'react';
 import { Button } from '@/components/ui/button';
 import { StatCard } from '@/components/dashboard/StatCard';
 import { RecentBookings } from '@/components/dashboard/RecentBookings';
 import { RecentReviews } from '@/components/dashboard/RecentReviews';
-import mockData from '@/lib/data';
 import { formatCurrency } from '@/lib/utils';
 import { DollarSign, Package, Book, Star, PlusCircle } from 'lucide-react';
 import Link from 'next/link';
+import { getTourPackages } from '@/lib/supabase/queries';
+import mockData from '@/lib/data';
+import type { TourPackage } from '@/lib/types';
 
 export default function DashboardPage() {
+  const [packages, setPackages] = React.useState<TourPackage[]>([]);
+  const [loading, setLoading] = React.useState(true);
+
+  React.useEffect(() => {
+    const fetchPackages = async () => {
+      setLoading(true);
+      const fetchedPackages = await getTourPackages();
+      setPackages(fetchedPackages);
+      setLoading(false);
+    };
+    fetchPackages();
+  }, []);
+
   const totalRevenue = mockData.bookings
     .filter(b => b.status === 'confirmed' || b.status === 'completed')
     .reduce((sum, b) => sum + b.paidAmount, 0);
@@ -15,7 +34,7 @@ export default function DashboardPage() {
   const stats = [
     { label: 'Total Revenue', value: formatCurrency(totalRevenue), icon: <DollarSign className="h-4 w-4" /> },
     { label: 'Total Bookings', value: mockData.bookings.length, icon: <Book className="h-4 w-4" /> },
-    { label: 'Total Tours', value: mockData.tourPackages.length, icon: <Package className="h-4 w-4" /> },
+    { label: 'Total Tours', value: packages.length, icon: <Package className="h-4 w-4" /> },
     { label: 'Total Reviews', value: mockData.reviews.length, icon: <Star className="h-4 w-4" /> },
   ];
 
@@ -24,6 +43,27 @@ export default function DashboardPage() {
     { label: 'Create Trip Day', href: '/dashboard/trip-days/create' },
     { label: 'Create Location', href: '/dashboard/trip-locations/create' },
   ];
+
+  if (loading) {
+    return (
+        <div className="flex w-full flex-col">
+            <div className="flex items-center justify-between">
+                <div>
+                    <div className="h-8 w-48 bg-muted rounded-md animate-pulse" />
+                    <div className="h-4 w-64 bg-muted rounded-md animate-pulse mt-2" />
+                </div>
+            </div>
+             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 mt-4">
+                {[...Array(4)].map((_, i) => (
+                    <div key={i} className="h-28 bg-card rounded-lg p-4 space-y-2 border">
+                        <div className="h-4 w-1/3 bg-muted rounded-md animate-pulse" />
+                        <div className="h-8 w-1/2 bg-muted rounded-md animate-pulse" />
+                    </div>
+                ))}
+            </div>
+        </div>
+    )
+  }
 
   return (
     <div className="flex w-full flex-col">
