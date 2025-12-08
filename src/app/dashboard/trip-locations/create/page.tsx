@@ -46,15 +46,34 @@ const tripLocationSchema = z.object({
 type TripLocationFormValues = z.infer<typeof tripLocationSchema>;
 
 const locationTypeOptions = [
-  "Tourist Places", "National Parks", "Beaches", "Mountain and Hiking Trails",
-  "Lakes and Rivers", "Museums and Galleries", "Historical Landmarks",
-  "Temples, Churches & Mosques", "UNESCO World Heritage Sites", "Major Cities",
-  "Shopping Districts", "Entertainment Zones", "Local Markets",
-  "Theme/Amusement Parks", "Adventure Sports Location", "Wildlife Reserves",
-  "Zoo and Aquarium", "Food Markets", "Famous Restaurants", "Street Food Area",
-  "Spas and Wellness Retreats", "Beach Resorts", "Countryside Retreats",
-  "Yoga Centers", "Cultural Festivals", "Music and Art Festivals",
-  "Seasonal Events", "Sporting Events"
+    "Tourist Places",
+    "National Parks",
+    "Beaches",
+    "Mountain and Hiking Trails",
+    "Lakes and Rivers",
+    "Museums and Galleries",
+    "Historical Landmarks",
+    "Temples, Churches & Mosques",
+    "UNESCO World Heritage Sites",
+    "Major Cities",
+    "Shopping Districts",
+    "Entertainment Zones",
+    "Local Markets",
+    "Theme/Amusement Parks",
+    "Adventure Sports Location",
+    "Wildlife Reserves",
+    "Zoo and Aquarium",
+    "Food Markets",
+    "Famous Restaurants",
+    "Street Food Area",
+    "Spas and Wellness Retreats",
+    "Beach Resorts",
+    "Countryside Retreats",
+    "Yoga Centers",
+    "Cultural Festivals",
+    "Music and Art Festivals",
+    "Seasonal Events",
+    "Sporting Events",
 ];
 
 export default function CreateTripLocationPage() {
@@ -222,26 +241,27 @@ export default function CreateTripLocationPage() {
                         <FormField control={form.control} name="state" render={({ field }) => (<FormItem><FormLabel>State</FormLabel><FormControl><Input placeholder="e.g., Île-de-France" {...field} /></FormControl><FormMessage /></FormItem>)} />
                         <FormField control={form.control} name="district" render={({ field }) => (<FormItem><FormLabel>District</FormLabel><FormControl><Input placeholder="e.g., Paris" {...field} /></FormControl><FormMessage /></FormItem>)} />
                         <FormField control={form.control} name="country" render={({ field }) => (<FormItem><FormLabel>Country</FormLabel><FormControl><Input placeholder="e.g., France" {...field} /></FormControl><FormMessage /></FormItem>)} />
-                        <FormField control={form.control} name="latitude" render={({ field }) => (<FormItem><FormLabel>Latitude</FormLabel><FormControl><Input type="number" placeholder="e.g., 48.8584" {...field} value={field.value ?? ''} /></FormControl><FormMessage /></FormItem>)} />
-                        <FormField control={form.control} name="longitude" render={({ field }) => (<FormItem><FormLabel>Longitude</FormLabel><FormControl><Input type="number" placeholder="e.g., 2.2945" {...field} value={field.value ?? ''} /></FormControl><FormMessage /></FormItem>)} />
-                        <div className="md:col-span-2 flex items-end gap-4">
-                            <FormField
-                                control={form.control}
-                                name="code"
-                                render={({ field }) => (
-                                    <FormItem className="flex-grow">
-                                    <FormLabel>Location Code</FormLabel>
-                                    <FormControl>
-                                        <Input placeholder="e.g., PAR-EFL" {...field} />
-                                    </FormControl>
-                                    <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
+                        
+                        <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
+                            <FormField control={form.control} name="latitude" render={({ field }) => (<FormItem><FormLabel>Latitude</FormLabel><FormControl><Input type="number" placeholder="e.g., 48.8584" {...field} value={field.value ?? ''} /></FormControl><FormMessage /></FormItem>)} />
+                            <FormField control={form.control} name="longitude" render={({ field }) => (<FormItem><FormLabel>Longitude</FormLabel><FormControl><Input type="number" placeholder="e.g., 2.2945" {...field} value={field.value ?? ''} /></FormControl><FormMessage /></FormItem>)} />
                             <Button type="button" variant="outline" onClick={handlePickFromMap}>
-                                <MapPin className="mr-2 h-4 w-4" /> Pick from map
+                                <MapPin className="mr-2 h-4 w-4" /> Pick Your Location
                             </Button>
                         </div>
+                        <FormField
+                            control={form.control}
+                            name="code"
+                            render={({ field }) => (
+                                <FormItem className="md:col-span-2">
+                                <FormLabel>Location Code</FormLabel>
+                                <FormControl>
+                                    <Input placeholder="e.g., PAR-EFL" {...field} />
+                                </FormControl>
+                                <FormMessage />
+                                </FormItem>
+                            )}
+                        />
                     </CardContent>
                 </Card>
                 </div>
@@ -354,3 +374,5 @@ export default function CreateTripLocationPage() {
     </div>
   )
 }
+
+    
