@@ -291,7 +291,7 @@ export default function EditTripLocationPage() {
                     <FormField control={form.control} name="latitude" render={({ field }) => (<FormItem><FormLabel>Latitude</FormLabel><FormControl><Input type="number" placeholder="e.g., 48.8584" {...field} value={field.value ?? ''} /></FormControl><FormMessage /></FormItem>)} />
                     <FormField control={form.control} name="longitude" render={({ field }) => (<FormItem><FormLabel>Longitude</FormLabel><FormControl><Input type="number" placeholder="e.g., 2.2945" {...field} value={field.value ?? ''} /></FormControl><FormMessage /></FormItem>)} />
                     <Button type="button" variant="outline" onClick={handlePickFromMap}>
-                        <MapPin className="mr-2 h-4 w-4" /> Pick Your Location
+                        <MapPin className="mr-2 h-4 w-4" /> My Location
                     </Button>
                   </div>
 
@@ -399,5 +399,3 @@ export default function EditTripLocationPage() {
     </div>
   );
 }
-
-    
