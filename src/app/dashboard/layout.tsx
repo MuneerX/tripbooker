@@ -2,21 +2,12 @@
 import { AppHeader } from "@/components/layout/Header";
 import { AppSidebar } from "@/components/layout/Sidebar";
 import { SidebarProvider } from "@/components/ui/sidebar";
-import { createClient } from "@/lib/supabase/server";
-import { redirect } from 'next/navigation';
 
-export default async function DashboardLayout({
+export default function DashboardLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const supabase = createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-
-  if (!user) {
-    return redirect('/login');
-  }
-  
   return (
     <SidebarProvider>
       <div className="flex min-h-screen w-full">
