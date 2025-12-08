@@ -82,6 +82,36 @@ export default function CreateTripLocationPage() {
 
   const imageFiles = form.watch("image_files");
 
+  const handlePickFromMap = () => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const { latitude, longitude } = position.coords;
+          form.setValue("latitude", latitude);
+          form.setValue("longitude", longitude);
+          toast({
+            title: "Location Fetched!",
+            description: `Latitude and Longitude have been set to your current location.`,
+          });
+        },
+        (error) => {
+          toast({
+            variant: "destructive",
+            title: "Could not fetch location",
+            description: error.message || "Please ensure you have granted location permissions.",
+          });
+        }
+      );
+    } else {
+      toast({
+        variant: "destructive",
+        title: "Geolocation not supported",
+        description: "Your browser does not support geolocation.",
+      });
+    }
+  };
+
+
   const handleRemoveImage = (indexToRemove: number) => {
     const currentFiles = form.getValues("image_files");
     if (!currentFiles) return;
@@ -208,7 +238,9 @@ export default function CreateTripLocationPage() {
                                     </FormItem>
                                 )}
                             />
-                            <Button type="button" variant="outline"><MapPin className="mr-2 h-4 w-4" /> Pick from map</Button>
+                            <Button type="button" variant="outline" onClick={handlePickFromMap}>
+                                <MapPin className="mr-2 h-4 w-4" /> Pick from map
+                            </Button>
                         </div>
                     </CardContent>
                 </Card>
@@ -322,6 +354,3 @@ export default function CreateTripLocationPage() {
     </div>
   )
 }
-
-    
-    

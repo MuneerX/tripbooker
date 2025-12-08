@@ -108,6 +108,36 @@ export default function EditTripLocationPage() {
   const newImageFiles = form.watch("new_image_files");
   const existingImageUrls = form.watch("image_urls") || [];
 
+    const handlePickFromMap = () => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const { latitude, longitude } = position.coords;
+          form.setValue("latitude", latitude);
+          form.setValue("longitude", longitude);
+          toast({
+            title: "Location Fetched!",
+            description: `Latitude and Longitude have been set to your current location.`,
+          });
+        },
+        (error) => {
+          toast({
+            variant: "destructive",
+            title: "Could not fetch location",
+            description: error.message || "Please ensure you have granted location permissions.",
+          });
+        }
+      );
+    } else {
+      toast({
+        variant: "destructive",
+        title: "Geolocation not supported",
+        description: "Your browser does not support geolocation.",
+      });
+    }
+  };
+
+
   const handleRemoveExistingImage = (urlToRemove: string) => {
     const updatedUrls = existingImageUrls.filter(url => url !== urlToRemove);
     form.setValue("image_urls", updatedUrls, { shouldValidate: true });
@@ -241,7 +271,9 @@ export default function EditTripLocationPage() {
                   <FormField control={form.control} name="longitude" render={({ field }) => (<FormItem><FormLabel>Longitude</FormLabel><FormControl><Input type="number" placeholder="e.g., 2.2945" {...field} value={field.value ?? ''} /></FormControl><FormMessage /></FormItem>)} />
                   <div className="md:col-span-2 flex items-end gap-4">
                     <FormField control={form.control} name="code" render={({ field }) => (<FormItem className="flex-grow"><FormLabel>Location Code</FormLabel><FormControl><Input placeholder="e.g., PAR-EFL" {...field} /></FormControl><FormMessage /></FormItem>)} />
-                    <Button type="button" variant="outline"><MapPin className="mr-2 h-4 w-4" /> Pick from map</Button>
+                    <Button type="button" variant="outline" onClick={handlePickFromMap}>
+                        <MapPin className="mr-2 h-4 w-4" /> Pick from map
+                    </Button>
                   </div>
                 </CardContent>
               </Card>
@@ -346,5 +378,3 @@ export default function EditTripLocationPage() {
     </div>
   );
 }
-
-    
