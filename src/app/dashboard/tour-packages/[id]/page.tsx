@@ -207,6 +207,18 @@ export default function TourPackageDetailPage() {
                                         <h2 className="text-2xl font-bold">{tourPackage.name}</h2>
                                         <p className="text-muted-foreground">{tourPackage.description}</p>
                                     </div>
+
+                                    {tourPackage.highlights && (
+                                        <div className="space-y-3">
+                                            <h3 className="font-semibold text-base">Highlights</h3>
+                                            <div className="flex flex-wrap gap-2">
+                                                {tourPackage.highlights.split(',').map((highlight, index) => (
+                                                    <Badge key={index} variant="secondary">{highlight.trim()}</Badge>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    )}
+
                                     <div className="flex items-center gap-4">
                                         <Badge variant="secondary" className="capitalize">{tourPackage.package_type}</Badge>
                                         <Badge variant="outline" className="capitalize">{tourPackage.category}</Badge>
