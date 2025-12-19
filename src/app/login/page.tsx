@@ -22,6 +22,7 @@ import { useToast } from '@/hooks/use-toast';
 import Image from 'next/image';
 import { useTheme } from 'next-themes';
 import { createClient } from '@/lib/supabase/client';
+import type { SupabaseClient } from '@supabase/supabase-js';
 
 const loginSchema = z.object({
   email: z.string().email({ message: "Invalid email address." }),
@@ -37,10 +38,11 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const { theme } = useTheme();
   const [mounted, setMounted] = useState(false);
-  const supabase = createClient();
+  const [supabase, setSupabase] = useState<SupabaseClient | null>(null);
 
   useEffect(() => {
     setMounted(true);
+    setSupabase(createClient());
   }, []);
 
   const logoUrl = theme === 'dark' 
@@ -57,6 +59,8 @@ export default function LoginPage() {
   });
 
   const onSubmit = async (data: LoginFormValues) => {
+    if (!supabase) return;
+
     const { error } = await supabase.auth.signInWithPassword({
       email: data.email,
       password: data.password,
@@ -131,7 +135,7 @@ export default function LoginPage() {
                   </FormItem>
                 )}
               />
-              <Button type="submit" className="w-full">
+              <Button type="submit" className="w-full" disabled={!supabase}>
                 Login
               </Button>
             </form>
