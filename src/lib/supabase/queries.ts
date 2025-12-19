@@ -846,5 +846,3 @@ export async function getReviews(): Promise<Review[]> {
   }
   return data as Review[];
 }
-
-    
