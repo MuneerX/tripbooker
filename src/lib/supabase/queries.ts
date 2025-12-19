@@ -5,36 +5,22 @@ import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
 
 import type { TourPackage, TripDay, Activity, TripLocation, PayInPart, Booking, Review } from '@/lib/types'
+import { createClient } from '@supabase/supabase-js'
 
-// Function to create a Supabase client with admin privileges (service_role)
-function createAdminClient() {
-  const cookieStore = cookies();
-  return createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!,
-    {
-      cookies: {
-        get(name: string) {
-          return cookieStore.get(name)?.value
-        },
-        set(name: string, value: string, options) {
-            try {
-              cookieStore.set({ name, value, ...options })
-            } catch (error) {
-              // The `set` method was called from a Server Component.
-            }
-          },
-          remove(name: string, options) {
-            try {
-              cookieStore.set({ name, value: '', ...options })
-            } catch (error) {
-              // The `delete` method was called from a Server Component.
-            }
-          },
-      },
-    }
-  );
-}
+// Correctly create a Supabase client with admin privileges (service_role)
+// This client does not use user cookies and has full access.
+const createAdminClient = () => {
+    return createClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.SUPABASE_SERVICE_ROLE_KEY!,
+        {
+            auth: {
+                autoRefreshToken: false,
+                persistSession: false,
+            },
+        }
+    );
+};
 
 
 /**
@@ -846,5 +832,3 @@ export async function getReviews(): Promise<Review[]> {
   }
   return data as Review[];
 }
-
-    
