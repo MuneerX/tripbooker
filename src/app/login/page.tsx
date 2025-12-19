@@ -38,11 +38,10 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const { theme } = useTheme();
   const [mounted, setMounted] = useState(false);
-  const [supabase, setSupabase] = useState<SupabaseClient | null>(null);
+  const supabase = createClient();
 
   useEffect(() => {
     setMounted(true);
-    setSupabase(createClient());
   }, []);
 
   const logoUrl = theme === 'dark' 
@@ -59,8 +58,6 @@ export default function LoginPage() {
   });
 
   const onSubmit = async (data: LoginFormValues) => {
-    if (!supabase) return;
-
     const { error } = await supabase.auth.signInWithPassword({
       email: data.email,
       password: data.password,
@@ -135,7 +132,7 @@ export default function LoginPage() {
                   </FormItem>
                 )}
               />
-              <Button type="submit" className="w-full" disabled={!supabase}>
+              <Button type="submit" className="w-full">
                 Login
               </Button>
             </form>
