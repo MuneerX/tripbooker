@@ -3,7 +3,6 @@
 "use server"
 
 import { createServerClient } from '@supabase/ssr'
-import { createClient as createBrowserClient } from './client'
 import { cookies } from 'next/headers'
 
 import type { TourPackage, TripDay, Activity, TripLocation, PayInPart, Booking, Review } from '@/lib/types'
@@ -436,7 +435,7 @@ export async function updateTourPackageStatus(id: string, is_active: boolean) {
  * Fetches all trip days and their related tour package name and activity count.
  */
 export async function getTripDays(): Promise<any[]> {
-    const supabase = createBrowserClient();
+    const supabase = createAdminClient();
     const { data, error } = await supabase
         .from('trip_days')
         .select(`
@@ -461,11 +460,11 @@ export async function getTripDays(): Promise<any[]> {
 /**
  * Fetches trip days for a specific tour package ID.
  */
-export async function getTripDaysForPackage(packageId: string): Promise<{ day_number: number }[]> {
+export async function getTripDaysForPackage(packageId: string): Promise<TripDay[]> {
     const supabase = createAdminClient();
     const { data, error } = await supabase
         .from('trip_days')
-        .select(`day_number`)
+        .select(`*`)
         .eq('package_id', packageId)
         .order('day_number', { ascending: true });
 
@@ -474,7 +473,7 @@ export async function getTripDaysForPackage(packageId: string): Promise<{ day_nu
         return [];
     }
 
-    return (data || []) as { day_number: number }[];
+    return (data || []) as TripDay[];
 }
 
 
@@ -482,7 +481,7 @@ export async function getTripDaysForPackage(packageId: string): Promise<{ day_nu
  * Fetches a single trip day by its ID.
  */
 export async function getTripDayById(id: string): Promise<TripDay | null> {
-    const supabase = createBrowserClient();
+    const supabase = createAdminClient();
     const { data, error } = await supabase
         .from('trip_days')
         .select(`*, tour_package:package_id(name)`)
@@ -636,7 +635,7 @@ export async function deleteTripDay(id: string) {
  * Fetches all trip locations from Supabase.
  */
 export async function getTripLocations(): Promise<TripLocation[]> {
-  const supabase = createBrowserClient();
+  const supabase = createAdminClient();
   const { data, error } = await supabase.from('places').select('*').order('created_at', { ascending: false });
 
   if (error) {
@@ -650,7 +649,7 @@ export async function getTripLocations(): Promise<TripLocation[]> {
  * Fetches a single trip location by its ID from Supabase.
  */
 export async function getTripLocationById(id: string): Promise<TripLocation | null> {
-  const supabase = createBrowserClient();
+  const supabase = createAdminClient();
   const { data, error } = await supabase.from('places').select('*').eq('id', id).single();
 
   if (error) {
