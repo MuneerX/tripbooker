@@ -1,5 +1,4 @@
 
-
 "use server"
 
 import { createServerClient } from '@supabase/ssr'
@@ -847,3 +846,5 @@ export async function getReviews(): Promise<Review[]> {
   }
   return data as Review[];
 }
+
+    
