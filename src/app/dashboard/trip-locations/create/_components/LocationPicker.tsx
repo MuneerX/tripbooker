@@ -210,6 +210,12 @@ export function LocationPicker({ initialPosition }: LocationPickerProps) {
     setSuggestions([]);
     setIsPopoverOpen(false);
   };
+  
+  const handleInputFocus = () => {
+    if (suggestions.length > 0) {
+      setIsPopoverOpen(true);
+    }
+  };
 
   return (
     <div className="space-y-4">
@@ -223,11 +229,16 @@ export function LocationPicker({ initialPosition }: LocationPickerProps) {
                             placeholder="Start typing an address..."
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
+                            onFocus={handleInputFocus}
                             className="pl-8"
                         />
                     </div>
                 </PopoverTrigger>
-                <PopoverContent className="w-[--radix-popover-trigger-width] p-0" align="start">
+                <PopoverContent 
+                  className="w-[--radix-popover-trigger-width] p-0" 
+                  align="start"
+                  onOpenAutoFocus={(e) => e.preventDefault()}
+                >
                     <Command>
                         <CommandList>
                             <CommandGroup>
