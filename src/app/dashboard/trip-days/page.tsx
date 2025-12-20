@@ -4,13 +4,13 @@
 import * as React from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { PlusCircle, MoreHorizontal, FilePenLine, Trash2, View, CalendarDays } from "lucide-react";
+import { PlusCircle, MoreHorizontal, FilePenLine, Trash2, View } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
-import type { TripDay, Activity } from "@/lib/types";
+import type { TripDay } from "@/lib/types";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -20,7 +20,6 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-  AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { getTripDays, deleteTripDay } from "@/lib/supabase/queries";
 import { useToast } from "@/hooks/use-toast";
@@ -38,7 +37,7 @@ export default function TripDaysPage() {
   const [allTripDays, setAllTripDays] = React.useState<TripDayWithPackageAndActivities[]>([]);
   const [loading, setLoading] = React.useState(true);
   const [searchTerm, setSearchTerm] = React.useState("");
-  const [deletingId, setDeletingId] = React.useState<string | null>(null);
+  const [itemToDelete, setItemToDelete] = React.useState<TripDayWithPackageAndActivities | null>(null);
   const [currentPage, setCurrentPage] = React.useState(1);
   const rowsPerPage = 10;
 
@@ -52,14 +51,25 @@ export default function TripDaysPage() {
     fetchTripDays();
   }, []);
 
-  const handleDelete = async (dayId: string, dayName: string) => {
-    setDeletingId(dayId);
+  React.useEffect(() => {
+    if (itemToDelete) {
+      document.body.style.pointerEvents = 'none';
+    } else {
+      document.body.style.pointerEvents = '';
+    }
+    return () => {
+      document.body.style.pointerEvents = '';
+    };
+  }, [itemToDelete]);
+
+  const handleDelete = async () => {
+    if (!itemToDelete) return;
     try {
-      await deleteTripDay(dayId);
-      setAllTripDays(prevDays => prevDays.filter(day => day.id !== dayId));
+      await deleteTripDay(itemToDelete.id);
+      setAllTripDays(prevDays => prevDays.filter(day => day.id !== itemToDelete.id));
       toast({
         title: "Success",
-        description: `Trip day "${dayName}" has been deleted.`,
+        description: `Trip day "${itemToDelete.title || itemToDelete.day_name}" has been deleted.`,
       });
     } catch (error: any) {
       toast({
@@ -68,7 +78,7 @@ export default function TripDaysPage() {
         description: error.message,
       });
     } finally {
-      setDeletingId(null);
+      setItemToDelete(null);
     }
   };
 
@@ -141,44 +151,29 @@ export default function TripDaysPage() {
                         <TableCell className="hidden sm:table-cell text-center">{day.day_number}</TableCell>
                         <TableCell className="hidden md:table-cell text-center">{activityCount}</TableCell>
                         <TableCell className="text-right">
-                          <AlertDialog>
-                            <DropdownMenu>
-                                <DropdownMenuTrigger asChild>
-                                <Button aria-haspopup="true" size="icon" variant="ghost">
-                                    <MoreHorizontal className="h-4 w-4" />
-                                    <span className="sr-only">Toggle menu</span>
-                                </Button>
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent align="end">
-                                <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                                <DropdownMenuItem onSelect={() => router.push(`/dashboard/trip-days/${day.id}`)}>
-                                    <View className="mr-2 h-4 w-4" /> View
-                                </DropdownMenuItem>
-                                <DropdownMenuItem onSelect={() => router.push(`/dashboard/trip-days/edit/${day.id}`)}>
-                                    <FilePenLine className="mr-2 h-4 w-4" /> Edit
-                                </DropdownMenuItem>
-                                <AlertDialogTrigger asChild>
-                                    <DropdownMenuItem className="text-red-600 focus:text-red-600 focus:bg-red-50" onSelect={(e) => e.preventDefault()}>
-                                      <Trash2 className="mr-2 h-4 w-4" /> Delete
-                                    </DropdownMenuItem>
-                                </AlertDialogTrigger>
-                                </DropdownMenuContent>
-                            </DropdownMenu>
-                            <AlertDialogContent>
-                                <AlertDialogHeader>
-                                <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-                                <AlertDialogDescription>
-                                    This action cannot be undone. This will permanently delete the trip day "{day.title || day.day_name}".
-                                </AlertDialogDescription>
-                                </AlertDialogHeader>
-                                <AlertDialogFooter>
-                                <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                <AlertDialogAction onClick={() => handleDelete(day.id, day.title || day.day_name || '')} className="bg-destructive hover:bg-destructive/90">
-                                  {deletingId === day.id ? "Deleting..." : "Delete"}
-                                </AlertDialogAction>
-                                </AlertDialogFooter>
-                            </AlertDialogContent>
-                            </AlertDialog>
+                          <DropdownMenu>
+                              <DropdownMenuTrigger asChild>
+                              <Button aria-haspopup="true" size="icon" variant="ghost">
+                                  <MoreHorizontal className="h-4 w-4" />
+                                  <span className="sr-only">Toggle menu</span>
+                              </Button>
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent align="end">
+                              <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                              <DropdownMenuItem onSelect={() => router.push(`/dashboard/trip-days/${day.id}`)}>
+                                  <View className="mr-2 h-4 w-4" /> View
+                              </DropdownMenuItem>
+                              <DropdownMenuItem onSelect={() => router.push(`/dashboard/trip-days/edit/${day.id}`)}>
+                                  <FilePenLine className="mr-2 h-4 w-4" /> Edit
+                              </DropdownMenuItem>
+                              <DropdownMenuItem 
+                                className="text-red-600 focus:text-red-600 focus:bg-red-50"
+                                onSelect={() => setItemToDelete(day)}
+                              >
+                                <Trash2 className="mr-2 h-4 w-4" /> Delete
+                              </DropdownMenuItem>
+                              </DropdownMenuContent>
+                          </DropdownMenu>
                         </TableCell>
                     </TableRow>
                     );
@@ -217,6 +212,25 @@ export default function TripDaysPage() {
             </div>
         </CardFooter>
         </Card>
+
+        {itemToDelete && (
+          <AlertDialog open={!!itemToDelete} onOpenChange={(open) => !open && setItemToDelete(null)}>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  This action cannot be undone. This will permanently delete the trip day "{itemToDelete.title || itemToDelete.day_name}".
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel onClick={() => setItemToDelete(null)}>Cancel</AlertDialogCancel>
+                <AlertDialogAction onClick={handleDelete} className="bg-destructive hover:bg-destructive/90">
+                  Delete
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+        )}
     </div>
   );
 }

@@ -24,7 +24,6 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-  AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { getTourPackages, deleteTourPackage } from "@/lib/supabase/queries";
 import { useToast } from "@/hooks/use-toast";
@@ -36,29 +35,42 @@ export default function TourPackagesPage() {
   const [currentPage, setCurrentPage] = React.useState(1);
   const [allPackages, setAllPackages] = React.useState<TourPackage[]>([]);
   const [loading, setLoading] = React.useState(true);
-  const [deletingId, setDeletingId] = React.useState<string | null>(null);
+  const [itemToDelete, setItemToDelete] = React.useState<TourPackage | null>(null);
+
   const rowsPerPage = 10;
 
   React.useEffect(() => {
     const fetchPackages = async () => {
       setLoading(true);
       const packages = await getTourPackages();
-      console.log('Fetched Packages:', packages);
       setAllPackages(packages);
       setLoading(false);
     };
     fetchPackages();
   }, []);
 
-  const handleDelete = async (pkg: TourPackage) => {
-    setDeletingId(pkg.id);
+  React.useEffect(() => {
+    if (itemToDelete) {
+      document.body.style.pointerEvents = 'none';
+    } else {
+      document.body.style.pointerEvents = '';
+    }
+    // Cleanup function to ensure pointer-events are re-enabled when component unmounts
+    return () => {
+      document.body.style.pointerEvents = '';
+    };
+  }, [itemToDelete]);
+
+  const handleDelete = async () => {
+    if (!itemToDelete) return;
+
     try {
-      await deleteTourPackage(pkg);
+      await deleteTourPackage(itemToDelete);
       toast({
         title: "Success",
-        description: `Tour package "${pkg.name}" has been deleted.`,
+        description: `Tour package "${itemToDelete.name}" has been deleted.`,
       });
-      setAllPackages(prev => prev.filter(p => p.id !== pkg.id));
+      setAllPackages(prev => prev.filter(p => p.id !== itemToDelete.id));
     } catch (error: any) {
       toast({
         variant: "destructive",
@@ -66,7 +78,7 @@ export default function TourPackagesPage() {
         description: error.message,
       });
     } finally {
-      setDeletingId(null);
+      setItemToDelete(null);
     }
   };
 
@@ -160,44 +172,29 @@ export default function TourPackagesPage() {
                       <Badge variant="outline" className={cn("capitalize", getStatusBadgeColor(pkg.is_active ? 'active' : 'inactive'))}>{pkg.is_active ? 'active' : 'inactive'}</Badge>
                     </TableCell>
                     <TableCell>
-                      <AlertDialog>
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button aria-haspopup="true" size="icon" variant="ghost">
-                                <MoreHorizontal className="h-4 w-4" />
-                                <span className="sr-only">Toggle menu</span>
-                              </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                              <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                              <DropdownMenuItem onSelect={() => router.push(`/dashboard/tour-packages/${pkg.id}`)}>
-                                <View className="mr-2 h-4 w-4" /> View
-                              </DropdownMenuItem>
-                              <DropdownMenuItem onSelect={() => router.push(`/dashboard/tour-packages/edit/${pkg.id}`)}>
-                                <FilePenLine className="mr-2 h-4 w-4" /> Edit
-                              </DropdownMenuItem>
-                              <AlertDialogTrigger asChild>
-                                <DropdownMenuItem className="text-red-600 focus:text-red-600 focus:bg-red-50" onSelect={(e) => e.preventDefault()}>
-                                  <Trash2 className="mr-2 h-4 w-4" /> Delete
-                                </DropdownMenuItem>
-                              </AlertDialogTrigger>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
-                          <AlertDialogContent>
-                            <AlertDialogHeader>
-                              <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-                              <AlertDialogDescription>
-                                This action cannot be undone. This will permanently delete the tour package "{pkg.name}".
-                              </AlertDialogDescription>
-                            </AlertDialogHeader>
-                            <AlertDialogFooter>
-                              <AlertDialogCancel>Cancel</AlertDialogCancel>
-                              <AlertDialogAction onClick={() => handleDelete(pkg)} className="bg-destructive hover:bg-destructive/90">
-                                {deletingId === pkg.id ? 'Deleting...' : 'Delete'}
-                              </AlertDialogAction>
-                            </AlertDialogFooter>
-                          </AlertDialogContent>
-                        </AlertDialog>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button aria-haspopup="true" size="icon" variant="ghost">
+                            <MoreHorizontal className="h-4 w-4" />
+                            <span className="sr-only">Toggle menu</span>
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                          <DropdownMenuItem onSelect={() => router.push(`/dashboard/tour-packages/${pkg.id}`)}>
+                            <View className="mr-2 h-4 w-4" /> View
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onSelect={() => router.push(`/dashboard/tour-packages/edit/${pkg.id}`)}>
+                            <FilePenLine className="mr-2 h-4 w-4" /> Edit
+                          </DropdownMenuItem>
+                          <DropdownMenuItem
+                            className="text-red-600 focus:text-red-600 focus:bg-red-50"
+                            onSelect={() => setItemToDelete(pkg)}
+                          >
+                            <Trash2 className="mr-2 h-4 w-4" /> Delete
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
                     </TableCell>
                   </TableRow>
                 ))
@@ -235,6 +232,25 @@ export default function TourPackagesPage() {
             </div>
         </CardFooter>
       </Card>
+
+      {itemToDelete && (
+        <AlertDialog open={!!itemToDelete} onOpenChange={(open) => !open && setItemToDelete(null)}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+              <AlertDialogDescription>
+                This action cannot be undone. This will permanently delete the tour package "{itemToDelete.name}".
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel onClick={() => setItemToDelete(null)}>Cancel</AlertDialogCancel>
+              <AlertDialogAction onClick={handleDelete} className="bg-destructive hover:bg-destructive/90">
+                Delete
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+      )}
     </div>
   );
 }

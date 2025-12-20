@@ -21,7 +21,6 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-  AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
@@ -35,7 +34,7 @@ export default function TripLocationsPage() {
   const [searchTerm, setSearchTerm] = React.useState("");
   const [allLocations, setAllLocations] = React.useState<TripLocation[]>([]);
   const [loading, setLoading] = React.useState(true);
-  const [deletingId, setDeletingId] = React.useState<string | null>(null);
+  const [itemToDelete, setItemToDelete] = React.useState<TripLocation | null>(null);
   const [currentPage, setCurrentPage] = React.useState(1);
   const rowsPerPage = 10;
 
@@ -49,14 +48,25 @@ export default function TripLocationsPage() {
     fetchLocations();
   }, []);
 
-  const handleDelete = async (location: TripLocation) => {
-    setDeletingId(location.id);
+  React.useEffect(() => {
+    if (itemToDelete) {
+      document.body.style.pointerEvents = 'none';
+    } else {
+      document.body.style.pointerEvents = '';
+    }
+    return () => {
+      document.body.style.pointerEvents = '';
+    };
+  }, [itemToDelete]);
+
+  const handleDelete = async () => {
+    if (!itemToDelete) return;
     try {
-      await deleteTripLocation(location);
-      setAllLocations(prev => prev.filter(loc => loc.id !== location.id));
+      await deleteTripLocation(itemToDelete);
+      setAllLocations(prev => prev.filter(loc => loc.id !== itemToDelete.id));
       toast({
         title: "Success",
-        description: `Location "${location.name}" has been deleted.`,
+        description: `Location "${itemToDelete.name}" has been deleted.`,
       });
     } catch (error: any) {
       toast({
@@ -65,7 +75,7 @@ export default function TripLocationsPage() {
         description: error.message,
       });
     } finally {
-      setDeletingId(null);
+      setItemToDelete(null);
     }
   };
 
@@ -162,7 +172,6 @@ export default function TripLocationsPage() {
                         <Badge variant="outline" className={cn("capitalize", getStatusBadgeColor(location.is_active ? 'active' : 'inactive'))}>{location.is_active ? 'Active' : 'Inactive'}</Badge>
                     </TableCell>
                     <TableCell>
-                        <AlertDialog>
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
                             <Button aria-haspopup="true" size="icon" variant="ghost">
@@ -178,28 +187,14 @@ export default function TripLocationsPage() {
                             <DropdownMenuItem onSelect={() => router.push(`/dashboard/trip-locations/edit/${location.id}`)}>
                                 <FilePenLine className="mr-2 h-4 w-4" /> Edit
                             </DropdownMenuItem>
-                            <AlertDialogTrigger asChild>
-                                <DropdownMenuItem className="text-red-600 focus:text-red-600 focus:bg-red-50" onSelect={(e) => e.preventDefault()}>
-                                <Trash2 className="mr-2 h-4 w-4" /> Delete
-                                </DropdownMenuItem>
-                            </AlertDialogTrigger>
+                            <DropdownMenuItem 
+                              className="text-red-600 focus:text-red-600 focus:bg-red-50"
+                              onSelect={() => setItemToDelete(location)}
+                            >
+                              <Trash2 className="mr-2 h-4 w-4" /> Delete
+                            </DropdownMenuItem>
                             </DropdownMenuContent>
                         </DropdownMenu>
-                        <AlertDialogContent>
-                            <AlertDialogHeader>
-                            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-                            <AlertDialogDescription>
-                                This action cannot be undone. This will permanently delete the location "{location.name}" and all of its images.
-                            </AlertDialogDescription>
-                            </AlertDialogHeader>
-                            <AlertDialogFooter>
-                              <AlertDialogCancel>Cancel</AlertDialogCancel>
-                              <AlertDialogAction onClick={() => handleDelete(location)} className="bg-destructive hover:bg-destructive/90">
-                                {deletingId === location.id ? "Deleting..." : "Delete"}
-                              </AlertDialogAction>
-                            </AlertDialogFooter>
-                        </AlertDialogContent>
-                        </AlertDialog>
                     </TableCell>
                     </TableRow>
                 ))
@@ -237,6 +232,25 @@ export default function TripLocationsPage() {
             </div>
         </CardFooter>
         </Card>
+        
+        {itemToDelete && (
+          <AlertDialog open={!!itemToDelete} onOpenChange={(open) => !open && setItemToDelete(null)}>
+            <AlertDialogContent>
+                <AlertDialogHeader>
+                <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                <AlertDialogDescription>
+                    This action cannot be undone. This will permanently delete the location "{itemToDelete.name}" and all of its images.
+                </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel onClick={() => setItemToDelete(null)}>Cancel</AlertDialogCancel>
+                  <AlertDialogAction onClick={handleDelete} className="bg-destructive hover:bg-destructive/90">
+                    Delete
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+        )}
     </div>
   );
 }
