@@ -23,7 +23,7 @@ import { LocationPicker } from "@/app/dashboard/trip-locations/create/_component
 import { Skeleton } from "@/components/ui/skeleton";
 
 
-const MAX_FILE_SIZE = 2 * 1024 * 1024; // 2MB
+const MAX_FILE_SIZE = 4 * 1024 * 1024;
 const ACCEPTED_IMAGE_TYPES = ["image/jpeg", "image/jpg", "image/png", "image/webp"];
 
 
@@ -44,7 +44,7 @@ const tripLocationSchema = z.object({
   image_urls: z.array(z.string()).optional(),
   new_image_files: z.any()
     .optional()
-    .refine((files) => !files || Array.from(files).every((file: any) => file.size <= MAX_FILE_SIZE), `Max file size is 2MB.`)
+    .refine((files) => !files || Array.from(files).every((file: any) => file.size <= MAX_FILE_SIZE), `Max file size is 4MB.`)
     .refine((files) => !files || Array.from(files).every((file: any) => ACCEPTED_IMAGE_TYPES.includes(file.type)), ".jpg, .jpeg, .png and .webp files are accepted."),
 });
 
@@ -293,8 +293,8 @@ export default function EditTripLocationPage() {
                                                   <h4 className="text-sm font-medium mb-2 text-muted-foreground">Current Images:</h4>
                                                   <div className="grid grid-cols-3 gap-2">
                                                   {existingImageUrls.map((url, index) => (
-                                                      <div key={index} className="relative group">
-                                                          <Image src={url} alt={`Existing image ${index + 1}`} width={150} height={100} className="rounded-md object-cover" />
+                                                      <div key={index} className="relative group aspect-video">
+                                                          <Image src={url} alt={`Existing image ${index + 1}`} fill className="rounded-md object-cover" />
                                                           <Button type="button" variant="destructive" size="icon" className="absolute top-1 right-1 h-6 w-6 opacity-0 group-hover:opacity-100" onClick={() => handleRemoveExistingImage(url)}>
                                                               <X className="h-4 w-4" />
                                                           </Button>
@@ -309,7 +309,7 @@ export default function EditTripLocationPage() {
                                                       <div className="flex flex-col items-center justify-center pt-5 pb-6">
                                                       <Upload className="w-8 h-8 mb-4 text-muted-foreground" />
                                                       <p className="mb-2 text-sm text-muted-foreground"><span className="font-semibold">Click to upload</span> or drag and drop</p>
-                                                      <p className="text-xs text-muted-foreground">Add new images (MAX. 2MB each)</p>
+                                                      <p className="text-xs text-muted-foreground">Add new images (MAX. 4MB each)</p>
                                                       </div>
                                                       <Input id="image-files" type="file" className="hidden" multiple onChange={(e) => handleFileChange(e, field)} />
                                                   </label>
