@@ -1,4 +1,5 @@
 
+
 "use server"
 
 import { createServerClient } from '@supabase/ssr'
@@ -449,7 +450,7 @@ export async function getTripDaysForPackage(packageId: string): Promise<TripDay[
     const supabase = createAdminClient();
     const { data, error } = await supabase
         .from('trip_days')
-        .select(`*`)
+        .select(`*, activities:trip_day_activities(*)`)
         .eq('package_id', packageId)
         .order('day_number', { ascending: true });
 
