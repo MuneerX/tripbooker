@@ -46,7 +46,7 @@ export type Activity = {
   activity_time?: string | null; // time without time zone
   title: string;
   description?: string | null;
-  activity_type?: 'trekking' | 'sightseeing' | 'meal' | 'transport' | 'accommodation' | 'adventure' | 'shopping' | 'leisure' | 'food' | 'explore' | 'stay' | null;
+  activity_type?: 'food' | 'explore' | 'stay' | null;
   place_id?: string | null;
   duration_minutes?: number | null;
   travel_duration_minutes?: number | null;

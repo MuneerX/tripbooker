@@ -28,7 +28,7 @@ export const activitySchema = z.object({
     id: z.string().uuid().optional().or(z.literal('')),
     trip_day_id: z.string().uuid().optional().or(z.literal('')),
     title: z.string().min(1, "Activity title is required"),
-    activity_type: z.enum(["trekking", "sightseeing", "meal", "transport", "accommodation", "adventure", "shopping", "leisure", "food", "explore", "stay"]),
+    activity_type: z.enum(["food", "explore", "stay"]),
     activity_time: z.string().regex(/^(0[0-9]|1[0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]$/, "Invalid time format. Use HH:mm:ss").optional().nullable(),
     duration_minutes: z.coerce.number().int().min(0, "Duration must be a positive number").optional().nullable(),
     travel_duration_minutes: z.coerce.number().int().min(0, "Travel duration must be a positive number").optional().nullable(),
@@ -114,14 +114,6 @@ export function ActivityFormModal({ children, activity, onSave }: ActivityFormMo
                                   <SelectItem value="food">Food</SelectItem>
                                   <SelectItem value="explore">Explore</SelectItem>
                                   <SelectItem value="stay">Stay</SelectItem>
-                                  <SelectItem value="trekking">Trekking</SelectItem>
-                                  <SelectItem value="sightseeing">Sightseeing</SelectItem>
-                                  <SelectItem value="meal">Meal</SelectItem>
-                                  <SelectItem value="transport">Transport</SelectItem>
-                                  <SelectItem value="accommodation">Accommodation</SelectItem>
-                                  <SelectItem value="adventure">Adventure</SelectItem>
-                                  <SelectItem value="shopping">Shopping</SelectItem>
-                                  <SelectItem value="leisure">Leisure</SelectItem>
                                   </SelectContent></Select><FormMessage /></FormItem> )} />
                                 <FormField control={activityForm.control} name="activity_time" render={({ field }) => ( <FormItem><FormLabel>Time (HH:mm:ss)</FormLabel><FormControl><Input placeholder="e.g., 17:30:00" {...field} value={field.value ?? ""} /></FormControl><FormMessage /></FormItem>)} />
                             </div>
