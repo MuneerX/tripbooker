@@ -25,12 +25,14 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { useBreadcrumb } from "../../layout";
 
 export default function TripLocationDetailPage() {
   const router = useRouter();
   const params = useParams();
   const { id } = params as { id: string };
   const { toast } = useToast();
+  const { setBreadcrumbName } = useBreadcrumb();
   
   const [location, setLocation] = React.useState<TripLocation | null>(null);
   const [loading, setLoading] = React.useState(true);
@@ -42,15 +44,19 @@ export default function TripLocationDetailPage() {
         const loc = await getTripLocationById(id);
         if (loc) {
           setLocation(loc);
+          setBreadcrumbName(loc.name);
         } else {
           toast({ variant: "destructive", title: "Error", description: "Location not found." });
+          setBreadcrumbName('Not Found');
           router.push('/dashboard/trip-locations');
         }
         setLoading(false);
       };
       fetchLocation();
     }
-  }, [id, router, toast]);
+    // Clear on unmount
+    return () => setBreadcrumbName('');
+  }, [id, router, toast, setBreadcrumbName]);
 
   const handleDelete = async () => {
     if (!location) return;

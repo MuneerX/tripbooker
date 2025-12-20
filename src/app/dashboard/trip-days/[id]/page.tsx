@@ -21,12 +21,14 @@ import { useToast } from "@/hooks/use-toast";
 import type { TripDay } from "@/lib/types";
 import { getTripDayById, deleteTripDay } from "@/lib/supabase/queries";
 import { formatCurrency } from "@/lib/utils";
+import { useBreadcrumb } from "../../layout";
 
 export default function TripDayDetailPage() {
   const router = useRouter();
   const params = useParams();
   const { id } = params as { id: string };
   const { toast } = useToast();
+  const { setBreadcrumbName } = useBreadcrumb();
 
   const [tripDay, setTripDay] = React.useState<TripDay | null>(null);
   const [loading, setLoading] = React.useState(true);
@@ -39,15 +41,19 @@ export default function TripDayDetailPage() {
         console.log('Fetched Trip Day with Activities:', day);
         if (day) {
           setTripDay(day);
+          setBreadcrumbName(day.day_name);
         } else {
            toast({ variant: "destructive", title: "Error", description: "Trip day not found." });
            router.push('/dashboard/trip-days');
+           setBreadcrumbName('Not Found');
         }
         setLoading(false);
       };
       fetchTripDay();
     }
-  }, [id, toast, router]);
+    // Clear on unmount
+    return () => setBreadcrumbName('');
+  }, [id, toast, router, setBreadcrumbName]);
 
   const handleDelete = async () => {
     try {

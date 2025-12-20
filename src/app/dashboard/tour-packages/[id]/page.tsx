@@ -30,6 +30,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { useToast } from "@/hooks/use-toast";
+import { useBreadcrumb } from "../../layout";
 
 
 export default function TourPackageDetailPage() {
@@ -37,6 +38,7 @@ export default function TourPackageDetailPage() {
   const params = useParams();
   const { id } = params as { id: string };
   const { toast } = useToast();
+  const { setBreadcrumbName } = useBreadcrumb();
 
   const [tourPackage, setTourPackage] = React.useState<TourPackage | null>(null);
   
@@ -51,6 +53,7 @@ export default function TourPackageDetailPage() {
         setTourPackage(pkg);
 
         if (pkg) {
+          setBreadcrumbName(pkg.name);
           const tripDays = await getTripDaysForPackage(pkg.id);
           setTripDaysForPackage(tripDays);
 
@@ -59,11 +62,15 @@ export default function TourPackageDetailPage() {
 
           setBookingsForPackage(allBookings.filter(b => b.tour_package_id === pkg.id));
           setReviewsForPackage(allReviews.filter(r => r.tour_package_id === pkg.id));
+        } else {
+           setBreadcrumbName('Not Found');
         }
       };
       fetchPackageAndRelatedData();
     }
-  }, [id]);
+     // Clear on unmount
+    return () => setBreadcrumbName('');
+  }, [id, setBreadcrumbName]);
 
   const allImages = React.useMemo(() => {
     if (!tourPackage) return [];

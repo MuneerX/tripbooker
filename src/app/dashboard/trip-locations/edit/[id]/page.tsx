@@ -1,5 +1,4 @@
 
-
 "use client";
 
 import * as React from "react";
@@ -19,6 +18,7 @@ import type { TripLocation } from "@/lib/types";
 import { Switch } from "@/components/ui/switch";
 import Image from "next/image";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useBreadcrumb } from "../../../layout";
 
 
 const MAX_FILE_SIZE = 2 * 1024 * 1024; // 2MB
@@ -83,6 +83,8 @@ export default function EditTripLocationPage() {
   const params = useParams();
   const { id } = params as { id: string };
   const { toast } = useToast();
+  const { setBreadcrumbName } = useBreadcrumb();
+
   const [loading, setLoading] = React.useState(true);
   const [isSubmitting, setIsSubmitting] = React.useState(false);
   const [originalLocation, setOriginalLocation] = React.useState<TripLocation | null>(null);
@@ -99,6 +101,7 @@ export default function EditTripLocationPage() {
         const loc = await getTripLocationById(id);
         if (loc) {
           setOriginalLocation(loc);
+          setBreadcrumbName(`Edit: ${loc.name}`);
           form.reset({
             name: loc.name,
             place_type: loc.place_type || 'Tourist Places',
@@ -122,7 +125,9 @@ export default function EditTripLocationPage() {
       };
       fetchLocation();
     }
-  }, [id, router, toast, form]);
+     // Clear on unmount
+    return () => setBreadcrumbName('');
+  }, [id, router, toast, form, setBreadcrumbName]);
 
   const newImageFiles = form.watch("new_image_files");
   const existingImageUrls = form.watch("image_urls") || [];

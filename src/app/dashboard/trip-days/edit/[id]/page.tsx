@@ -1,5 +1,4 @@
 
-
 "use client";
 
 import * as React from "react";
@@ -19,6 +18,7 @@ import { getTripDayById, updateTripDay, getTripDaysForPackage, getTourPackages }
 import { ActivityFormModal, activitySchema } from "@/app/dashboard/trip-days/create/_components/ActivityFormModal";
 import { formatCurrency } from "@/lib/utils";
 import type { TripDay, TourPackage } from "@/lib/types";
+import { useBreadcrumb } from "../../../layout";
 
 const tripDayEditSchema = z.object({
   day_name: z.string().min(1, "Day name is required"),
@@ -37,6 +37,8 @@ export default function EditTripDayPage() {
   const params = useParams();
   const { id } = params as { id: string };
   const { toast } = useToast();
+  const { setBreadcrumbName } = useBreadcrumb();
+
   const [loading, setLoading] = React.useState(true);
   const [isSubmitting, setIsSubmitting] = React.useState(false);
   const [existingDayNumbers, setExistingDayNumbers] = React.useState<number[]>([]);
@@ -83,6 +85,7 @@ export default function EditTripDayPage() {
                 const existingDays = await getTripDaysForPackage(day.package_id);
                 setExistingDayNumbers(existingDays.map(d => d.day_number));
                 setOriginalDayNumber(day.day_number);
+                setBreadcrumbName(`Edit: ${day.day_name}`);
 
                 form.reset({
                     day_name: day.day_name || '',
@@ -106,7 +109,10 @@ export default function EditTripDayPage() {
         setLoading(false);
     };
     fetchInitialData();
-  }, [id, router, toast, form]);
+    
+     // Clear on unmount
+    return () => setBreadcrumbName('');
+  }, [id, router, toast, form, setBreadcrumbName]);
 
   const selectedPackageId = form.watch("package_id");
 

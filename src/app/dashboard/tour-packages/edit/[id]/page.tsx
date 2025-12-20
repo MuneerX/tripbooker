@@ -1,5 +1,4 @@
 
-
 "use client"
 
 import * as React from "react"
@@ -20,6 +19,7 @@ import { Upload, File as FileIcon, X, Image as ImageIcon } from "lucide-react"
 import type { TourPackage } from "@/lib/types"
 import Image from "next/image"
 import { PayInPartsForm } from "@/app/dashboard/tour-packages/create/_components/PayInPartsForm"
+import { useBreadcrumb } from "../../../layout"
 
 const MAX_FILE_SIZE = 2 * 1024 * 1024; // 2MB
 const ACCEPTED_IMAGE_TYPES = ["image/jpeg", "image/jpg", "image/png", "image/webp"];
@@ -73,6 +73,8 @@ export default function EditTourPackagePage() {
   const params = useParams();
   const { id } = params as { id: string };
   const { toast } = useToast();
+  const { setBreadcrumbName } = useBreadcrumb();
+
   const [tourPackage, setTourPackage] = React.useState<TourPackage | null>(null);
   const [loading, setLoading] = React.useState(true);
   const [isPayInPartsEnabled, setIsPayInPartsEnabled] = React.useState(false);
@@ -96,6 +98,7 @@ export default function EditTourPackagePage() {
         const pkg = await getTourPackageById(id);
         if (pkg) {
           setTourPackage(pkg);
+          setBreadcrumbName(pkg.name);
           form.reset({
             ...pkg,
             base_price: pkg.base_price ?? 0,
@@ -111,7 +114,9 @@ export default function EditTourPackagePage() {
       };
       fetchPackage();
     }
-  }, [id, router, toast, form]);
+     // Clear on unmount
+    return () => setBreadcrumbName('');
+  }, [id, router, toast, form, setBreadcrumbName]);
 
   React.useEffect(() => {
     if (!isFeatured) {
@@ -406,5 +411,3 @@ export default function EditTourPackagePage() {
     </div>
   )
 }
-
-    
