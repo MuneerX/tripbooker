@@ -172,24 +172,18 @@ export function LocationPicker({ initialPosition }: LocationPickerProps) {
   }, [setValue, trigger, getValues]);
 
 
-  const handleLocationChange = useCallback(async (lat: number, lon: number, address?: string) => {
+  const handleLocationChange = useCallback(async (lat: number, lon: number) => {
     setPosition([lat, lon]);
-    if (address) {
-       updateFormFields(lat, lon, { display_name: address });
-    } else {
-        // Reverse geocode to get address details
-        try {
-            const response = await fetch(`https://us1.locationiq.com/v1/reverse.php?key=${LOCATIONIQ_API_KEY}&lat=${lat}&lon=${lon}&format=json&addressdetails=1`);
-            if (response.ok) {
-                const data: LocationIQResult = await response.json();
-                updateFormFields(lat, lon, data);
-                if (data.display_name) setSearchQuery(data.display_name);
-            }
-        } catch (error) {
-            console.error('Reverse geocoding error:', error);
-            // Fallback to setting just coordinates
-            updateFormFields(lat, lon, {});
+    try {
+        const response = await fetch(`https://us1.locationiq.com/v1/reverse.php?key=${LOCATIONIQ_API_KEY}&lat=${lat}&lon=${lon}&format=json&addressdetails=1`);
+        if (response.ok) {
+            const data: LocationIQResult = await response.json();
+            updateFormFields(lat, lon, data);
+            if (data.display_name) setSearchQuery(data.display_name);
         }
+    } catch (error) {
+        console.error('Reverse geocoding error:', error);
+        updateFormFields(lat, lon, {});
     }
   }, [updateFormFields]);
   
@@ -237,9 +231,9 @@ export function LocationPicker({ initialPosition }: LocationPickerProps) {
                     <Command>
                         <CommandList>
                             <CommandGroup>
-                                {suggestions.map((item) => (
+                                {suggestions.map((item, index) => (
                                     <CommandItem
-                                        key={item.place_id}
+                                        key={`${item.place_id}-${index}`}
                                         onSelect={() => handleSuggestionClick(item)}
                                         value={item.display_name}
                                     >
