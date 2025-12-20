@@ -38,6 +38,8 @@ export type TourPackage = {
   featured_image_url: string | null;
   is_active: boolean;
   updated_at: string;
+  bookings: Booking[];
+  reviews: Review[];
 };
 
 export type Activity = {

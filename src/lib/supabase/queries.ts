@@ -42,11 +42,20 @@ export async function getTourPackages(): Promise<TourPackage[]> {
 }
 
 /**
- * Fetches a single tour package by its ID from Supabase.
+ * Fetches a single tour package by its ID from Supabase, along with its related data.
  */
 export async function getTourPackageById(id: string): Promise<TourPackage | null> {
     const supabase = createAdminClient();
-    const { data, error } = await supabase.from('tour_packages').select('*, pay_in_parts(*)').eq('id', id).single()
+    const { data, error } = await supabase
+      .from('tour_packages')
+      .select(`
+        *,
+        pay_in_parts(*),
+        bookings:tour_bookings(*, customer:profiles(full_name, email)),
+        reviews(*, customer:profiles(full_name))
+      `)
+      .eq('id', id)
+      .single();
 
     if (error) {
       console.error(`Error fetching tour package ${id}:`, error)
@@ -54,8 +63,23 @@ export async function getTourPackageById(id: string): Promise<TourPackage | null
     }
 
     if (!data) return null;
+    
+    console.log(`Fetched data for package ${id}:`, JSON.stringify(data, null, 2));
+    
+    // Process bookings to match the expected structure
+    const processedBookings = data.bookings.map((item: any) => ({
+      ...item,
+      paid_amount: item.total_amount, // Assuming paid_amount is same as total for now
+      customer_name: item.customer?.full_name || 'N/A',
+      customer_email: item.customer?.email || 'N/A',
+    }));
 
-    return { ...data } as TourPackage;
+    const processedReviews = data.reviews.map((item: any) => ({
+        ...item,
+        customer_name: item.customer?.full_name || 'N/A',
+    }));
+
+    return { ...data, bookings: processedBookings, reviews: processedReviews } as TourPackage;
 }
 
 /**
@@ -865,7 +889,6 @@ export async function getBookings(): Promise<Booking[]> {
       total_adults,
       total_children,
       total_amount,
-      paid_amount:total_amount,
       booking_status,
       payment_status,
       payment_method,
@@ -883,8 +906,6 @@ export async function getBookings(): Promise<Booking[]> {
     return [];
   }
     
-  console.log('Fetched bookings:', data);
-
   // Map the data to the Booking type
   return data.map((item: any) => ({
     id: item.id,
@@ -896,7 +917,7 @@ export async function getBookings(): Promise<Booking[]> {
     total_adults: item.total_adults,
     total_children: item.total_children,
     total_amount: item.total_amount,
-    paid_amount: item.paid_amount,
+    paid_amount: item.total_amount, // Alias paid_amount from total_amount
     booking_status: item.booking_status,
     payment_status: item.payment_status,
     payment_method: item.payment_method,
@@ -912,10 +933,21 @@ export async function getBookings(): Promise<Booking[]> {
  */
 export async function getReviews(): Promise<Review[]> {
   const supabase = createAdminClient();
-  const { data, error } = await supabase.from('reviews').select('*').order('created_at', { ascending: false });
+  const { data, error } = await supabase
+    .from('reviews')
+    .select(`
+        *,
+        customer:profiles(full_name)
+    `)
+    .order('created_at', { ascending: false });
+
   if (error) {
     console.error('Error fetching reviews:', error);
     return [];
   }
-  return data as Review[];
+
+  return data.map((item: any) => ({
+    ...item,
+    customer_name: item.customer?.full_name || 'N/A',
+  })) as Review[];
 }

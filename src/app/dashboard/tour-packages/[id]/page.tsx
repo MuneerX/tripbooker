@@ -16,7 +16,7 @@ import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import Link from "next/link";
-import { getTourPackageById, deleteTourPackage, getTripDaysForPackage, getBookings, getReviews } from "@/lib/supabase/queries";
+import { getTourPackageById, deleteTourPackage, getTripDaysForPackage } from "@/lib/supabase/queries";
 import type { TourPackage, Booking, TripDay, Review, Activity } from "@/lib/types";
 import {
   AlertDialog,
@@ -42,10 +42,8 @@ export default function TourPackageDetailPage() {
 
   const [tourPackage, setTourPackage] = React.useState<TourPackage | null>(null);
   
-  const [bookingsForPackage, setBookingsForPackage] = React.useState<Booking[]>([]);
   const [tripDaysForPackage, setTripDaysForPackage] = React.useState<TripDay[]>([]);
-  const [reviewsForPackage, setReviewsForPackage] = React.useState<Review[]>([]);
-
+  
   React.useEffect(() => {
     if (id) {
       const fetchPackageAndRelatedData = async () => {
@@ -56,12 +54,6 @@ export default function TourPackageDetailPage() {
           setBreadcrumbName(pkg.name);
           const tripDays = await getTripDaysForPackage(pkg.id);
           setTripDaysForPackage(tripDays);
-
-          const allBookings = await getBookings();
-          const allReviews = await getReviews();
-
-          setBookingsForPackage(allBookings.filter(b => b.package_id === pkg.id));
-          setReviewsForPackage(allReviews.filter(r => r.tour_package_id === pkg.id));
         } else {
            setBreadcrumbName('Not Found');
         }
@@ -136,6 +128,9 @@ export default function TourPackageDetailPage() {
       </ul>
     );
   };
+  
+  const bookingsForPackage = tourPackage.bookings || [];
+  const reviewsForPackage = tourPackage.reviews || [];
 
   return (
     <div className="space-y-6">
