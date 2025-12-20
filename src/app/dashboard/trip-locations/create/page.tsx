@@ -1,5 +1,4 @@
 
-
 "use client"
 
 import * as React from "react"
@@ -17,8 +16,15 @@ import { Upload, File as FileIcon, X } from "lucide-react"
 import { createTripLocationWithImages } from "@/lib/supabase/queries"
 import { Switch } from "@/components/ui/switch"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { LocationPicker } from "./_components/LocationPicker"
+import dynamic from 'next/dynamic'
 import type { TripLocation } from "@/lib/types"
+import { Skeleton } from "@/components/ui/skeleton"
+
+const LocationPicker = dynamic(() => import('./_components/LocationPicker').then(mod => mod.LocationPicker), {
+  ssr: false,
+  loading: () => <Skeleton className="h-80 w-full" />,
+});
+
 
 const MAX_FILE_SIZE = 2 * 1024 * 1024; // 2MB
 const ACCEPTED_IMAGE_TYPES = ["image/jpeg", "image/jpg", "image/png", "image/webp"];

@@ -21,7 +21,6 @@ const customIcon = new Icon({
   iconAnchor: [12, 41],
 });
 
-
 type LocationIQResult = {
   place_id: string;
   lat: string;
@@ -41,6 +40,12 @@ type LocationIQResult = {
   };
   name?: string;
 };
+
+function ChangeView({ center, zoom }: { center: [number, number]; zoom: number }) {
+  const map = useMap();
+  map.setView(center, zoom);
+  return null;
+}
 
 function MapUpdater({ 
     position, 
@@ -97,12 +102,15 @@ export function LocationPicker({ initialPosition }: LocationPickerProps) {
 
   const addressValue = watch('address');
 
-  // Set initial address value in search bar
+  // Set initial position and address value from form
   useEffect(() => {
+    if (initialPosition) {
+        setPosition(initialPosition);
+    }
     if (addressValue) {
         setSearchQuery(addressValue);
     }
-  }, [addressValue]);
+  }, [initialPosition, addressValue]);
 
 
   useEffect(() => {
@@ -194,7 +202,6 @@ export function LocationPicker({ initialPosition }: LocationPickerProps) {
         setValue('name', name);
     }
 
-    // This will trigger the useEffect in MapUpdater
     setPosition([lat, lon]);
 
     updateFormFields(lat, lon, suggestion);
@@ -268,5 +275,3 @@ export function LocationPicker({ initialPosition }: LocationPickerProps) {
     </div>
   );
 }
-
-    

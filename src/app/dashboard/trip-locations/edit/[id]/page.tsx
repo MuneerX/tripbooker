@@ -19,8 +19,13 @@ import { Switch } from "@/components/ui/switch";
 import Image from "next/image";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useBreadcrumb } from "../../../layout";
-import { LocationPicker } from "@/app/dashboard/trip-locations/create/_components/LocationPicker";
+import dynamic from 'next/dynamic';
 import { Skeleton } from "@/components/ui/skeleton";
+
+const LocationPicker = dynamic(() => import('@/app/dashboard/trip-locations/create/_components/LocationPicker').then(mod => mod.LocationPicker), {
+  ssr: false,
+  loading: () => <Skeleton className="h-80 w-full" />,
+});
 
 
 const MAX_FILE_SIZE = 2 * 1024 * 1024; // 2MB
@@ -242,7 +247,7 @@ export default function EditTripLocationPage() {
                 <Card>
                     <CardHeader><CardTitle>Location Details</CardTitle></CardHeader>
                     <CardContent className="space-y-6">
-                        <LocationPicker initialPosition={[loadedLocation.latitude ?? 0, loadedLocation.longitude ?? 0]}/>
+                        {loadedLocation && <LocationPicker initialPosition={[loadedLocation.latitude ?? 0, loadedLocation.longitude ?? 0]}/>}
                     </CardContent>
                 </Card>
                 <Card>
@@ -343,5 +348,3 @@ export default function EditTripLocationPage() {
     </div>
   );
 }
-
-    
