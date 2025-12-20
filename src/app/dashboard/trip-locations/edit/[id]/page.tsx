@@ -182,18 +182,9 @@ export default function EditTripLocationPage() {
       setIsSubmitting(false);
     }
   };
-  
-  const initialPosition = React.useMemo(() => {
-    const lat = form.getValues('latitude');
-    const lon = form.getValues('longitude');
-    if (lat && lon) {
-      return [lat, lon] as [number, number];
-    }
-    return undefined;
-  }, [form.getValues('latitude'), form.getValues('longitude')]);
 
 
-  if (loading) {
+  if (loading || !originalLocation) {
     return (
         <div className="space-y-6">
             <div className="flex items-center gap-4">
@@ -249,7 +240,7 @@ export default function EditTripLocationPage() {
                 <Card>
                     <CardHeader><CardTitle>Location Details</CardTitle></CardHeader>
                     <CardContent className="space-y-6">
-                        {initialPosition && <LocationPicker initialPosition={initialPosition}/>}
+                        <LocationPicker initialPosition={[originalLocation.latitude ?? 0, originalLocation.longitude ?? 0]}/>
                     </CardContent>
                 </Card>
                 <Card>
@@ -350,3 +341,5 @@ export default function EditTripLocationPage() {
     </div>
   );
 }
+
+    

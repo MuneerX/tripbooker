@@ -1,10 +1,10 @@
 
 "use client";
 
-import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useFormContext } from 'react-hook-form';
 import { MapContainer, TileLayer, Marker, useMap, useMapEvents } from 'react-leaflet';
-import { LatLngExpression, Icon } from 'leaflet';
+import { Icon } from 'leaflet';
 import { Input } from '@/components/ui/input';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Command, CommandGroup, CommandItem, CommandList } from '@/components/ui/command';
@@ -99,10 +99,10 @@ export function LocationPicker({ initialPosition }: LocationPickerProps) {
 
   // Set initial address value in search bar
   useEffect(() => {
-    if (initialPosition && addressValue) {
+    if (addressValue) {
         setSearchQuery(addressValue);
     }
-  }, [initialPosition, addressValue]);
+  }, [addressValue]);
 
 
   useEffect(() => {
@@ -268,3 +268,5 @@ export function LocationPicker({ initialPosition }: LocationPickerProps) {
     </div>
   );
 }
+
+    
