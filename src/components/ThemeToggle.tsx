@@ -14,7 +14,7 @@ export function ThemeToggle() {
     <div className="p-2">
       <div className="grid grid-cols-2 gap-1 rounded-lg bg-muted p-1">
         <Button
-          variant={theme === 'light' ? 'secondary' : 'ghost'}
+          variant={theme === 'light' ? 'default' : 'ghost'}
           size="sm"
           onClick={() => setTheme("light")}
           className="h-auto px-2 py-1.5 text-sm"
@@ -24,7 +24,7 @@ export function ThemeToggle() {
           Light
         </Button>
         <Button
-          variant={theme === 'dark' ? 'secondary' : 'ghost'}
+          variant={theme === 'dark' ? 'default' : 'ghost'}
           size="sm"
           onClick={() => setTheme("dark")}
           className="h-auto px-2 py-1.5 text-sm"
