@@ -1,7 +1,7 @@
 
 "use client";
 
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { useFormContext } from 'react-hook-form';
 import { MapContainer, TileLayer, Marker, useMap, useMapEvents } from 'react-leaflet';
 import { LatLngExpression, Icon } from 'leaflet';
@@ -45,13 +45,11 @@ type LocationIQResult = {
 function MapEvents({ onLocationChange }: { onLocationChange: (lat: number, lon: number, address?: string) => void }) {
   const map = useMap();
   
-  const mapClickHandler = useCallback((e: any) => {
-    const { lat, lng } = e.latlng;
-    onLocationChange(lat, lng);
-  }, [onLocationChange]);
-
   useMapEvents({
-    click: mapClickHandler
+    click(e) {
+      const { lat, lng } = e.latlng;
+      onLocationChange(lat, lng);
+    },
   });
 
   return null;
@@ -106,7 +104,7 @@ export function LocationPicker({ initialPosition }: LocationPickerProps) {
     if (addressValue && addressValue !== searchQuery) {
       setSearchQuery(addressValue);
     }
-  }, [addressValue, searchQuery]);
+  }, [addressValue]);
 
   useEffect(() => {
     if (debouncedSearch.length > 2) {
