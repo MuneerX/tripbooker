@@ -1,10 +1,10 @@
 
 "use client";
 
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useFormContext } from 'react-hook-form';
-import { MapContainer, TileLayer, Marker, useMap, useMapEvents } from 'react-leaflet';
-import { Icon } from 'leaflet';
+import L from 'leaflet';
+import 'leaflet/dist/leaflet.css';
 import { Input } from '@/components/ui/input';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Command, CommandGroup, CommandItem, CommandList } from '@/components/ui/command';
@@ -15,11 +15,15 @@ import { MapPin } from 'lucide-react';
 
 const LOCATIONIQ_API_KEY = "pk.a8d62ce33fb7db732bdcd81162108c18";
 
-const customIcon = new Icon({
+// Fix for default icon path in webpack environments
+delete (L.Icon.Default.prototype as any)._getIconUrl;
+
+L.Icon.Default.mergeOptions({
+  iconRetinaUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
   iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
-  iconSize: [25, 41],
-  iconAnchor: [12, 41],
+  shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
 });
+
 
 type LocationIQResult = {
   place_id: string;
@@ -41,39 +45,6 @@ type LocationIQResult = {
   name?: string;
 };
 
-function MapUpdater({
-  position,
-  onLocationChange,
-}: {
-  position: [number, number];
-  onLocationChange: (lat: number, lng: number) => void;
-}) {
-  const map = useMap();
-
-  useEffect(() => {
-    map.setView(position, map.getZoom());
-  }, [position, map]);
-
-  useMapEvents({
-    click(e) {
-      onLocationChange(e.latlng.lat, e.latlng.lng);
-    },
-  });
-
-  const markerHandlers = useMemo(
-    () => ({
-      dragend(e: any) {
-        const marker = e.target;
-        const { lat, lng } = marker.getLatLng();
-        onLocationChange(lat, lng);
-      },
-    }),
-    [onLocationChange]
-  );
-
-  return <Marker position={position} icon={customIcon} draggable={true} eventHandlers={markerHandlers} />;
-}
-
 type LocationPickerProps = {
   initialPosition: [number, number];
 };
@@ -88,16 +59,50 @@ export function LocationPicker({ initialPosition }: LocationPickerProps) {
   
   const debouncedSearch = useDebounce(searchQuery, 500);
 
-  useEffect(() => {
-    if (initialPosition[0] !== position[0] || initialPosition[1] !== position[1]) {
-        setPosition(initialPosition);
-    }
-    const currentAddress = getValues('address');
-    if (currentAddress && currentAddress !== searchQuery) {
-      setSearchQuery(currentAddress);
-    }
-  }, [initialPosition, getValues, position, searchQuery]);
+  const mapRef = useRef<HTMLDivElement>(null);
+  const mapInstanceRef = useRef<L.Map | null>(null);
+  const markerRef = useRef<L.Marker | null>(null);
 
+  useEffect(() => {
+    if (mapRef.current && !mapInstanceRef.current) {
+      const map = L.map(mapRef.current).setView(position, 13);
+      mapInstanceRef.current = map;
+
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+      }).addTo(map);
+
+      const marker = L.marker(position, { draggable: true }).addTo(map);
+      markerRef.current = marker;
+
+      marker.on('dragend', () => {
+        const { lat, lng } = marker.getLatLng();
+        handleLocationChange(lat, lng);
+      });
+
+      map.on('click', (e) => {
+        handleLocationChange(e.latlng.lat, e.latlng.lng);
+      });
+    }
+
+    // Cleanup function to remove the map
+    return () => {
+      if (mapInstanceRef.current) {
+        mapInstanceRef.current.remove();
+        mapInstanceRef.current = null;
+      }
+    };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Run only once on mount
+
+  useEffect(() => {
+    if (mapInstanceRef.current && (position[0] !== initialPosition[0] || position[1] !== initialPosition[1])) {
+      mapInstanceRef.current.setView(position, mapInstanceRef.current.getZoom());
+    }
+    if (markerRef.current) {
+      markerRef.current.setLatLng(position);
+    }
+  }, [position, initialPosition]);
 
   useEffect(() => {
     if (debouncedSearch.length > 2) {
@@ -243,16 +248,7 @@ export function LocationPicker({ initialPosition }: LocationPickerProps) {
             </Popover>
         </div>
 
-        <div className="h-80 w-full rounded-md overflow-hidden border">
-             {/* MapContainer is rendered once with a stable center prop */}
-             <MapContainer center={initialPosition} zoom={13} scrollWheelZoom={true} className="h-full w-full">
-                <TileLayer
-                    attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-                    url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                />
-                <MapUpdater position={position} onLocationChange={handleLocationChange} />
-             </MapContainer>
-        </div>
+        <div ref={mapRef} className="h-80 w-full rounded-md overflow-hidden border"></div>
         <div className="grid grid-cols-2 gap-4">
              <div className="grid gap-2">
                 <label className="text-sm font-medium">Latitude</label>
@@ -266,3 +262,5 @@ export function LocationPicker({ initialPosition }: LocationPickerProps) {
     </div>
   );
 }
+
+    
