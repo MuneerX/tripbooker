@@ -16,7 +16,7 @@ import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import Link from "next/link";
-import { getTourPackageById, deleteTourPackage, getTripDaysForPackage } from "@/lib/supabase/queries";
+import { getTourPackageById, deleteTourPackage, getTripDaysForPackage, getBookings, getReviews } from "@/lib/supabase/queries";
 import type { TourPackage, Booking, TripDay, Review, Activity } from "@/lib/types";
 import {
   AlertDialog,
@@ -41,9 +41,10 @@ export default function TourPackageDetailPage() {
   const { setBreadcrumbName } = useBreadcrumb();
 
   const [tourPackage, setTourPackage] = React.useState<TourPackage | null>(null);
-  
   const [tripDaysForPackage, setTripDaysForPackage] = React.useState<TripDay[]>([]);
-  
+  const [bookingsForPackage, setBookingsForPackage] = React.useState<Booking[]>([]);
+  const [reviewsForPackage, setReviewsForPackage] = React.useState<Review[]>([]);
+
   React.useEffect(() => {
     if (id) {
       const fetchPackageAndRelatedData = async () => {
@@ -52,8 +53,14 @@ export default function TourPackageDetailPage() {
 
         if (pkg) {
           setBreadcrumbName(pkg.name);
-          const tripDays = await getTripDaysForPackage(pkg.id);
+          const [tripDays, bookings, reviews] = await Promise.all([
+            getTripDaysForPackage(pkg.id),
+            getBookings(pkg.id),
+            getReviews(pkg.id)
+          ]);
           setTripDaysForPackage(tripDays);
+          setBookingsForPackage(bookings);
+          setReviewsForPackage(reviews);
         } else {
            setBreadcrumbName('Not Found');
         }
@@ -129,8 +136,6 @@ export default function TourPackageDetailPage() {
     );
   };
   
-  const bookingsForPackage = tourPackage.bookings || [];
-  const reviewsForPackage = tourPackage.reviews || [];
 
   return (
     <div className="space-y-6">
@@ -444,3 +449,5 @@ export default function TourPackageDetailPage() {
     </div>
   );
 }
+
+    

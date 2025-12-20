@@ -50,9 +50,7 @@ export async function getTourPackageById(id: string): Promise<TourPackage | null
       .from('tour_packages')
       .select(`
         *,
-        pay_in_parts(*),
-        bookings:tour_bookings(*, customer:profiles(full_name, email)),
-        reviews(*, customer:profiles(full_name))
+        pay_in_parts(*)
       `)
       .eq('id', id)
       .single();
@@ -64,22 +62,7 @@ export async function getTourPackageById(id: string): Promise<TourPackage | null
 
     if (!data) return null;
     
-    console.log(`Fetched data for package ${id}:`, JSON.stringify(data, null, 2));
-    
-    // Process bookings to match the expected structure
-    const processedBookings = data.bookings.map((item: any) => ({
-      ...item,
-      paid_amount: item.total_amount, // Assuming paid_amount is same as total for now
-      customer_name: item.customer?.full_name || 'N/A',
-      customer_email: item.customer?.email || 'N/A',
-    }));
-
-    const processedReviews = data.reviews.map((item: any) => ({
-        ...item,
-        customer_name: item.customer?.full_name || 'N/A',
-    }));
-
-    return { ...data, bookings: processedBookings, reviews: processedReviews } as TourPackage;
+    return { ...data } as TourPackage;
 }
 
 /**
@@ -873,11 +856,11 @@ export async function deleteTripLocation(location: TripLocation) {
 // --- Booking and Review Functions ---
 
 /**
- * Fetches all bookings from Supabase.
+ * Fetches all bookings from Supabase, or bookings for a specific package.
  */
-export async function getBookings(): Promise<Booking[]> {
+export async function getBookings(packageId?: string): Promise<Booking[]> {
   const supabase = createAdminClient();
-  const { data, error } = await supabase
+  let query = supabase
     .from('tour_bookings')
     .select(`
       id,
@@ -901,10 +884,18 @@ export async function getBookings(): Promise<Booking[]> {
     `)
     .order('created_at', { ascending: false });
 
+  if (packageId) {
+    query = query.eq('package_id', packageId);
+  }
+
+  const { data, error } = await query;
+  
   if (error) {
     console.error('Error fetching bookings:', error);
     return [];
   }
+  
+  console.log(`Fetched ${data?.length || 0} bookings for packageId: ${packageId || 'all'}`);
     
   // Map the data to the Booking type
   return data.map((item: any) => ({
@@ -929,17 +920,23 @@ export async function getBookings(): Promise<Booking[]> {
 }
 
 /**
- * Fetches all reviews from Supabase.
+ * Fetches all reviews from Supabase, or reviews for a specific package.
  */
-export async function getReviews(): Promise<Review[]> {
+export async function getReviews(packageId?: string): Promise<Review[]> {
   const supabase = createAdminClient();
-  const { data, error } = await supabase
+   let query = supabase
     .from('reviews')
     .select(`
         *,
-        customer:profiles(full_name)
+        customer:user_id(full_name)
     `)
     .order('created_at', { ascending: false });
+
+  if (packageId) {
+    query = query.eq('tour_package_id', packageId);
+  }
+  
+  const { data, error } = await query;
 
   if (error) {
     console.error('Error fetching reviews:', error);
@@ -951,3 +948,5 @@ export async function getReviews(): Promise<Review[]> {
     customer_name: item.customer?.full_name || 'N/A',
   })) as Review[];
 }
+
+    
