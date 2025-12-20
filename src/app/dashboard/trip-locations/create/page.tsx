@@ -16,7 +16,23 @@ import { Upload, File as FileIcon, X } from "lucide-react"
 import { createTripLocationWithImages } from "@/lib/supabase/queries"
 import { Switch } from "@/components/ui/switch"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { LocationPicker } from "./_components/LocationPicker";
+import dynamic from 'next/dynamic'
+import { Skeleton } from "@/components/ui/skeleton"
+
+const LocationPicker = dynamic(() => import('./_components/LocationPicker').then(mod => mod.LocationPicker), {
+  ssr: false,
+  loading: () => (
+    <div className="space-y-4">
+      <Skeleton className="h-10 w-full" />
+      <Skeleton className="h-80 w-full rounded-md" />
+      <div className="grid grid-cols-2 gap-4">
+        <Skeleton className="h-10 w-full" />
+        <Skeleton className="h-10 w-full" />
+      </div>
+    </div>
+  ),
+});
+
 
 const MAX_FILE_SIZE = 2 * 1024 * 1024; // 2MB
 const ACCEPTED_IMAGE_TYPES = ["image/jpeg", "image/jpg", "image/png", "image/webp"];
