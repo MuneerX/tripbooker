@@ -920,7 +920,7 @@ export async function getReviews(packageId?: string): Promise<Review[]> {
     .order('created_at', { ascending: false });
 
   if (packageId) {
-    query = query.eq('tour_package_id', packageId);
+    query = query.eq('package_id', packageId);
   }
   
   const { data, error } = await query;
@@ -932,6 +932,7 @@ export async function getReviews(packageId?: string): Promise<Review[]> {
 
   return (data || []).map((item: any) => ({
     ...item,
+    review_text: item.comment, // Map comment to review_text
     customer_name: item.customer?.full_name || 'Anonymous',
   }));
 }

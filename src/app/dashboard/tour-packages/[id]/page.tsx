@@ -422,7 +422,7 @@ export default function TourPackageDetailPage() {
                                     ))}
                                     </div>
                                 </div>
-                                <p className="text-sm text-muted-foreground">{review.review_text}</p>
+                                <p className="text-sm text-muted-foreground">{review.comment}</p>
                                 <p className="text-xs text-muted-foreground mt-1">{format(new Date(review.created_at), "PPP")}</p>
                                 </div>
                             </div>

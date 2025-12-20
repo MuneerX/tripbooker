@@ -118,10 +118,11 @@ export type Booking = {
 
 export type Review = {
   id: string;
-  tour_package_id: string;
+  package_id: string;
   user_id: string;
   customer_name: string;
   rating: number;
+  comment: string | null;
   review_text: string;
   created_at: string;
 };
