@@ -47,6 +47,8 @@ type ActivityFormModalProps = {
     children: React.ReactNode;
     activity?: Partial<Activity>;
     onSave: (data: ActivityFormValues) => void;
+    locations: TripLocation[];
+    onLocationsChange: (locations: TripLocation[]) => void;
 }
 
 const defaultActivityValues: Partial<ActivityFormValues> = {
@@ -63,9 +65,8 @@ const defaultActivityValues: Partial<ActivityFormValues> = {
   place_id: undefined,
 };
 
-export function ActivityFormModal({ children, activity, onSave }: ActivityFormModalProps) {
+export function ActivityFormModal({ children, activity, onSave, locations, onLocationsChange }: ActivityFormModalProps) {
     const [isOpen, setIsOpen] = React.useState(false);
-    const [locations, setLocations] = React.useState<TripLocation[]>([]);
     
     const activityForm = useForm<ActivityFormValues>({
         resolver: zodResolver(activitySchema),
@@ -76,7 +77,7 @@ export function ActivityFormModal({ children, activity, onSave }: ActivityFormMo
         const fetchLocations = async () => {
           if (isOpen) {
             const fetchedLocations = await getTripLocations();
-            setLocations(fetchedLocations);
+            onLocationsChange(fetchedLocations);
           }
         };
         fetchLocations();
@@ -87,7 +88,7 @@ export function ActivityFormModal({ children, activity, onSave }: ActivityFormMo
               activity_time: activity.activity_time || "00:00:00",
             } : defaultActivityValues);
         }
-    }, [isOpen, activity, activityForm]);
+    }, [isOpen, activity, activityForm, onLocationsChange]);
 
     const handleSave = (data: ActivityFormValues) => {
         console.log('Saving activity data:', data);
@@ -180,5 +181,3 @@ export function ActivityFormModal({ children, activity, onSave }: ActivityFormMo
         </Dialog>
     )
 }
-
-    

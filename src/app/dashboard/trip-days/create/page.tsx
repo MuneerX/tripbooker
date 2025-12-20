@@ -14,10 +14,12 @@ import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { useRouter } from "next/navigation"
 import { useToast } from "@/hooks/use-toast"
-import { PlusCircle, Trash2 } from "lucide-react"
+import { PlusCircle, Trash2, MapPin, AlertTriangle, DollarSign, CheckCircle, XCircle } from "lucide-react"
 import { createTripDay, getTourPackages, getTripDaysForPackage } from "@/lib/supabase/queries"
-import type { TourPackage } from "@/lib/types"
+import type { TourPackage, TripLocation } from "@/lib/types"
 import { ActivityFormModal, activitySchema } from "./_components/ActivityFormModal"
+import { formatCurrency } from "@/lib/utils";
+import Link from "next/link";
 
 
 const tripDaySchema = z.object({
@@ -38,6 +40,8 @@ export default function CreateTripDayPage() {
   const [tourPackages, setTourPackages] = React.useState<TourPackage[]>([]);
   const [isSubmitting, setIsSubmitting] = React.useState(false);
   const [existingDayNumbers, setExistingDayNumbers] = React.useState<number[]>([]);
+  const [locations, setLocations] = React.useState<TripLocation[]>([]);
+
 
   React.useEffect(() => {
     const fetchPackages = async () => {
@@ -122,6 +126,11 @@ export default function CreateTripDayPage() {
   const selectedPackageName = form.watch('package_id') 
     ? tourPackages.find(p => p.id === form.watch('package_id'))?.name 
     : '...';
+    
+   const findLocationName = (placeId?: string | null) => {
+    if (!placeId) return null;
+    return locations.find(loc => loc.id === placeId)?.name || null;
+  }
 
   return (
     <div className="space-y-6">
@@ -180,7 +189,11 @@ export default function CreateTripDayPage() {
                         <CardTitle>Activities for Itinerary: {selectedPackageName}</CardTitle>
                         <CardDescription>Add and manage activities for this trip day.</CardDescription>
                     </div>
-                    <ActivityFormModal onSave={(newActivity) => append(newActivity)}>
+                    <ActivityFormModal 
+                        onSave={(newActivity) => append(newActivity)}
+                        locations={locations}
+                        onLocationsChange={setLocations}
+                    >
                         <Button type="button" size="sm">
                             <PlusCircle className="mr-2 h-4 w-4" /> Add Activity
                         </Button>
@@ -196,14 +209,50 @@ export default function CreateTripDayPage() {
                     fields.map((activity, index) => (
                         <Card key={activity.id} className="bg-muted/30 p-4">
                            <div className="flex justify-between items-start">
-                                <div className="grid gap-1">
-                                    <p className="font-semibold">{activity.title} <span className="text-xs font-normal text-muted-foreground">({activity.activity_type})</span></p>
-                                    <p className="text-sm text-muted-foreground">{activity.activity_time} &bull; {activity.duration_minutes} mins</p>
+                                <div className="grid gap-2 flex-1">
+                                    <div className="flex justify-between">
+                                        <p className="font-semibold">{activity.title} <span className="text-xs font-normal text-muted-foreground capitalize">({activity.activity_type})</span></p>
+                                        <p className="text-sm text-muted-foreground">{activity.activity_time ? activity.activity_time.substring(0,5) : ''} &bull; {activity.duration_minutes} mins</p>
+                                    </div>
+                                    <p className="text-sm text-muted-foreground">{activity.description}</p>
+
+                                    {activity.place_id && findLocationName(activity.place_id) && (
+                                        <div className="flex items-center text-sm gap-2 mt-2 text-muted-foreground">
+                                            <MapPin className="h-4 w-4" />
+                                            <span>Location: <Link href={`/dashboard/trip-locations/${activity.place_id}`} className="underline hover:text-primary ml-1">{findLocationName(activity.place_id)}</Link></span>
+                                        </div>
+                                    )}
+                                    
+                                    {activity.special_instructions && (
+                                        <div className="flex items-start text-sm gap-2 mt-2 text-sky-600">
+                                            <AlertTriangle className="h-4 w-4 mt-0.5" />
+                                            <span>{activity.special_instructions}</span>
+                                        </div>
+                                    )}
+
+                                    <div className="flex items-center text-sm gap-4 mt-2">
+                                        <div className="flex items-center gap-1.5">
+                                            {activity.cost_included ? <CheckCircle className="h-4 w-4 text-green-500" /> : <XCircle className="h-4 w-4 text-red-500" />}
+                                            <span className="text-muted-foreground">Cost Included</span>
+                                        </div>
+                                        <div className="flex items-center gap-1.5">
+                                            {activity.booking_required ? <CheckCircle className="h-4 w-4 text-green-500" /> : <XCircle className="h-4 w-4 text-red-500" />}
+                                            <span className="text-muted-foreground">Booking Required</span>
+                                        </div>
+                                        {Number(activity.additional_cost) > 0 && (
+                                            <div className="flex items-center gap-1.5 text-amber-600">
+                                                <DollarSign className="h-4 w-4" />
+                                                <span className="text-muted-foreground">Extra: {formatCurrency(Number(activity.additional_cost))}</span>
+                                            </div>
+                                        )}
+                                    </div>
                                 </div>
-                                <div className="flex items-center gap-2">
+                                <div className="flex items-center gap-2 pl-4">
                                      <ActivityFormModal 
                                         activity={activity} 
                                         onSave={(editedActivity) => update(index, editedActivity)}
+                                        locations={locations}
+                                        onLocationsChange={setLocations}
                                      >
                                         <Button type="button" variant="outline" size="sm">Edit</Button>
                                     </ActivityFormModal>
