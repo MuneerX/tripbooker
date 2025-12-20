@@ -41,12 +41,6 @@ type LocationIQResult = {
   name?: string;
 };
 
-function ChangeView({ center, zoom }: { center: [number, number]; zoom: number }) {
-  const map = useMap();
-  map.setView(center, zoom);
-  return null;
-}
-
 function MapUpdater({ 
     position, 
     onLocationChange 
@@ -107,10 +101,11 @@ export function LocationPicker({ initialPosition }: LocationPickerProps) {
     if (initialPosition) {
         setPosition(initialPosition);
     }
-    if (addressValue) {
-        setSearchQuery(addressValue);
+    const currentAddress = getValues('address');
+    if (currentAddress && !searchQuery) {
+        setSearchQuery(currentAddress);
     }
-  }, [initialPosition, addressValue]);
+  }, [initialPosition, getValues, searchQuery]);
 
 
   useEffect(() => {
