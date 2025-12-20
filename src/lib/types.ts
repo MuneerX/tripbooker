@@ -113,6 +113,7 @@ export type Booking = {
   created_at: string;
   customer_name: string;
   customer_email: string;
+  status: 'pending' | 'confirmed' | 'cancelled' | 'completed';
 };
 
 

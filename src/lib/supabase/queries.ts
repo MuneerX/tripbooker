@@ -863,24 +863,24 @@ export async function getBookings(packageId?: string): Promise<Booking[]> {
   let query = supabase
     .from('tour_bookings')
     .select(`
-      id,
-      booking_reference,
-      user_id,
-      package_id,
-      booking_date,
-      travel_date,
-      total_adults,
-      total_children,
-      total_amount,
-      booking_status,
-      payment_status,
-      payment_method,
-      special_requests,
-      created_at,
-      customer:profiles (
-        full_name,
-        email
-      )
+        id,
+        booking_reference,
+        user_id,
+        package_id,
+        booking_date,
+        travel_date,
+        total_adults,
+        total_children,
+        total_amount,
+        booking_status,
+        payment_status,
+        payment_method,
+        special_requests,
+        created_at,
+        profiles (
+            full_name,
+            email
+        )
     `)
     .order('created_at', { ascending: false });
 
@@ -891,14 +891,14 @@ export async function getBookings(packageId?: string): Promise<Booking[]> {
   const { data, error } = await query;
   
   if (error) {
-    console.error('Error fetching bookings:', error);
+    console.error('Error fetching bookings:', error.message);
     return [];
   }
   
   console.log(`Fetched ${data?.length || 0} bookings for packageId: ${packageId || 'all'}`);
     
   // Map the data to the Booking type
-  return data.map((item: any) => ({
+  return (data || []).map((item: any) => ({
     id: item.id,
     booking_reference: item.booking_reference,
     user_id: item.user_id,
@@ -908,14 +908,15 @@ export async function getBookings(packageId?: string): Promise<Booking[]> {
     total_adults: item.total_adults,
     total_children: item.total_children,
     total_amount: item.total_amount,
-    paid_amount: item.total_amount, // Alias paid_amount from total_amount
+    paid_amount: item.total_amount, // Assuming total_amount is the paid amount for now
     booking_status: item.booking_status,
     payment_status: item.payment_status,
     payment_method: item.payment_method,
     special_requests: item.special_requests,
     created_at: item.created_at,
-    customer_name: item.customer?.full_name || 'N/A',
-    customer_email: item.customer?.email || 'N/A',
+    customer_name: item.profiles?.full_name || 'N/A',
+    customer_email: item.profiles?.email || 'N/A',
+    status: item.booking_status,
   }));
 }
 
@@ -948,5 +949,3 @@ export async function getReviews(packageId?: string): Promise<Review[]> {
     customer_name: item.customer?.full_name || 'N/A',
   })) as Review[];
 }
-
-    

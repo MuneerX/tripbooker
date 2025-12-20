@@ -36,8 +36,8 @@ export default function DashboardPage() {
   }, []);
 
   const totalRevenue = bookings
-    .filter(b => b.status === 'confirmed' || b.status === 'completed')
-    .reduce((sum, b) => sum + b.paid_amount, 0);
+    .filter(b => b.booking_status === 'confirmed' || b.booking_status === 'completed')
+    .reduce((sum, b) => sum + b.total_amount, 0);
 
   const stats = [
     { label: 'Total Revenue', value: formatCurrency(totalRevenue), icon: <DollarSign className="h-4 w-4" /> },
