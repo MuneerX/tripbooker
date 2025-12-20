@@ -343,7 +343,7 @@ export default function TourPackageDetailPage() {
                               <CardHeader className="bg-muted/50 flex flex-row items-center justify-between">
                                 <div>
                                     <CardTitle>Day {day.day_number}: {day.day_name}</CardTitle>
-                                    <CardDescription>{day.activities.length} activities planned</CardDescription>
+                                    <CardDescription>{day.activities?.length || 0} activities planned</CardDescription>
                                 </div>
                                 <Button asChild size="sm" variant="outline" className="ml-auto gap-1">
                                     <Link href={`/dashboard/trip-days/${day.id}`}>
@@ -353,7 +353,7 @@ export default function TourPackageDetailPage() {
                                 </Button>
                               </CardHeader>
                               <CardContent className="p-6 space-y-4">
-                                {day.activities.slice(0, 2).map((activity, index) => (
+                                {day.activities && day.activities.length > 0 ? day.activities.slice(0, 2).map((activity, index) => (
                                     <div
                                     key={`${activity.id}-${index}`}
                                     className="flex items-start gap-4 p-4 border rounded-lg"
@@ -377,8 +377,8 @@ export default function TourPackageDetailPage() {
                                         </div>
                                     </div>
                                     </div>
-                                ))}
-                                {day.activities.length > 2 && (
+                                )) : null}
+                                {day.activities && day.activities.length > 2 && (
                                     <div className="text-center text-sm text-muted-foreground">
                                         + {day.activities.length - 2} more activities...
                                     </div>
