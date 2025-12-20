@@ -19,7 +19,7 @@ import { Switch } from "@/components/ui/switch";
 import Image from "next/image";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useBreadcrumb } from "../../../layout";
-import { LocationPicker } from "../create/_components/LocationPicker";
+import { LocationPicker } from "@/app/dashboard/trip-locations/create/_components/LocationPicker";
 import { Skeleton } from "@/components/ui/skeleton";
 
 
