@@ -163,7 +163,7 @@ export default function TripLocationsPage() {
                     </TableCell>
                     <TableCell className="font-medium">{location.name}</TableCell>
                     <TableCell>
-                        <Badge variant="secondary" className="capitalize">{location.place_type}</Badge>
+                        <Badge variant="secondary" className="capitalize whitespace-nowrap truncate">{location.place_type}</Badge>
                     </TableCell>
                     <TableCell className="hidden md:table-cell">{location.city}</TableCell>
                     <TableCell className="hidden md:table-cell">{location.state}</TableCell>
