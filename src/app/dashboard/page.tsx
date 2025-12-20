@@ -31,6 +31,11 @@ export default function DashboardPage() {
       setBookings(fetchedBookings);
       setReviews(fetchedReviews);
       setLoading(false);
+
+      const packageIdsWithBookings = new Set(fetchedBookings.map(b => b.package_id));
+      const packagesWithBookings = fetchedPackages.filter(p => packageIdsWithBookings.has(p.id));
+      console.log("Tour packages that have bookings:", packagesWithBookings.map(p => p.name));
+
     };
     fetchDashboardData();
   }, []);
