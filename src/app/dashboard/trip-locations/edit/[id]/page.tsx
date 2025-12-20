@@ -81,7 +81,6 @@ export default function EditTripLocationPage() {
   const { toast } = useToast();
   const { setBreadcrumbName } = useBreadcrumb();
 
-  const [loading, setLoading] = React.useState(true);
   const [isSubmitting, setIsSubmitting] = React.useState(false);
   const [originalLocation, setOriginalLocation] = React.useState<TripLocation | null>(null);
 
@@ -93,7 +92,6 @@ export default function EditTripLocationPage() {
   React.useEffect(() => {
     if (id) {
       const fetchLocation = async () => {
-        setLoading(true);
         try {
             const loc = await getTripLocationById(id);
             if (loc) {
@@ -121,8 +119,6 @@ export default function EditTripLocationPage() {
             }
         } catch(e) {
              toast({ variant: "destructive", title: "Error", description: "Failed to load location data." });
-        } finally {
-            setLoading(false);
         }
       };
       fetchLocation();
@@ -259,14 +255,9 @@ export default function EditTripLocationPage() {
       </div>
     </div>
   );
-
-  
-  if (loading) {
-    return renderSkeleton();
-  }
   
   if (!originalLocation) {
-    return <div>Location data could not be loaded.</div>
+    return renderSkeleton();
   }
   
   const initialPosition: [number, number] = [originalLocation.latitude ?? 20.5937, originalLocation.longitude ?? 78.9629];
@@ -400,5 +391,3 @@ export default function EditTripLocationPage() {
     </div>
   );
 }
-
-    

@@ -41,44 +41,37 @@ type LocationIQResult = {
   name?: string;
 };
 
-function MapUpdater({ 
-    position, 
-    onLocationChange 
-}: { 
-    position: [number, number]; 
-    onLocationChange: (lat: number, lon: number) => void;
+function MapUpdater({
+  position,
+  onLocationChange,
+}: {
+  position: [number, number];
+  onLocationChange: (lat: number, lng: number) => void;
 }) {
-    const map = useMap();
+  const map = useMap();
 
-    useEffect(() => {
-        // Only set the view, don't re-render the container
-        map.setView(position, map.getZoom());
-    }, [position, map]);
+  useEffect(() => {
+    map.setView(position, map.getZoom());
+  }, [position, map]);
 
-    useMapEvents({
-        click(e) {
-            const { lat, lng } = e.latlng;
-            onLocationChange(lat, lng);
-        },
-    });
-    
-    const markerHandlers = useMemo(() => ({
-        dragend(e: any) {
-            const marker = e.target;
-            const { lat, lng } = marker.getLatLng();
-            onLocationChange(lat, lng);
-        },
-    }), [onLocationChange]);
+  useMapEvents({
+    click(e) {
+      onLocationChange(e.latlng.lat, e.latlng.lng);
+    },
+  });
 
-    return (
-        <>
-            <TileLayer
-                attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-            />
-            <Marker position={position} icon={customIcon} draggable={true} eventHandlers={markerHandlers} />
-        </>
-    );
+  const markerHandlers = useMemo(
+    () => ({
+      dragend(e: any) {
+        const marker = e.target;
+        const { lat, lng } = marker.getLatLng();
+        onLocationChange(lat, lng);
+      },
+    }),
+    [onLocationChange]
+  );
+
+  return <Marker position={position} icon={customIcon} draggable={true} eventHandlers={markerHandlers} />;
 }
 
 type LocationPickerProps = {
@@ -96,7 +89,6 @@ export function LocationPicker({ initialPosition }: LocationPickerProps) {
   const debouncedSearch = useDebounce(searchQuery, 500);
 
   useEffect(() => {
-    // Sync position if initialPosition prop changes (e.g., on form reset)
     if (initialPosition[0] !== position[0] || initialPosition[1] !== position[1]) {
         setPosition(initialPosition);
     }
@@ -254,6 +246,10 @@ export function LocationPicker({ initialPosition }: LocationPickerProps) {
         <div className="h-80 w-full rounded-md overflow-hidden border">
              {/* MapContainer is rendered once with a stable center prop */}
              <MapContainer center={initialPosition} zoom={13} scrollWheelZoom={true} className="h-full w-full">
+                <TileLayer
+                    attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                    url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                />
                 <MapUpdater position={position} onLocationChange={handleLocationChange} />
              </MapContainer>
         </div>
@@ -270,5 +266,3 @@ export function LocationPicker({ initialPosition }: LocationPickerProps) {
     </div>
   );
 }
-
-    
