@@ -863,21 +863,8 @@ export async function getBookings(packageId?: string): Promise<Booking[]> {
   let query = supabase
     .from('tour_bookings')
     .select(`
-        id,
-        booking_reference,
-        user_id,
-        package_id,
-        booking_date,
-        travel_date,
-        total_adults,
-        total_children,
-        total_amount,
-        booking_status,
-        payment_status,
-        payment_method,
-        special_requests,
-        created_at,
-        profiles (
+        *,
+        profiles:user_id (
             full_name,
             email
         )
@@ -895,7 +882,7 @@ export async function getBookings(packageId?: string): Promise<Booking[]> {
     return [];
   }
   
-  console.log(`Fetched ${data?.length || 0} bookings for packageId: ${packageId || 'all'}`);
+  console.log(`Fetched ${data?.length || 0} bookings for packageId: ${packageId || 'all'}`, data);
     
   // Map the data to the Booking type
   return (data || []).map((item: any) => ({
@@ -949,3 +936,6 @@ export async function getReviews(packageId?: string): Promise<Review[]> {
     customer_name: item.customer?.full_name || 'N/A',
   })) as Review[];
 }
+
+
+    
