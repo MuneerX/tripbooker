@@ -864,7 +864,7 @@ export async function getBookings(packageId?: string): Promise<Booking[]> {
     .from('tour_bookings')
     .select(`
       *,
-      profiles (
+      profiles:user_id (
           full_name,
           email,
           avatar_url
@@ -941,3 +941,6 @@ export async function getReviews(packageId?: string): Promise<Review[]> {
   }));
 }
 
+
+
+    
