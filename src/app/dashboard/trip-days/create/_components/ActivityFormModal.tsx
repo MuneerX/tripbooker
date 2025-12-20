@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import * as React from "react";
@@ -125,7 +126,7 @@ export function ActivityFormModal({ children, activity, onSave }: ActivityFormMo
                             <FormField control={activityForm.control} name="special_instructions" render={({ field }) => ( <FormItem><FormLabel>Special Instructions</FormLabel><FormControl><Textarea placeholder="e.g., Bring sunscreen" {...field} value={field.value ?? ""} /></FormControl><FormMessage /></FormItem>)} />
 
                              <div className="grid md:grid-cols-3 gap-4 items-center">
-                                <FormField control={activityForm.control} name="additional_cost" render={({ field }) => ( <FormItem><FormLabel>Additional Cost (USD)</FormLabel><FormControl><Input type="number" {...field} value={field.value ?? ""} /></FormControl><FormMessage /></FormItem>)} />
+                                <FormField control={activityForm.control} name="additional_cost" render={({ field }) => ( <FormItem><FormLabel>Additional Cost (INR)</FormLabel><FormControl><Input type="number" {...field} value={field.value ?? ""} /></FormControl><FormMessage /></FormItem>)} />
                                 <FormField control={activityForm.control} name="cost_included" render={({ field }) => (<FormItem className="flex items-center gap-2 pt-8"><FormControl><Checkbox checked={field.value ?? false} onCheckedChange={field.onChange} /></FormControl><FormLabel>Cost Included</FormLabel></FormItem>)} />
                                 <FormField control={activityForm.control} name="booking_required" render={({ field }) => (<FormItem className="flex items-center gap-2 pt-8"><FormControl><Checkbox checked={field.value ?? false} onCheckedChange={field.onChange} /></FormControl><FormLabel>Booking Required</FormLabel></FormItem>)} />
                             </div>
