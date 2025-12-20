@@ -12,10 +12,21 @@ export function Breadcrumbs() {
   const { breadcrumbName } = useBreadcrumb();
   const pathSegments = pathname.split('/').filter(segment => segment);
   
-  const isDetailPage = pathSegments.length > 2 && (pathSegments[pathSegments.length - 2] === 'edit' || /^[a-z0-9-]+$/.test(pathSegments[pathSegments.length-1]));
+  const isEditPage = pathSegments.includes('edit');
+  const isDetailPage = pathSegments.length > 2 && (isEditPage || /^[a-z0-9-]+$/.test(pathSegments[pathSegments.length-1]));
   const isCreatePage = pathSegments[pathSegments.length - 1] === 'create';
+  
+  let segmentsToRender = pathSegments.slice(1);
+  if (isDetailPage) {
+    segmentsToRender = pathSegments.slice(1, -1);
+  }
+  if (isEditPage) {
+    segmentsToRender = pathSegments.slice(1, -2);
+  }
+  if(isCreatePage){
+    segmentsToRender = pathSegments.slice(1, -1);
+  }
 
-  const segmentsToRender = (isDetailPage || isCreatePage) ? pathSegments.slice(1, -1) : pathSegments.slice(1);
 
   if (pathSegments.length <= 1) {
     return <div className="hidden md:flex font-semibold text-lg">Dashboard</div>;
@@ -30,6 +41,8 @@ export function Breadcrumbs() {
           </Link>
         </li>
         {segmentsToRender.map((segment, index) => {
+           if (segment === 'edit') return null;
+
           const href = `/` + pathSegments.slice(0, index + 2).join('/');
           const name = segment.charAt(0).toUpperCase() + segment.slice(1).replace(/-/g, ' ');
 
@@ -58,7 +71,7 @@ export function Breadcrumbs() {
                 </li>
             </React.Fragment>
         )}
-        {isDetailPage && breadcrumbName && (
+        {(isDetailPage && !isCreatePage) && breadcrumbName && (
           <React.Fragment>
             <li className="flex items-center">
               <ChevronRight className="h-4 w-4 text-muted-foreground" />
