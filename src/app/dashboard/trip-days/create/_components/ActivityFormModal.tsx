@@ -1,5 +1,4 @@
 
-
 "use client";
 
 import * as React from "react";
@@ -21,7 +20,8 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import type { Activity } from "@/lib/types";
+import type { Activity, TripLocation } from "@/lib/types";
+import { getTripLocations } from "@/lib/supabase/queries";
 
 
 export const activitySchema = z.object({
@@ -65,6 +65,7 @@ const defaultActivityValues: Partial<ActivityFormValues> = {
 
 export function ActivityFormModal({ children, activity, onSave }: ActivityFormModalProps) {
     const [isOpen, setIsOpen] = React.useState(false);
+    const [locations, setLocations] = React.useState<TripLocation[]>([]);
     
     const activityForm = useForm<ActivityFormValues>({
         resolver: zodResolver(activitySchema),
@@ -72,6 +73,14 @@ export function ActivityFormModal({ children, activity, onSave }: ActivityFormMo
     });
 
     React.useEffect(() => {
+        const fetchLocations = async () => {
+          if (isOpen) {
+            const fetchedLocations = await getTripLocations();
+            setLocations(fetchedLocations);
+          }
+        };
+        fetchLocations();
+
         if (isOpen) {
             activityForm.reset(activity ? {
               ...activity,
@@ -116,6 +125,32 @@ export function ActivityFormModal({ children, activity, onSave }: ActivityFormMo
                                   </SelectContent></Select><FormMessage /></FormItem> )} />
                                 <FormField control={activityForm.control} name="activity_time" render={({ field }) => ( <FormItem><FormLabel>Time (HH:mm:ss)</FormLabel><FormControl><Input placeholder="e.g., 17:30:00" {...field} value={field.value ?? ""} /></FormControl><FormMessage /></FormItem>)} />
                             </div>
+
+                            <FormField
+                                control={activityForm.control}
+                                name="place_id"
+                                render={({ field }) => (
+                                    <FormItem>
+                                    <FormLabel>Location</FormLabel>
+                                    <Select onValueChange={field.onChange} value={field.value || undefined}>
+                                        <FormControl>
+                                        <SelectTrigger>
+                                            <SelectValue placeholder="Select a location (optional)" />
+                                        </SelectTrigger>
+                                        </FormControl>
+                                        <SelectContent>
+                                            <SelectItem value="">None</SelectItem>
+                                            {locations.map(loc => (
+                                                <SelectItem key={loc.id} value={loc.id}>
+                                                    {loc.name}
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                    <FormMessage />
+                                    </FormItem>
+                                )}
+                                />
 
                              <div className="grid md:grid-cols-2 gap-4">
                                 <FormField control={activityForm.control} name="duration_minutes" render={({ field }) => ( <FormItem><FormLabel>Activity Duration (minutes)</FormLabel><FormControl><Input type="number" placeholder="e.g., 120" {...field} value={field.value ?? ""} /></FormControl><FormMessage /></FormItem>)} />

@@ -12,7 +12,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ArrowLeft, PlusCircle, Trash2, DollarSign, CheckCircle, XCircle, AlertTriangle } from "lucide-react";
+import { ArrowLeft, PlusCircle, Trash2, DollarSign, CheckCircle, XCircle, AlertTriangle, MapPin } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { getTripDayById, updateTripDay, getTripDaysForPackage, getTourPackages } from "@/lib/supabase/queries";
 import { ActivityFormModal, activitySchema } from "@/app/dashboard/trip-days/create/_components/ActivityFormModal";
@@ -236,6 +236,13 @@ export default function EditTripDayPage() {
                                 <p className="text-sm text-muted-foreground">{activity.activity_time ? activity.activity_time.substring(0,5) : ''} &bull; {activity.duration_minutes} mins</p>
                             </div>
                             <p className="text-sm text-muted-foreground">{activity.description}</p>
+
+                            {activity.place && (
+                                <div className="flex items-center text-sm gap-2 mt-2 text-muted-foreground">
+                                    <MapPin className="h-4 w-4" />
+                                    <span>Location: {activity.place.name}</span>
+                                </div>
+                            )}
                             
                             {activity.special_instructions && (
                                 <div className="flex items-start text-sm gap-2 mt-2 text-sky-600">

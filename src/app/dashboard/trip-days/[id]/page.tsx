@@ -5,7 +5,7 @@ import * as React from "react";
 import { useParams, useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { ArrowLeft, Edit, Trash2, Clock, CheckCircle, XCircle, AlertTriangle, DollarSign } from "lucide-react";
+import { ArrowLeft, Edit, Trash2, Clock, CheckCircle, XCircle, AlertTriangle, DollarSign, MapPin } from "lucide-react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -147,6 +147,14 @@ export default function TripDayDetailPage() {
                           <span>Time: {activity.activity_time ? activity.activity_time.substring(0, 5) : 'N/A'}</span>
                           <span>Duration: {activity.duration_minutes} mins</span>
                         </div>
+
+                         {activity.place && (
+                            <div className="flex items-center text-sm gap-2 mt-2 text-muted-foreground">
+                                <MapPin className="h-4 w-4" />
+                                <span>Location: {activity.place.name}</span>
+                            </div>
+                        )}
+
                         <div className="flex items-center text-sm gap-4 mt-2">
                           <div className="flex items-center gap-1">
                             {activity.cost_included ? <CheckCircle className="h-4 w-4 text-green-500" /> : <XCircle className="h-4 w-4 text-red-500" />}

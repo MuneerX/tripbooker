@@ -56,6 +56,7 @@ export type Activity = {
   special_instructions?: string | null;
   created_at?: string;
   updated_at?: string;
+  place?: TripLocation | null;
 };
 
 export type TripDay = {

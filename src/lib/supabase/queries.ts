@@ -481,7 +481,7 @@ export async function getTripDayById(id: string): Promise<TripDay | null> {
     
     const { data: activities, error: activitiesError } = await supabase
         .from('trip_day_activities')
-        .select('*')
+        .select('*, place:place_id(*)')
         .eq('trip_day_id', id)
         .order('activity_time');
         
