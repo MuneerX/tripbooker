@@ -42,45 +42,43 @@ type LocationIQResult = {
   name?: string;
 };
 
-function MapEvents({ onLocationChange }: { onLocationChange: (lat: number, lon: number, address?: string) => void }) {
-  const map = useMap();
-  
-  useMapEvents({
-    click(e) {
-      const { lat, lng } = e.latlng;
-      onLocationChange(lat, lng);
-    },
-  });
+function MapUpdater({ 
+    position, 
+    onLocationChange 
+}: { 
+    position: [number, number]; 
+    onLocationChange: (lat: number, lon: number) => void;
+}) {
+    const map = useMap();
 
-  return null;
-}
+    useEffect(() => {
+        map.setView(position, map.getZoom());
+    }, [position, map]);
 
-function ChangeView({ center, zoom }: { center: LatLngExpression; zoom: number }) {
-  const map = useMap();
-   useEffect(() => {
-    map.setView(center, zoom);
-  }, [center, zoom, map]);
-  return null;
-}
+    useMapEvents({
+        click(e) {
+            const { lat, lng } = e.latlng;
+            onLocationChange(lat, lng);
+        },
+    });
+    
+    const markerHandlers = useMemo(() => ({
+        dragend(e: any) {
+            const marker = e.target;
+            const { lat, lng } = marker.getLatLng();
+            onLocationChange(lat, lng);
+        },
+    }), [onLocationChange]);
 
-type MapContentProps = {
-  position: [number, number];
-  markerHandlers: any;
-  onLocationChange: (lat: number, lng: number) => void;
-};
-
-function MapContent({ position, markerHandlers, onLocationChange }: MapContentProps) {
-  return (
-    <>
-      <TileLayer
-        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-      />
-      <Marker position={position} icon={customIcon} draggable={true} eventHandlers={markerHandlers} />
-      <MapEvents onLocationChange={onLocationChange} />
-      <ChangeView center={position} zoom={13} />
-    </>
-  );
+    return (
+        <>
+            <TileLayer
+                attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+            />
+            <Marker position={position} icon={customIcon} draggable={true} eventHandlers={markerHandlers} />
+        </>
+    );
 }
 
 type LocationPickerProps = {
@@ -99,12 +97,13 @@ export function LocationPicker({ initialPosition }: LocationPickerProps) {
 
   const addressValue = watch('address');
 
-  // Update internal search query when form value changes externally
+  // Set initial address value in search bar
   useEffect(() => {
-    if (addressValue && addressValue !== searchQuery) {
-      setSearchQuery(addressValue);
+    if (initialPosition && addressValue) {
+        setSearchQuery(addressValue);
     }
-  }, [addressValue]);
+  }, [initialPosition, addressValue]);
+
 
   useEffect(() => {
     if (debouncedSearch.length > 2) {
@@ -165,8 +164,6 @@ export function LocationPicker({ initialPosition }: LocationPickerProps) {
         setValue('code', `${cityName.substring(0, 3).toUpperCase()}-LOC`);
     }
 
-
-    // Trigger validation for all touched fields
     ['latitude', 'longitude', 'address', 'city', 'state', 'country', 'district', 'code'].forEach(field => trigger(field as keyof TripLocation));
 
   }, [setValue, trigger, getValues]);
@@ -187,23 +184,18 @@ export function LocationPicker({ initialPosition }: LocationPickerProps) {
     }
   }, [updateFormFields]);
   
-  const markerHandlers = useMemo(() => ({
-    dragend(e: any) {
-      const marker = e.target;
-      const { lat, lng } = marker.getLatLng();
-      handleLocationChange(lat, lng);
-    },
-  }), [handleLocationChange]);
 
   const handleSuggestionClick = (suggestion: LocationIQResult) => {
     const lat = parseFloat(suggestion.lat);
     const lon = parseFloat(suggestion.lon);
-    setPosition([lat, lon]);
-
-    if(suggestion.display_name && !getValues('name')) {
+    
+    if(!getValues('name')) {
         const name = suggestion.display_name.split(',')[0];
         setValue('name', name);
     }
+
+    // This will trigger the useEffect in MapUpdater
+    setPosition([lat, lon]);
 
     updateFormFields(lat, lon, suggestion);
     setSearchQuery(suggestion.display_name);
@@ -260,7 +252,7 @@ export function LocationPicker({ initialPosition }: LocationPickerProps) {
 
         <div className="h-80 w-full rounded-md overflow-hidden border">
              <MapContainer center={position} zoom={13} scrollWheelZoom={true} className="h-full w-full">
-                <MapContent position={position} markerHandlers={markerHandlers} onLocationChange={handleLocationChange} />
+                <MapUpdater position={position} onLocationChange={handleLocationChange} />
              </MapContainer>
         </div>
         <div className="grid grid-cols-2 gap-4">
