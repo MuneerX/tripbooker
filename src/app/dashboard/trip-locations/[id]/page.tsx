@@ -61,7 +61,7 @@ export default function TripLocationDetailPage() {
   const handleDelete = async () => {
     if (!location) return;
     try {
-      await deleteTripLocation(location.id);
+      await deleteTripLocation(location);
       toast({
         title: "Success",
         description: `Location "${location.name}" has been deleted.`,
@@ -220,7 +220,7 @@ export default function TripLocationDetailPage() {
             <AlertDialogHeader>
                 <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
                 <AlertDialogDescription>
-                This action cannot be undone. This will permanently delete the location "{location.name}".
+                This action cannot be undone. This will permanently delete the location "{location.name}" and all associated images from storage.
                 </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>

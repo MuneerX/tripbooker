@@ -49,14 +49,14 @@ export default function TripLocationsPage() {
     fetchLocations();
   }, []);
 
-  const handleDelete = async (locationId: string, locationName: string) => {
-    setDeletingId(locationId);
+  const handleDelete = async (location: TripLocation) => {
+    setDeletingId(location.id);
     try {
-      await deleteTripLocation(locationId);
-      setAllLocations(prev => prev.filter(loc => loc.id !== locationId));
+      await deleteTripLocation(location);
+      setAllLocations(prev => prev.filter(loc => loc.id !== location.id));
       toast({
         title: "Success",
-        description: `Location "${locationName}" has been deleted.`,
+        description: `Location "${location.name}" has been deleted.`,
       });
     } catch (error: any) {
       toast({
@@ -189,12 +189,12 @@ export default function TripLocationsPage() {
                             <AlertDialogHeader>
                             <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
                             <AlertDialogDescription>
-                                This action cannot be undone. This will permanently delete the location "{location.name}".
+                                This action cannot be undone. This will permanently delete the location "{location.name}" and all of its images.
                             </AlertDialogDescription>
                             </AlertDialogHeader>
                             <AlertDialogFooter>
                               <AlertDialogCancel>Cancel</AlertDialogCancel>
-                              <AlertDialogAction onClick={() => handleDelete(location.id, location.name)} className="bg-destructive hover:bg-destructive/90">
+                              <AlertDialogAction onClick={() => handleDelete(location)} className="bg-destructive hover:bg-destructive/90">
                                 {deletingId === location.id ? "Deleting..." : "Delete"}
                               </AlertDialogAction>
                             </AlertDialogFooter>

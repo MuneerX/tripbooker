@@ -792,15 +792,55 @@ export async function updateTripLocation(id: string, formData: FormData) {
 
 
 /**
- * Deletes a trip location.
+ * Deletes a trip location and its associated images from storage.
  */
-export async function deleteTripLocation(id: string) {
-    const supabase = createAdminClient();
-    const { error } = await supabase.from('places').delete().eq('id', id);
+export async function deleteTripLocation(location: TripLocation) {
+    if (!location) throw new Error("Trip location data is required.");
 
-    if (error) {
-        console.error(`Error deleting trip location ${id}:`, error);
-        throw new Error(error.message);
+    const supabase = createAdminClient();
+
+    // 1. Collect all image URLs to delete
+    const urlsToDelete = [...(location.image_urls || [])];
+    const pathsToDelete: string[] = [];
+
+    const getPathFromUrl = (url: string): string | null => {
+        if (!url) return null;
+        try {
+            const urlObject = new URL(url);
+            const pathSegments = urlObject.pathname.split('/');
+            const bucketNameIndex = pathSegments.findIndex(segment => segment === 'images');
+            if (bucketNameIndex === -1 || bucketNameIndex + 1 >= pathSegments.length) {
+                console.warn('Could not determine storage path from URL:', url);
+                return null;
+            }
+            const filePath = pathSegments.slice(bucketNameIndex + 1).join('/');
+            return decodeURIComponent(filePath);
+        } catch (e) {
+            console.error('Invalid URL for image deletion:', url, e);
+            return null;
+        }
+    };
+    
+    for (const url of urlsToDelete) {
+        const path = getPathFromUrl(url);
+        if (path) pathsToDelete.push(path);
+    }
+
+    // 2. Delete images from storage if any paths were found
+    if (pathsToDelete.length > 0) {
+        const { error: storageError } = await supabase.storage.from('images').remove(pathsToDelete);
+        if (storageError) {
+            console.error("Error deleting images from storage:", storageError);
+            // We'll log and continue to delete the DB record
+        }
+    }
+
+    // 3. Delete the trip location record from the database
+    const { error: dbError } = await supabase.from('places').delete().eq('id', location.id);
+
+    if (dbError) {
+        console.error(`Error deleting trip location ${location.id}:`, dbError);
+        throw new Error(dbError.message);
     }
     return { success: true };
 }
