@@ -901,7 +901,7 @@ export async function getBookings(packageId?: string): Promise<Booking[]> {
     created_at: item.created_at,
     customer_name: item.profiles?.full_name || 'N/A',
     customer_email: item.profiles?.email || 'N/A',
-    status: item.booking_status, // a_s
+    status: item.booking_status,
     avatar_url: item.profiles?.avatar_url,
   }));
 }
@@ -940,3 +940,4 @@ export async function getReviews(packageId?: string): Promise<Review[]> {
     avatar_url: item.customer?.avatar_url,
   }));
 }
+
