@@ -13,8 +13,9 @@ export function Breadcrumbs() {
   const pathSegments = pathname.split('/').filter(segment => segment);
   
   const isDetailPage = pathSegments.length > 2 && (pathSegments[pathSegments.length - 2] === 'edit' || /^[a-z0-9-]+$/.test(pathSegments[pathSegments.length-1]));
+  const isCreatePage = pathSegments[pathSegments.length - 1] === 'create';
 
-  const segmentsToRender = isDetailPage ? pathSegments.slice(1, -1) : pathSegments.slice(1);
+  const segmentsToRender = (isDetailPage || isCreatePage) ? pathSegments.slice(1, -1) : pathSegments.slice(1);
 
   if (pathSegments.length <= 1) {
     return <div className="hidden md:flex font-semibold text-lg">Dashboard</div>;
@@ -45,6 +46,18 @@ export function Breadcrumbs() {
             </React.Fragment>
           );
         })}
+        {isCreatePage && (
+             <React.Fragment>
+                <li className="flex items-center">
+                    <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                </li>
+                <li>
+                    <span className="font-medium text-foreground">
+                        Create
+                    </span>
+                </li>
+            </React.Fragment>
+        )}
         {isDetailPage && breadcrumbName && (
           <React.Fragment>
             <li className="flex items-center">
