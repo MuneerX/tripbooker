@@ -105,7 +105,6 @@ export type Booking = {
   total_adults: number;
   total_children: number;
   total_amount: number;
-  paid_amount: number;
   booking_status: 'pending' | 'confirmed' | 'cancelled' | 'completed';
   payment_status: 'pending' | 'completed' | 'failed' | 'refunded';
   payment_method: string | null;

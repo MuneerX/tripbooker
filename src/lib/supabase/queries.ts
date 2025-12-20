@@ -863,27 +863,25 @@ export async function getBookings(packageId?: string): Promise<Booking[]> {
   let query = supabase
     .from('tour_bookings')
     .select(`
-        *,
-        profiles:user_id (
-            full_name,
-            email
-        )
+      *,
+      profiles:user_id (
+          full_name,
+          email
+      )
     `)
-    .order('created_at', { ascending: false });
+    .order('booking_date', { ascending: false });
 
   if (packageId) {
     query = query.eq('package_id', packageId);
   }
 
   const { data, error } = await query;
-  
+
   if (error) {
     console.error('Error fetching bookings:', error.message);
     return [];
   }
   
-  console.log(`Fetched ${data?.length || 0} bookings for packageId: ${packageId || 'all'}`, data);
-    
   // Map the data to the Booking type
   return (data || []).map((item: any) => ({
     id: item.id,
@@ -895,7 +893,6 @@ export async function getBookings(packageId?: string): Promise<Booking[]> {
     total_adults: item.total_adults,
     total_children: item.total_children,
     total_amount: item.total_amount,
-    paid_amount: item.total_amount, // Assuming total_amount is the paid amount for now
     booking_status: item.booking_status,
     payment_status: item.payment_status,
     payment_method: item.payment_method,
@@ -903,7 +900,7 @@ export async function getBookings(packageId?: string): Promise<Booking[]> {
     created_at: item.created_at,
     customer_name: item.profiles?.full_name || 'N/A',
     customer_email: item.profiles?.email || 'N/A',
-    status: item.booking_status,
+    status: item.booking_status, // a_s
   }));
 }
 
@@ -915,8 +912,15 @@ export async function getReviews(packageId?: string): Promise<Review[]> {
    let query = supabase
     .from('reviews')
     .select(`
-        *,
-        customer:user_id(full_name)
+      id,
+      tour_package_id,
+      user_id,
+      rating,
+      review_text,
+      created_at,
+      customer:user_id (
+        full_name
+      )
     `)
     .order('created_at', { ascending: false });
 
@@ -931,11 +935,8 @@ export async function getReviews(packageId?: string): Promise<Review[]> {
     return [];
   }
 
-  return data.map((item: any) => ({
+  return (data || []).map((item: any) => ({
     ...item,
-    customer_name: item.customer?.full_name || 'N/A',
-  })) as Review[];
+    customer_name: item.customer?.full_name || 'Anonymous',
+  }));
 }
-
-
-    
