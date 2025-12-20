@@ -19,6 +19,7 @@ import { ActivityFormModal, activitySchema } from "@/app/dashboard/trip-days/cre
 import { formatCurrency } from "@/lib/utils";
 import type { TripDay, TourPackage } from "@/lib/types";
 import { useBreadcrumb } from "../../../layout";
+import Link from "next/link";
 
 const tripDayEditSchema = z.object({
   day_name: z.string().min(1, "Day name is required"),
@@ -237,10 +238,10 @@ export default function EditTripDayPage() {
                             </div>
                             <p className="text-sm text-muted-foreground">{activity.description}</p>
 
-                            {activity.place && (
+                            {activity.place && activity.place.id && (
                                 <div className="flex items-center text-sm gap-2 mt-2 text-muted-foreground">
                                     <MapPin className="h-4 w-4" />
-                                    <span>Location: {activity.place.name}</span>
+                                     <span>Location: <Link href={`/dashboard/trip-locations/${activity.place.id}`} className="underline hover:text-primary ml-1">{activity.place.name}</Link></span>
                                 </div>
                             )}
                             

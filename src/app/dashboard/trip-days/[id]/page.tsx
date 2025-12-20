@@ -22,6 +22,7 @@ import type { TripDay } from "@/lib/types";
 import { getTripDayById, deleteTripDay } from "@/lib/supabase/queries";
 import { formatCurrency } from "@/lib/utils";
 import { useBreadcrumb } from "../../layout";
+import Link from "next/link";
 
 export default function TripDayDetailPage() {
   const router = useRouter();
@@ -148,10 +149,10 @@ export default function TripDayDetailPage() {
                           <span>Duration: {activity.duration_minutes} mins</span>
                         </div>
 
-                         {activity.place && (
+                         {activity.place && activity.place.id && (
                             <div className="flex items-center text-sm gap-2 mt-2 text-muted-foreground">
                                 <MapPin className="h-4 w-4" />
-                                <span>Location: {activity.place.name}</span>
+                                <span>Location: <Link href={`/dashboard/trip-locations/${activity.place.id}`} className="underline hover:text-primary ml-1">{activity.place.name}</Link></span>
                             </div>
                         )}
 
