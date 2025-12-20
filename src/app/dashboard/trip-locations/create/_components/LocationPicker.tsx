@@ -81,13 +81,13 @@ function MapUpdater({
 }
 
 type LocationPickerProps = {
-  initialPosition?: [number, number];
+  initialPosition: [number, number];
 };
 
 export function LocationPicker({ initialPosition }: LocationPickerProps) {
   const { setValue, watch, trigger, getValues } = useFormContext<TripLocation>();
   
-  const [position, setPosition] = useState<[number, number]>(initialPosition || [20.5937, 78.9629]);
+  const [position, setPosition] = useState<[number, number]>(initialPosition);
   const [searchQuery, setSearchQuery] = useState('');
   const [suggestions, setSuggestions] = useState<LocationIQResult[]>([]);
   const [isPopoverOpen, setIsPopoverOpen] = useState(false);
@@ -97,11 +97,20 @@ export function LocationPicker({ initialPosition }: LocationPickerProps) {
   const addressValue = watch('address');
 
   useEffect(() => {
+    // When the component mounts or the form value changes externally, update the search query input
     const currentAddress = getValues('address');
-    if (currentAddress && !searchQuery) {
-        setSearchQuery(currentAddress);
+    if (currentAddress) {
+      setSearchQuery(currentAddress);
     }
-  }, [getValues, searchQuery]);
+  }, [addressValue, getValues]);
+  
+  useEffect(() => {
+     // If the initial position prop changes (e.g. on edit page after data load), update the internal position state
+    if (initialPosition && (initialPosition[0] !== position[0] || initialPosition[1] !== position[1])) {
+        setPosition(initialPosition);
+    }
+  }, [initialPosition, position]);
+
 
   useEffect(() => {
     if (debouncedSearch.length > 2) {

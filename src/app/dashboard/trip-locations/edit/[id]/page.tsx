@@ -47,8 +47,8 @@ const tripLocationSchema = z.object({
   place_type: z.string().min(1, "Place type is required"),
   city: z.string().min(1, "City is required"),
   country: z.string().min(1, "Country is required"),
-  latitude: z.coerce.number().min(-90).max(90, "Invalid latitude"),
-  longitude: z.coerce.number().min(-180).max(180, "Invalid longitude"),
+  latitude: z.coerce.number().min(-90, "Invalid latitude").max(90, "Invalid latitude"),
+  longitude: z.coerce.number().min(-180, "Invalid longitude").max(180, "Invalid longitude"),
   state: z.string().min(1, "State is required"),
   district: z.string().min(1, "District is required"),
   code: z.string().min(1, "Location code is required"),
@@ -94,31 +94,36 @@ export default function EditTripLocationPage() {
     if (id) {
       const fetchLocation = async () => {
         setLoading(true);
-        const loc = await getTripLocationById(id);
-        if (loc) {
-          setBreadcrumbName(`Edit: ${loc.name}`);
-          form.reset({
-            ...loc,
-            name: loc.name || '',
-            place_type: loc.place_type || 'Tourist Places',
-            city: loc.city || '',
-            country: loc.country || 'India',
-            state: loc.state || '',
-            district: loc.district || '',
-            code: loc.code || '',
-            description: loc.description || '',
-            address: loc.address || '',
-            is_active: loc.is_active || false,
-            image_urls: loc.image_urls || [],
-            latitude: loc.latitude ?? 0,
-            longitude: loc.longitude ?? 0,
-          });
-          setOriginalLocation(loc);
-        } else {
-          toast({ variant: "destructive", title: "Error", description: "Location not found." });
-          router.push('/dashboard/trip-locations');
+        try {
+            const loc = await getTripLocationById(id);
+            if (loc) {
+              setBreadcrumbName(`Edit: ${loc.name}`);
+              form.reset({
+                ...loc,
+                name: loc.name || '',
+                place_type: loc.place_type || 'Tourist Places',
+                city: loc.city || '',
+                country: loc.country || 'India',
+                state: loc.state || '',
+                district: loc.district || '',
+                code: loc.code || '',
+                description: loc.description || '',
+                address: loc.address || '',
+                is_active: loc.is_active ?? false,
+                image_urls: loc.image_urls || [],
+                latitude: loc.latitude ?? 0,
+                longitude: loc.longitude ?? 0,
+              });
+              setOriginalLocation(loc);
+            } else {
+              toast({ variant: "destructive", title: "Error", description: "Location not found." });
+              router.push('/dashboard/trip-locations');
+            }
+        } catch(e) {
+             toast({ variant: "destructive", title: "Error", description: "Failed to load location data." });
+        } finally {
+            setLoading(false);
         }
-        setLoading(false);
       };
       fetchLocation();
     }
@@ -260,7 +265,7 @@ export default function EditTripLocationPage() {
 
   return (
     <div className="space-y-6">
-      {loading ? renderSkeleton() : (
+      {loading || !originalLocation ? renderSkeleton() : (
         <>
           <div className="flex items-center gap-4">
               <Button type="button" variant="outline" size="icon" className="h-7 w-7" onClick={() => router.back()}>
@@ -284,7 +289,7 @@ export default function EditTripLocationPage() {
                       <Card>
                           <CardHeader><CardTitle>Location Details</CardTitle></CardHeader>
                           <CardContent className="space-y-6">
-                              {originalLocation && <LocationPicker initialPosition={[originalLocation.latitude ?? 0, originalLocation.longitude ?? 0]}/>}
+                              <LocationPicker initialPosition={[originalLocation.latitude ?? 0, originalLocation.longitude ?? 0]}/>
                           </CardContent>
                       </Card>
                       <Card>
