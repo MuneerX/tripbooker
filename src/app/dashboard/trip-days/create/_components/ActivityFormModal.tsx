@@ -132,14 +132,17 @@ export function ActivityFormModal({ children, activity, onSave }: ActivityFormMo
                                 render={({ field }) => (
                                     <FormItem>
                                     <FormLabel>Location</FormLabel>
-                                    <Select onValueChange={field.onChange} value={field.value || undefined}>
+                                    <Select 
+                                        onValueChange={(value) => field.onChange(value === "none" ? null : value)} 
+                                        value={field.value ?? "none"}
+                                    >
                                         <FormControl>
                                         <SelectTrigger>
                                             <SelectValue placeholder="Select a location (optional)" />
                                         </SelectTrigger>
                                         </FormControl>
                                         <SelectContent>
-                                            <SelectItem value="">None</SelectItem>
+                                            <SelectItem value="none">None</SelectItem>
                                             {locations.map(loc => (
                                                 <SelectItem key={loc.id} value={loc.id}>
                                                     {loc.name}
@@ -177,3 +180,5 @@ export function ActivityFormModal({ children, activity, onSave }: ActivityFormMo
         </Dialog>
     )
 }
+
+    
