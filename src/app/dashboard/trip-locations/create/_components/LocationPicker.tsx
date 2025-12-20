@@ -39,6 +39,7 @@ type LocationIQResult = {
     postcode?: string;
     country?: string;
   };
+  name?: string;
 };
 
 function MapEvents({ onLocationChange }: { onLocationChange: (lat: number, lon: number, address?: string) => void }) {
@@ -89,7 +90,7 @@ type LocationPickerProps = {
 };
 
 export function LocationPicker({ initialPosition }: LocationPickerProps) {
-  const { setValue, watch, trigger } = useFormContext<TripLocation>();
+  const { setValue, watch, trigger, getValues } = useFormContext<TripLocation>();
   
   const [position, setPosition] = useState<[number, number]>(initialPosition || [20.5937, 78.9629]);
   const [searchQuery, setSearchQuery] = useState('');
@@ -136,16 +137,41 @@ export function LocationPicker({ initialPosition }: LocationPickerProps) {
   const updateFormFields = useCallback((lat: number, lon: number, location: Partial<LocationIQResult>) => {
     setValue('latitude', lat);
     setValue('longitude', lon);
-    if (location.display_name) setValue('address', location.display_name);
-    if (location.address?.city) setValue('city', location.address.city);
-    if (location.address?.state) setValue('state', location.address.state);
-    if (location.address?.country) setValue('country', location.address.country);
-    if (location.address?.state_district) setValue('district', location.address.state_district);
-    
-    // Trigger validation for all touched fields
-    ['latitude', 'longitude', 'address', 'city', 'state', 'country', 'district'].forEach(field => trigger(field as keyof TripLocation));
 
-  }, [setValue, trigger]);
+    if (location.display_name) {
+      setValue('address', location.display_name);
+    }
+    
+    const locationName = location.name || getValues('name') || '';
+    const cityName = location.address?.city;
+
+    if (cityName) {
+      setValue('city', cityName);
+    }
+    if (location.address?.state) {
+      setValue('state', location.address.state);
+    }
+    if (location.address?.country) {
+      setValue('country', location.address.country);
+    }
+    const district = location.address?.state_district || location.address?.county;
+    if (district) {
+      setValue('district', district);
+    }
+
+    if(cityName && locationName) {
+        const cityCode = cityName.substring(0, 3).toUpperCase();
+        const nameCode = locationName.substring(0, 3).toUpperCase();
+        setValue('code', `${cityCode}-${nameCode}`);
+    } else if (cityName) {
+        setValue('code', `${cityName.substring(0, 3).toUpperCase()}-LOC`);
+    }
+
+
+    // Trigger validation for all touched fields
+    ['latitude', 'longitude', 'address', 'city', 'state', 'country', 'district', 'code'].forEach(field => trigger(field as keyof TripLocation));
+
+  }, [setValue, trigger, getValues]);
 
 
   const handleLocationChange = useCallback(async (lat: number, lon: number, address?: string) => {
@@ -181,6 +207,12 @@ export function LocationPicker({ initialPosition }: LocationPickerProps) {
     const lat = parseFloat(suggestion.lat);
     const lon = parseFloat(suggestion.lon);
     setPosition([lat, lon]);
+
+    if(suggestion.display_name && !getValues('name')) {
+        const name = suggestion.display_name.split(',')[0];
+        setValue('name', name);
+    }
+
     updateFormFields(lat, lon, suggestion);
     setSearchQuery(suggestion.display_name);
     setSuggestions([]);

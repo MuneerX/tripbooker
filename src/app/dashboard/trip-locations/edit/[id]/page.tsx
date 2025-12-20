@@ -86,7 +86,7 @@ export default function EditTripLocationPage() {
           setBreadcrumbName(`Edit: ${loc.name}`);
           form.reset({
             ...loc,
-            name: loc.name,
+            name: loc.name || '',
             place_type: loc.place_type || 'Tourist Places',
             city: loc.city || '',
             country: loc.country || 'India',
@@ -97,6 +97,8 @@ export default function EditTripLocationPage() {
             address: loc.address || '',
             is_active: loc.is_active || false,
             image_urls: loc.image_urls || [],
+            latitude: loc.latitude ?? 0,
+            longitude: loc.longitude ?? 0,
           });
         } else {
           toast({ variant: "destructive", title: "Error", description: "Location not found." });
@@ -188,7 +190,7 @@ export default function EditTripLocationPage() {
       return [lat, lon] as [number, number];
     }
     return undefined;
-  }, [form.formState.isDirty]);
+  }, [form.getValues('latitude'), form.getValues('longitude')]);
 
 
   if (loading) {
@@ -332,13 +334,13 @@ export default function EditTripLocationPage() {
               <Card>
                     <CardHeader><CardTitle>Description</CardTitle></CardHeader>
                     <CardContent>
-                        <FormField control={form.control} name="description" render={({ field }) => (<FormItem><FormLabel>Place Description</FormLabel><FormControl><Textarea placeholder="A brief description of the location." {...field} rows={5} /></FormControl><FormMessage /></FormItem>)} />
+                        <FormField control={form.control} name="description" render={({ field }) => (<FormItem><FormLabel>Place Description</FormLabel><FormControl><Textarea placeholder="A brief description of the location." {...field} value={field.value ?? ""} rows={5} /></FormControl><FormMessage /></FormItem>)} />
                     </CardContent>
               </Card>
                <Card>
                   <CardHeader><CardTitle>Status</CardTitle></CardHeader>
                   <CardContent>
-                    <FormField control={form.control} name="is_active" render={({ field }) => ( <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4"><div className="space-y-0.5"><FormLabel>Active Status</FormLabel></div><FormControl><Switch checked={field.value} onCheckedChange={field.onChange} /></FormControl></FormItem> )} />
+                    <FormField control={form.control} name="is_active" render={({ field }) => ( <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4"><div className="space-y-0.5"><FormLabel>Active Status</FormLabel></div><FormControl><Switch checked={field.value ?? false} onCheckedChange={field.onChange} /></FormControl></FormItem> )} />
                   </CardContent>
                 </Card>
             </div>
