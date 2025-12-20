@@ -912,13 +912,8 @@ export async function getReviews(packageId?: string): Promise<Review[]> {
    let query = supabase
     .from('reviews')
     .select(`
-      id,
-      tour_package_id,
-      user_id,
-      rating,
-      review_text,
-      created_at,
-      customer:user_id (
+      *,
+      customer:profiles (
         full_name
       )
     `)
