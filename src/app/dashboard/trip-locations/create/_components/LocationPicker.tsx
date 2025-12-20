@@ -51,6 +51,7 @@ function MapUpdater({
     const map = useMap();
 
     useEffect(() => {
+        // Only set the view, don't re-render the container
         map.setView(position, map.getZoom());
     }, [position, map]);
 
@@ -88,28 +89,22 @@ export function LocationPicker({ initialPosition }: LocationPickerProps) {
   const { setValue, watch, trigger, getValues } = useFormContext<TripLocation>();
   
   const [position, setPosition] = useState<[number, number]>(initialPosition);
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState(watch('address') || '');
   const [suggestions, setSuggestions] = useState<LocationIQResult[]>([]);
   const [isPopoverOpen, setIsPopoverOpen] = useState(false);
   
   const debouncedSearch = useDebounce(searchQuery, 500);
 
-  const addressValue = watch('address');
-
   useEffect(() => {
-    // When the component mounts or the form value changes externally, update the search query input
-    const currentAddress = getValues('address');
-    if (currentAddress) {
-      setSearchQuery(currentAddress);
-    }
-  }, [addressValue, getValues]);
-  
-  useEffect(() => {
-     // If the initial position prop changes (e.g. on edit page after data load), update the internal position state
-    if (initialPosition && (initialPosition[0] !== position[0] || initialPosition[1] !== position[1])) {
+    // Sync position if initialPosition prop changes (e.g., on form reset)
+    if (initialPosition[0] !== position[0] || initialPosition[1] !== position[1]) {
         setPosition(initialPosition);
     }
-  }, [initialPosition, position]);
+    const currentAddress = getValues('address');
+    if (currentAddress && currentAddress !== searchQuery) {
+      setSearchQuery(currentAddress);
+    }
+  }, [initialPosition, getValues, position, searchQuery]);
 
 
   useEffect(() => {
@@ -257,6 +252,7 @@ export function LocationPicker({ initialPosition }: LocationPickerProps) {
         </div>
 
         <div className="h-80 w-full rounded-md overflow-hidden border">
+             {/* MapContainer is rendered once with a stable center prop */}
              <MapContainer center={initialPosition} zoom={13} scrollWheelZoom={true} className="h-full w-full">
                 <MapUpdater position={position} onLocationChange={handleLocationChange} />
              </MapContainer>
@@ -274,3 +270,5 @@ export function LocationPicker({ initialPosition }: LocationPickerProps) {
     </div>
   );
 }
+
+    

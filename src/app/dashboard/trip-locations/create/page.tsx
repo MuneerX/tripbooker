@@ -152,6 +152,8 @@ export default function CreateTripLocationPage() {
         setIsSubmitting(false);
     }
   };
+  
+  const initialPosition: [number, number] = [form.watch('latitude') || 20.5937, form.watch('longitude') || 78.9629];
 
   return (
     <div className="space-y-6">
@@ -166,7 +168,7 @@ export default function CreateTripLocationPage() {
                   <Card>
                     <CardHeader><CardTitle>Location Details</CardTitle></CardHeader>
                     <CardContent className="space-y-6">
-                      <LocationPicker initialPosition={[form.getValues('latitude')!, form.getValues('longitude')!]}/>
+                      <LocationPicker initialPosition={initialPosition}/>
                     </CardContent>
                   </Card>
                    <Card>
@@ -258,3 +260,5 @@ export default function CreateTripLocationPage() {
     </div>
   )
 }
+
+    

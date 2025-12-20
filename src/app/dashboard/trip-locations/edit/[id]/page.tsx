@@ -261,11 +261,20 @@ export default function EditTripLocationPage() {
   );
 
   
+  if (loading) {
+    return renderSkeleton();
+  }
+  
+  if (!originalLocation) {
+    return <div>Location data could not be loaded.</div>
+  }
+  
+  const initialPosition: [number, number] = [originalLocation.latitude ?? 20.5937, originalLocation.longitude ?? 78.9629];
   const originalLocationName = form.getValues('name');
+
 
   return (
     <div className="space-y-6">
-      {loading || !originalLocation ? renderSkeleton() : (
         <>
           <div className="flex items-center gap-4">
               <Button type="button" variant="outline" size="icon" className="h-7 w-7" onClick={() => router.back()}>
@@ -289,7 +298,7 @@ export default function EditTripLocationPage() {
                       <Card>
                           <CardHeader><CardTitle>Location Details</CardTitle></CardHeader>
                           <CardContent className="space-y-6">
-                              <LocationPicker initialPosition={[originalLocation.latitude ?? 0, originalLocation.longitude ?? 0]}/>
+                              <LocationPicker initialPosition={initialPosition}/>
                           </CardContent>
                       </Card>
                       <Card>
@@ -388,7 +397,8 @@ export default function EditTripLocationPage() {
               </form>
             </Form>
         </>
-      )}
     </div>
   );
 }
+
+    
