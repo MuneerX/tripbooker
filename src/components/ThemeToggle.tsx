@@ -11,27 +11,29 @@ export function ThemeToggle() {
   const { theme, setTheme } = useTheme()
 
   return (
-    <div className="flex items-center justify-center px-2 py-1.5">
-        <div className="flex items-center rounded-md border p-1">
-             <Button
-                variant={theme === 'light' ? 'secondary' : 'ghost'}
-                size="sm"
-                onClick={() => setTheme("light")}
-                className="h-auto px-2 py-0.5"
-                aria-label="Switch to light theme"
-            >
-                <Sun className="h-4 w-4" />
-            </Button>
-            <Button
-                variant={theme === 'dark' ? 'secondary' : 'ghost'}
-                size="sm"
-                onClick={() => setTheme("dark")}
-                className="h-auto px-2 py-0.5"
-                aria-label="Switch to dark theme"
-            >
-                <Moon className="h-4 w-4" />
-            </Button>
-        </div>
+    <div className="p-2">
+      <div className="grid grid-cols-2 gap-1 rounded-lg bg-muted p-1">
+        <Button
+          variant={theme === 'light' ? 'secondary' : 'ghost'}
+          size="sm"
+          onClick={() => setTheme("light")}
+          className="h-auto px-2 py-1.5 text-sm"
+          aria-label="Switch to light theme"
+        >
+          <Sun className="mr-2 h-4 w-4" />
+          Light
+        </Button>
+        <Button
+          variant={theme === 'dark' ? 'secondary' : 'ghost'}
+          size="sm"
+          onClick={() => setTheme("dark")}
+          className="h-auto px-2 py-1.5 text-sm"
+          aria-label="Switch to dark theme"
+        >
+          <Moon className="mr-2 h-4 w-4" />
+          Dark
+        </Button>
+      </div>
     </div>
   )
 }
