@@ -14,10 +14,10 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ArrowLeft, PlusCircle, Trash2, DollarSign, CheckCircle, XCircle, AlertTriangle, MapPin } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { getTripDayById, updateTripDay, getTripDaysForPackage, getTourPackages } from "@/lib/supabase/queries";
+import { getTripDayById, updateTripDay, getTripDaysForPackage, getTourPackages, getTripLocations } from "@/lib/supabase/queries";
 import { ActivityFormModal, activitySchema } from "@/app/dashboard/trip-days/create/_components/ActivityFormModal";
 import { formatCurrency } from "@/lib/utils";
-import type { TripDay, TourPackage } from "@/lib/types";
+import type { TripDay, TourPackage, TripLocation } from "@/lib/types";
 import { useBreadcrumb } from "../../../layout";
 import Link from "next/link";
 
@@ -45,6 +45,7 @@ export default function EditTripDayPage() {
   const [existingDayNumbers, setExistingDayNumbers] = React.useState<number[]>([]);
   const [originalDayNumber, setOriginalDayNumber] = React.useState<number | null>(null);
   const [tourPackages, setTourPackages] = React.useState<TourPackage[]>([]);
+  const [locations, setLocations] = React.useState<TripLocation[]>([]);
 
   const formSchema = tripDayEditSchema.superRefine(({ day_number, package_id }, ctx) => {
     const isOriginalPackage = package_id === form.getValues('package_id');
@@ -77,8 +78,9 @@ export default function EditTripDayPage() {
     const fetchInitialData = async () => {
         setLoading(true);
         
-        const packages = await getTourPackages();
+        const [packages, locs] = await Promise.all([getTourPackages(), getTripLocations()]);
         setTourPackages(packages);
+        setLocations(locs);
 
         if (id) {
             const day = await getTripDayById(id);
@@ -132,6 +134,12 @@ export default function EditTripDayPage() {
     control: form.control,
     name: "activities"
   });
+  
+  const findLocationName = (placeId?: string | null) => {
+    if (!placeId) return null;
+    return locations.find(loc => loc.id === placeId)?.name || null;
+  };
+
 
   const onSubmit = async (data: TripDayEditFormValues) => {
     setIsSubmitting(true);
@@ -237,14 +245,14 @@ export default function EditTripDayPage() {
                                 <p className="text-sm text-muted-foreground">{activity.activity_time ? activity.activity_time.substring(0,5) : ''} &bull; {activity.duration_minutes} mins</p>
                             </div>
                             <p className="text-sm text-muted-foreground">{activity.description}</p>
-
-                            {activity.place && activity.place.id && (
+                            
+                            {activity.place_id && findLocationName(activity.place_id) && (
                                 <div className="flex items-center text-sm gap-2 mt-2 text-muted-foreground">
                                     <MapPin className="h-4 w-4" />
-                                     <span>Location: <Link href={`/dashboard/trip-locations/${activity.place.id}`} className="underline hover:text-primary ml-1">{activity.place.name}</Link></span>
+                                    <span>Location: <Link href={`/dashboard/trip-locations/${activity.place_id}`} className="underline hover:text-primary ml-1">{findLocationName(activity.place_id)}</Link></span>
                                 </div>
                             )}
-                            
+
                             {activity.special_instructions && (
                                 <div className="flex items-start text-sm gap-2 mt-2 text-sky-600">
                                     <AlertTriangle className="h-4 w-4 mt-0.5" />

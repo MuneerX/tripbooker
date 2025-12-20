@@ -15,7 +15,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useRouter } from "next/navigation"
 import { useToast } from "@/hooks/use-toast"
 import { PlusCircle, Trash2, MapPin, AlertTriangle, DollarSign, CheckCircle, XCircle } from "lucide-react"
-import { createTripDay, getTourPackages, getTripDaysForPackage } from "@/lib/supabase/queries"
+import { createTripDay, getTourPackages, getTripDaysForPackage, getTripLocations } from "@/lib/supabase/queries"
 import type { TourPackage, TripLocation } from "@/lib/types"
 import { ActivityFormModal, activitySchema } from "./_components/ActivityFormModal"
 import { formatCurrency } from "@/lib/utils";
@@ -44,11 +44,12 @@ export default function CreateTripDayPage() {
 
 
   React.useEffect(() => {
-    const fetchPackages = async () => {
-      const packages = await getTourPackages();
+    const fetchPackagesAndLocations = async () => {
+      const [packages, locs] = await Promise.all([getTourPackages(), getTripLocations()]);
       setTourPackages(packages);
+      setLocations(locs);
     };
-    fetchPackages();
+    fetchPackagesAndLocations();
   }, []);
 
   const formSchema = tripDaySchema.superRefine(({ day_number }, ctx) => {
@@ -189,11 +190,7 @@ export default function CreateTripDayPage() {
                         <CardTitle>Activities for Itinerary: {selectedPackageName}</CardTitle>
                         <CardDescription>Add and manage activities for this trip day.</CardDescription>
                     </div>
-                    <ActivityFormModal 
-                        onSave={(newActivity) => append(newActivity)}
-                        locations={locations}
-                        onLocationsChange={setLocations}
-                    >
+                    <ActivityFormModal onSave={(newActivity) => append(newActivity)}>
                         <Button type="button" size="sm">
                             <PlusCircle className="mr-2 h-4 w-4" /> Add Activity
                         </Button>
@@ -251,8 +248,6 @@ export default function CreateTripDayPage() {
                                      <ActivityFormModal 
                                         activity={activity} 
                                         onSave={(editedActivity) => update(index, editedActivity)}
-                                        locations={locations}
-                                        onLocationsChange={setLocations}
                                      >
                                         <Button type="button" variant="outline" size="sm">Edit</Button>
                                     </ActivityFormModal>
