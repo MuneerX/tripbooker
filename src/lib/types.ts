@@ -113,6 +113,7 @@ export type Booking = {
   customer_name: string;
   customer_email: string;
   status: 'pending' | 'confirmed' | 'cancelled' | 'completed';
+  avatar_url?: string | null;
 };
 
 
@@ -123,8 +124,8 @@ export type Review = {
   customer_name: string;
   rating: number;
   comment: string | null;
-  review_text: string;
   created_at: string;
+  avatar_url?: string | null;
 };
 
 // For stats cards

@@ -44,7 +44,7 @@ export function RecentBookings({ bookings }: { bookings: Booking[] }) {
                 <TableCell>
                   <div className="flex items-center gap-3">
                     <Avatar className="hidden h-9 w-9 sm:flex">
-                      <AvatarImage src={`https://i.pravatar.cc/150?u=${booking.user_id}`} alt="Avatar" />
+                      <AvatarImage src={booking.avatar_url || undefined} alt="Avatar" />
                       <AvatarFallback>{booking.customer_name?.charAt(0) ?? 'A'}</AvatarFallback>
                     </Avatar>
                     <div className="grid gap-0.5">

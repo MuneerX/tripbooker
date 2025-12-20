@@ -864,9 +864,10 @@ export async function getBookings(packageId?: string): Promise<Booking[]> {
     .from('tour_bookings')
     .select(`
       *,
-      profiles:user_id (
+      profiles (
           full_name,
-          email
+          email,
+          avatar_url
       )
     `)
     .order('booking_date', { ascending: false });
@@ -901,6 +902,7 @@ export async function getBookings(packageId?: string): Promise<Booking[]> {
     customer_name: item.profiles?.full_name || 'N/A',
     customer_email: item.profiles?.email || 'N/A',
     status: item.booking_status, // a_s
+    avatar_url: item.profiles?.avatar_url,
   }));
 }
 
@@ -914,7 +916,8 @@ export async function getReviews(packageId?: string): Promise<Review[]> {
     .select(`
       *,
       customer:profiles (
-        full_name
+        full_name,
+        avatar_url
       )
     `)
     .order('created_at', { ascending: false });
@@ -932,7 +935,8 @@ export async function getReviews(packageId?: string): Promise<Review[]> {
 
   return (data || []).map((item: any) => ({
     ...item,
-    review_text: item.comment, // Map comment to review_text
+    comment: item.comment,
     customer_name: item.customer?.full_name || 'Anonymous',
+    avatar_url: item.customer?.avatar_url,
   }));
 }

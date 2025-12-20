@@ -407,7 +407,7 @@ export default function TourPackageDetailPage() {
                             {reviewsForPackage.length > 0 ? reviewsForPackage.map(review => (
                             <div key={review.id} className="flex items-start gap-4">
                                 <Avatar className="h-10 w-10 border">
-                                <AvatarImage src={`https://i.pravatar.cc/150?u=${review.user_id}`} />
+                                <AvatarImage src={review.avatar_url || undefined} />
                                 <AvatarFallback>{review.customer_name.charAt(0)}</AvatarFallback>
                                 </Avatar>
                                 <div className="grid gap-1.5 flex-1">
