@@ -9,7 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Command, CommandGroup, CommandItem, CommandList } from '@/components/ui/command';
 import { useDebounce } from '@/hooks/use-debounce';
-import { TripLocation } from '@/lib/types';
+import type { TripLocation } from '@/lib/types';
 import { MapPin } from 'lucide-react';
 
 
@@ -58,8 +58,30 @@ function MapEvents({ onLocationChange }: { onLocationChange: (lat: number, lon: 
 
 function ChangeView({ center, zoom }: { center: LatLngExpression; zoom: number }) {
   const map = useMap();
-  map.setView(center, zoom);
+   useEffect(() => {
+    map.setView(center, zoom);
+  }, [center, zoom, map]);
   return null;
+}
+
+type MapContentProps = {
+  position: [number, number];
+  markerHandlers: any;
+  onLocationChange: (lat: number, lng: number) => void;
+};
+
+function MapContent({ position, markerHandlers, onLocationChange }: MapContentProps) {
+  return (
+    <>
+      <TileLayer
+        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+      />
+      <Marker position={position} icon={customIcon} draggable={true} eventHandlers={markerHandlers} />
+      <MapEvents onLocationChange={onLocationChange} />
+      <ChangeView center={position} zoom={13} />
+    </>
+  );
 }
 
 type LocationPickerProps = {
@@ -164,8 +186,6 @@ export function LocationPicker({ initialPosition }: LocationPickerProps) {
     setSuggestions([]);
     setIsPopoverOpen(false);
   };
-  
-  const mapKey = useMemo(() => position.join(','), [position]);
 
   return (
     <div className="space-y-4">
@@ -204,15 +224,9 @@ export function LocationPicker({ initialPosition }: LocationPickerProps) {
         </div>
 
         <div className="h-80 w-full rounded-md overflow-hidden border">
-            <MapContainer key={mapKey} center={position} zoom={13} scrollWheelZoom={true} className="h-full w-full">
-                <TileLayer
-                    attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-                    url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                />
-                <Marker position={position} icon={customIcon} draggable={true} eventHandlers={markerHandlers} />
-                <MapEvents onLocationChange={handleLocationChange} />
-                <ChangeView center={position} zoom={13} />
-            </MapContainer>
+             <MapContainer center={position} zoom={13} scrollWheelZoom={true} className="h-full w-full">
+                <MapContent position={position} markerHandlers={markerHandlers} onLocationChange={handleLocationChange} />
+             </MapContainer>
         </div>
         <div className="grid grid-cols-2 gap-4">
              <div className="grid gap-2">
