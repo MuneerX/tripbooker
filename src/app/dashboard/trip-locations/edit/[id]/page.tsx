@@ -69,7 +69,7 @@ export default function EditTripLocationPage() {
 
   const [loading, setLoading] = React.useState(true);
   const [isSubmitting, setIsSubmitting] = React.useState(false);
-  const [originalLocation, setOriginalLocation] = React.useState<TripLocation | null>(null);
+  const [loadedLocation, setLoadedLocation] = React.useState<TripLocation | null>(null);
 
   const form = useForm<TripLocationFormValues>({
     resolver: zodResolver(tripLocationSchema),
@@ -82,7 +82,6 @@ export default function EditTripLocationPage() {
         setLoading(true);
         const loc = await getTripLocationById(id);
         if (loc) {
-          setOriginalLocation(loc);
           setBreadcrumbName(`Edit: ${loc.name}`);
           form.reset({
             ...loc,
@@ -100,6 +99,7 @@ export default function EditTripLocationPage() {
             latitude: loc.latitude ?? 0,
             longitude: loc.longitude ?? 0,
           });
+          setLoadedLocation(loc); // Set the loaded location data
         } else {
           toast({ variant: "destructive", title: "Error", description: "Location not found." });
           router.push('/dashboard/trip-locations');
@@ -141,11 +141,12 @@ export default function EditTripLocationPage() {
 
 
   const onSubmit = async (data: TripLocationFormValues) => {
+    if (!loadedLocation) return;
     setIsSubmitting(true);
     const formData = new FormData();
 
-    if (originalLocation?.image_urls) {
-        formData.append('original_image_urls', JSON.stringify(originalLocation.image_urls));
+    if (loadedLocation.image_urls) {
+        formData.append('original_image_urls', JSON.stringify(loadedLocation.image_urls));
     }
     
     Object.entries(data).forEach(([key, value]) => {
@@ -183,34 +184,35 @@ export default function EditTripLocationPage() {
     }
   };
 
+  const renderSkeleton = () => (
+    <div className="space-y-6">
+      <div className="flex items-center gap-4">
+           <Skeleton className="h-7 w-7 rounded-full" />
+           <Skeleton className="h-6 w-48" />
+      </div>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+           <div className="lg:col-span-2 space-y-6">
+              <Card>
+                  <CardHeader><Skeleton className="h-6 w-1/3" /></CardHeader>
+                  <CardContent><Skeleton className="h-96 w-full" /></CardContent>
+              </Card>
+           </div>
+           <div className="lg:col-span-1 space-y-6">
+              <Card>
+                  <CardHeader><Skeleton className="h-6 w-1/3" /></CardHeader>
+                  <CardContent className="space-y-4">
+                      <Skeleton className="h-10 w-full" />
+                      <Skeleton className="h-10 w-full" />
+                      <Skeleton className="h-10 w-full" />
+                  </CardContent>
+              </Card>
+           </div>
+      </div>
+    </div>
+  );
 
-  if (loading || !originalLocation) {
-    return (
-        <div className="space-y-6">
-            <div className="flex items-center gap-4">
-                 <Skeleton className="h-7 w-7 rounded-full" />
-                 <Skeleton className="h-6 w-48" />
-            </div>
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                 <div className="lg:col-span-2 space-y-6">
-                    <Card>
-                        <CardHeader><Skeleton className="h-6 w-1/3" /></CardHeader>
-                        <CardContent><Skeleton className="h-96 w-full" /></CardContent>
-                    </Card>
-                 </div>
-                 <div className="lg:col-span-1 space-y-6">
-                    <Card>
-                        <CardHeader><Skeleton className="h-6 w-1/3" /></CardHeader>
-                        <CardContent className="space-y-4">
-                            <Skeleton className="h-10 w-full" />
-                            <Skeleton className="h-10 w-full" />
-                            <Skeleton className="h-10 w-full" />
-                        </CardContent>
-                    </Card>
-                 </div>
-            </div>
-        </div>
-    )
+  if (loading || !loadedLocation) {
+    return renderSkeleton();
   }
   
   const originalLocationName = form.getValues('name');
@@ -240,7 +242,7 @@ export default function EditTripLocationPage() {
                 <Card>
                     <CardHeader><CardTitle>Location Details</CardTitle></CardHeader>
                     <CardContent className="space-y-6">
-                        <LocationPicker initialPosition={[originalLocation.latitude ?? 0, originalLocation.longitude ?? 0]}/>
+                        <LocationPicker initialPosition={[loadedLocation.latitude ?? 0, loadedLocation.longitude ?? 0]}/>
                     </CardContent>
                 </Card>
                 <Card>
