@@ -95,20 +95,21 @@ export type TripLocation = {
 
 export type Booking = {
   id: string;
-  tour_package_id: string;
-  user_id: string;
+  booking_reference: string;
+  user_id: string | null;
+  package_id: string;
+  booking_date: string;
+  travel_date: string | null;
+  total_adults: number;
+  total_children: number;
+  total_amount: number;
+  booking_status: 'pending' | 'confirmed' | 'cancelled' | 'completed';
+  payment_status: string;
+  payment_method: string | null;
+  special_requests: string | null;
+  created_at: string;
   customer_name: string;
   customer_email: string;
-  status: 'pending' | 'confirmed' | 'cancelled' | 'completed';
-  payment_type: 'full' | 'partial';
-  transaction_id: string;
-  reservation_date: string;
-  travel_date: string;
-  referral_code: string | null;
-  total_amount: number;
-  paid_amount: number;
-  number_of_travelers: number;
-  created_at: string;
 };
 
 export type Review = {

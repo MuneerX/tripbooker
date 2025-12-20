@@ -853,12 +853,54 @@ export async function deleteTripLocation(location: TripLocation) {
  */
 export async function getBookings(): Promise<Booking[]> {
   const supabase = createAdminClient();
-  const { data, error } = await supabase.from('bookings').select('*').order('created_at', { ascending: false });
+  const { data, error } = await supabase
+    .from('tour_bookings')
+    .select(`
+      id,
+      booking_reference,
+      user_id,
+      package_id,
+      booking_date,
+      travel_date,
+      total_adults,
+      total_children,
+      total_amount,
+      booking_status,
+      payment_status,
+      payment_method,
+      special_requests,
+      created_at,
+      customer:profiles (
+        full_name,
+        email
+      )
+    `)
+    .order('created_at', { ascending: false });
+
   if (error) {
     console.error('Error fetching bookings:', error);
     return [];
   }
-  return data as Booking[];
+
+  // Map the data to the Booking type
+  return data.map((item: any) => ({
+    id: item.id,
+    booking_reference: item.booking_reference,
+    user_id: item.user_id,
+    package_id: item.package_id,
+    booking_date: item.booking_date,
+    travel_date: item.travel_date,
+    total_adults: item.total_adults,
+    total_children: item.total_children,
+    total_amount: item.total_amount,
+    booking_status: item.booking_status,
+    payment_status: item.payment_status,
+    payment_method: item.payment_method,
+    special_requests: item.special_requests,
+    created_at: item.created_at,
+    customer_name: item.customer?.full_name || 'N/A',
+    customer_email: item.customer?.email || 'N/A',
+  }));
 }
 
 /**

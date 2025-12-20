@@ -60,7 +60,7 @@ export default function TourPackageDetailPage() {
           const allBookings = await getBookings();
           const allReviews = await getReviews();
 
-          setBookingsForPackage(allBookings.filter(b => b.tour_package_id === pkg.id));
+          setBookingsForPackage(allBookings.filter(b => b.package_id === pkg.id));
           setReviewsForPackage(allReviews.filter(r => r.tour_package_id === pkg.id));
         } else {
            setBreadcrumbName('Not Found');
@@ -300,13 +300,13 @@ export default function TourPackageDetailPage() {
                             <Table>
                               <TableHeader>
                                 <TableRow>
-                                  <TableHead>Booking ID</TableHead>
+                                  <TableHead>Booking Ref</TableHead>
                                   <TableHead>Customer</TableHead>
-                                  <TableHead>Reservation Date</TableHead>
-                                  <TableHead>Transaction ID</TableHead>
-                                  <TableHead>Payment Type</TableHead>
+                                  <TableHead>Booking Date</TableHead>
+                                  <TableHead>Travel Date</TableHead>
+                                  <TableHead>Payment</TableHead>
                                   <TableHead>Amount</TableHead>
-                                  <TableHead>Referral Code</TableHead>
+                                  <TableHead>Guests</TableHead>
                                   <TableHead>Status</TableHead>
                                 </TableRow>
                               </TableHeader>
@@ -314,19 +314,19 @@ export default function TourPackageDetailPage() {
                                 {bookingsForPackage.length > 0 ? (
                                   bookingsForPackage.map((booking) => (
                                     <TableRow key={booking.id}>
-                                      <TableCell className="font-mono text-xs">{booking.id}</TableCell>
+                                      <TableCell className="font-mono text-xs">{booking.booking_reference}</TableCell>
                                       <TableCell>
                                         <div className="font-medium">{booking.customer_name}</div>
                                         <div className="text-sm text-muted-foreground hidden md:inline">{booking.customer_email}</div>
                                       </TableCell>
-                                      <TableCell>{format(new Date(booking.reservation_date), "PPP")}</TableCell>
-                                      <TableCell className="font-mono text-xs">{booking.transaction_id}</TableCell>
-                                      <TableCell className="capitalize">{booking.payment_type}</TableCell>
+                                      <TableCell>{format(new Date(booking.booking_date), "PPP")}</TableCell>
+                                      <TableCell>{booking.travel_date ? format(new Date(booking.travel_date), "PPP") : 'N/A'}</TableCell>
+                                      <TableCell className="capitalize">{booking.payment_status}</TableCell>
                                       <TableCell>{formatCurrency(booking.total_amount)}</TableCell>
-                                      <TableCell>{booking.referral_code || 'N/A'}</TableCell>
+                                      <TableCell>{booking.total_adults + booking.total_children}</TableCell>
                                       <TableCell>
-                                        <Badge variant="outline" className={getStatusBadgeColor(booking.status)}>
-                                          {booking.status}
+                                        <Badge variant="outline" className={getStatusBadgeColor(booking.booking_status)}>
+                                          {booking.booking_status}
                                         </Badge>
                                       </TableCell>
                                     </TableRow>
