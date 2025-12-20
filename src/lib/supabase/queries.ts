@@ -865,6 +865,7 @@ export async function getBookings(): Promise<Booking[]> {
       total_adults,
       total_children,
       total_amount,
+      paid_amount:total_amount,
       booking_status,
       payment_status,
       payment_method,
@@ -881,6 +882,8 @@ export async function getBookings(): Promise<Booking[]> {
     console.error('Error fetching bookings:', error);
     return [];
   }
+    
+  console.log('Fetched bookings:', data);
 
   // Map the data to the Booking type
   return data.map((item: any) => ({
@@ -893,6 +896,7 @@ export async function getBookings(): Promise<Booking[]> {
     total_adults: item.total_adults,
     total_children: item.total_children,
     total_amount: item.total_amount,
+    paid_amount: item.paid_amount,
     booking_status: item.booking_status,
     payment_status: item.payment_status,
     payment_method: item.payment_method,

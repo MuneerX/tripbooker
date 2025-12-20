@@ -103,14 +103,16 @@ export type Booking = {
   total_adults: number;
   total_children: number;
   total_amount: number;
+  paid_amount: number;
   booking_status: 'pending' | 'confirmed' | 'cancelled' | 'completed';
-  payment_status: string;
+  payment_status: 'pending' | 'completed' | 'failed' | 'refunded';
   payment_method: string | null;
   special_requests: string | null;
   created_at: string;
   customer_name: string;
   customer_email: string;
 };
+
 
 export type Review = {
   id: string;

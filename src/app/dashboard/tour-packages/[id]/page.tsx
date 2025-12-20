@@ -325,7 +325,7 @@ export default function TourPackageDetailPage() {
                                       <TableCell>{formatCurrency(booking.total_amount)}</TableCell>
                                       <TableCell>{booking.total_adults + booking.total_children}</TableCell>
                                       <TableCell>
-                                        <Badge variant="outline" className={getStatusBadgeColor(booking.booking_status)}>
+                                        <Badge variant="outline" className={cn("capitalize", getStatusBadgeColor(booking.booking_status))}>
                                           {booking.booking_status}
                                         </Badge>
                                       </TableCell>
