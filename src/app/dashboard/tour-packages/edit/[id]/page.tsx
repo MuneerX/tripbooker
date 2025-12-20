@@ -98,7 +98,7 @@ export default function EditTourPackagePage() {
         const pkg = await getTourPackageById(id);
         if (pkg) {
           setTourPackage(pkg);
-          setBreadcrumbName(pkg.name);
+          setBreadcrumbName(`Edit: ${pkg.name}`);
           form.reset({
             ...pkg,
             base_price: pkg.base_price ?? 0,
@@ -357,7 +357,7 @@ export default function EditTourPackagePage() {
                                     <FormItem>
                                         <FormLabel>Featured Image</FormLabel>
                                         {form.getValues("featured_image_url") && !newFeaturedImageFile && (
-                                             <div className="relative group aspect-video w-48">
+                                             <div className="relative group aspect-video w-full">
                                                 <Image src={form.getValues("featured_image_url")!} alt="Featured image" fill className="rounded-md object-cover" />
                                                 <Button type="button" variant="destructive" size="icon" className="absolute top-1 right-1 h-6 w-6" onClick={() => form.setValue("featured_image_url", "", { shouldValidate: true })}>
                                                     <X className="h-4 w-4" />
