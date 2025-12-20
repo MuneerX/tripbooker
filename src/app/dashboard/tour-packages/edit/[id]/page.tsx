@@ -262,8 +262,8 @@ export default function EditTourPackagePage() {
                                                 <h4 className="text-sm font-medium mb-2">Current Images:</h4>
                                                 <div className="grid grid-cols-3 gap-2">
                                                 {existingImageUrls.map((url, index) => (
-                                                    <div key={index} className="relative group">
-                                                        <Image src={url} alt={`Existing image ${index + 1}`} width={150} height={100} className="rounded-md object-cover" />
+                                                    <div key={index} className="relative group aspect-video">
+                                                        <Image src={url} alt={`Existing image ${index + 1}`} fill className="rounded-md object-cover" />
                                                         <Button type="button" variant="destructive" size="icon" className="absolute top-1 right-1 h-6 w-6 opacity-0 group-hover:opacity-100" onClick={() => handleRemoveExistingImage(url)}>
                                                             <X className="h-4 w-4" />
                                                         </Button>
@@ -357,8 +357,8 @@ export default function EditTourPackagePage() {
                                     <FormItem>
                                         <FormLabel>Featured Image</FormLabel>
                                         {form.getValues("featured_image_url") && !newFeaturedImageFile && (
-                                             <div className="relative group w-48">
-                                                <Image src={form.getValues("featured_image_url")!} alt="Featured image" width={192} height={108} className="rounded-md object-cover" />
+                                             <div className="relative group aspect-video w-48">
+                                                <Image src={form.getValues("featured_image_url")!} alt="Featured image" fill className="rounded-md object-cover" />
                                                 <Button type="button" variant="destructive" size="icon" className="absolute top-1 right-1 h-6 w-6" onClick={() => form.setValue("featured_image_url", "", { shouldValidate: true })}>
                                                     <X className="h-4 w-4" />
                                                 </Button>
@@ -411,3 +411,5 @@ export default function EditTourPackagePage() {
     </div>
   )
 }
+
+    
