@@ -203,6 +203,10 @@ export default function EditTripLocationPage() {
       <div className="flex items-center gap-4">
            <Skeleton className="h-7 w-7 rounded-full" />
            <Skeleton className="h-6 w-48" />
+           <div className="ml-auto flex items-center gap-2">
+            <Skeleton className="h-9 w-20" />
+            <Skeleton className="h-9 w-24" />
+           </div>
       </div>
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
            <div className="lg:col-span-2 space-y-6">
@@ -219,14 +223,31 @@ export default function EditTripLocationPage() {
                     </div>
                   </CardContent>
               </Card>
+              <Card>
+                  <CardHeader><Skeleton className="h-6 w-1/4" /></CardHeader>
+                  <CardContent className="space-y-4">
+                      <Skeleton className="h-24 w-full" />
+                      <Skeleton className="h-32 w-full" />
+                  </CardContent>
+              </Card>
            </div>
            <div className="lg:col-span-1 space-y-6">
               <Card>
-                  <CardHeader><Skeleton className="h-6 w-1/3" /></CardHeader>
+                  <CardHeader><Skeleton className="h-6 w-1/2" /></CardHeader>
                   <CardContent className="space-y-4">
                       <Skeleton className="h-10 w-full" />
                       <Skeleton className="h-10 w-full" />
                       <Skeleton className="h-10 w-full" />
+                      <Skeleton className="h-10 w-full" />
+                      <Skeleton className="h-10 w-full" />
+                      <Skeleton className="h-10 w-full" />
+                      <Skeleton className="h-10 w-full" />
+                  </CardContent>
+              </Card>
+              <Card>
+                  <CardHeader><Skeleton className="h-6 w-1/4" /></CardHeader>
+                  <CardContent>
+                      <Skeleton className="h-12 w-full" />
                   </CardContent>
               </Card>
            </div>
@@ -239,131 +260,130 @@ export default function EditTripLocationPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center gap-4">
-          <Button type="button" variant="outline" size="icon" className="h-7 w-7" onClick={() => router.back()}>
-            <ArrowLeft className="h-4 w-4" />
-            <span className="sr-only">Back</span>
-          </Button>
-          <h1 className="flex-1 text-xl font-semibold">
-            Edit Location: {loading ? <Skeleton className="h-6 w-48 inline-block" /> : originalLocationName}
-          </h1>
-          <div className="flex items-center gap-2">
-            <Button type="button" variant="outline" onClick={() => router.back()}>Cancel</Button>
-            <Button type="submit" form="location-edit-form" disabled={isSubmitting}>
-              {isSubmitting ? "Saving..." : "Save Changes"}
-            </Button>
-          </div>
-        </div>
-      
       {loading ? renderSkeleton() : (
-        <Form {...form}>
-          <form id="location-edit-form" onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-              <div className="lg:col-span-2 space-y-6">
-                  <Card>
-                      <CardHeader><CardTitle>Location Details</CardTitle></CardHeader>
-                      <CardContent className="space-y-6">
-                          {originalLocation && <LocationPicker initialPosition={[originalLocation.latitude ?? 0, originalLocation.longitude ?? 0]}/>}
-                      </CardContent>
-                  </Card>
-                  <Card>
-                      <CardHeader><CardTitle>Place Media</CardTitle></CardHeader>
-                      <CardContent>
-                          <FormField
-                              control={form.control}
-                              name="new_image_files"
-                              render={({ field }) => (
-                              <FormItem>
-                                  <FormLabel>Location Images</FormLabel>
-                                  <div className="space-y-4">
-                                      {existingImageUrls.length > 0 && (
-                                          <div>
-                                              <h4 className="text-sm font-medium mb-2 text-muted-foreground">Current Images:</h4>
-                                              <div className="grid grid-cols-3 gap-2">
-                                              {existingImageUrls.map((url, index) => (
-                                                  <div key={index} className="relative group">
-                                                      <Image src={url} alt={`Existing image ${index + 1}`} width={150} height={100} className="rounded-md object-cover" />
-                                                      <Button type="button" variant="destructive" size="icon" className="absolute top-1 right-1 h-6 w-6 opacity-0 group-hover:opacity-100" onClick={() => handleRemoveExistingImage(url)}>
-                                                          <X className="h-4 w-4" />
-                                                      </Button>
-                                                  </div>
-                                              ))}
-                                              </div>
-                                          </div>
-                                      )}
-                                      <FormControl>
-                                          <div className="flex items-center justify-center w-full">
-                                              <label htmlFor="image-files" className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-lg cursor-pointer bg-muted/50 hover:bg-muted">
-                                                  <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                                                  <Upload className="w-8 h-8 mb-4 text-muted-foreground" />
-                                                  <p className="mb-2 text-sm text-muted-foreground"><span className="font-semibold">Click to upload</span> or drag and drop</p>
-                                                  <p className="text-xs text-muted-foreground">Add new images (MAX. 2MB each)</p>
-                                                  </div>
-                                                  <Input id="image-files" type="file" className="hidden" multiple onChange={(e) => handleFileChange(e, field)} />
-                                              </label>
-                                          </div> 
-                                      </FormControl>
-                                      <FormMessage />
-                                      {newImageFiles && newImageFiles.length > 0 && (
-                                          <div className="mt-4 space-y-2">
-                                              <h4 className="text-sm font-medium">New Files to Upload:</h4>
-                                              <div className="grid gap-2 text-sm">
-                                                  {Array.from(newImageFiles).map((file: any, index: number) => (
-                                                      <div key={index} className="flex items-center justify-between p-2 bg-muted rounded-md">
-                                                          <div className="flex items-center gap-2">
-                                                              <FileIcon className="h-4 w-4 text-muted-foreground" />
-                                                              <span className="font-medium truncate max-w-xs">{file.name}</span>
-                                                          </div>
-                                                          <Button type="button" variant="ghost" size="icon" className="h-6 w-6 text-destructive" onClick={() => handleRemoveNewImage(index)}>
+        <>
+          <div className="flex items-center gap-4">
+              <Button type="button" variant="outline" size="icon" className="h-7 w-7" onClick={() => router.back()}>
+                <ArrowLeft className="h-4 w-4" />
+                <span className="sr-only">Back</span>
+              </Button>
+              <h1 className="flex-1 text-xl font-semibold">
+                Edit Location: {originalLocationName}
+              </h1>
+              <div className="flex items-center gap-2">
+                <Button type="button" variant="outline" onClick={() => router.back()}>Cancel</Button>
+                <Button type="submit" form="location-edit-form" disabled={isSubmitting}>
+                  {isSubmitting ? "Saving..." : "Save Changes"}
+                </Button>
+              </div>
+            </div>
+            <Form {...form}>
+              <form id="location-edit-form" onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                  <div className="lg:col-span-2 space-y-6">
+                      <Card>
+                          <CardHeader><CardTitle>Location Details</CardTitle></CardHeader>
+                          <CardContent className="space-y-6">
+                              {originalLocation && <LocationPicker initialPosition={[originalLocation.latitude ?? 0, originalLocation.longitude ?? 0]}/>}
+                          </CardContent>
+                      </Card>
+                      <Card>
+                          <CardHeader><CardTitle>Place Media</CardTitle></CardHeader>
+                          <CardContent>
+                              <FormField
+                                  control={form.control}
+                                  name="new_image_files"
+                                  render={({ field }) => (
+                                  <FormItem>
+                                      <FormLabel>Location Images</FormLabel>
+                                      <div className="space-y-4">
+                                          {existingImageUrls.length > 0 && (
+                                              <div>
+                                                  <h4 className="text-sm font-medium mb-2 text-muted-foreground">Current Images:</h4>
+                                                  <div className="grid grid-cols-3 gap-2">
+                                                  {existingImageUrls.map((url, index) => (
+                                                      <div key={index} className="relative group">
+                                                          <Image src={url} alt={`Existing image ${index + 1}`} width={150} height={100} className="rounded-md object-cover" />
+                                                          <Button type="button" variant="destructive" size="icon" className="absolute top-1 right-1 h-6 w-6 opacity-0 group-hover:opacity-100" onClick={() => handleRemoveExistingImage(url)}>
                                                               <X className="h-4 w-4" />
                                                           </Button>
                                                       </div>
                                                   ))}
+                                                  </div>
                                               </div>
-                                          </div>
-                                      )}
-                                  </div>
-                              </FormItem>
-                              )}
-                          />
+                                          )}
+                                          <FormControl>
+                                              <div className="flex items-center justify-center w-full">
+                                                  <label htmlFor="image-files" className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-lg cursor-pointer bg-muted/50 hover:bg-muted">
+                                                      <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                                                      <Upload className="w-8 h-8 mb-4 text-muted-foreground" />
+                                                      <p className="mb-2 text-sm text-muted-foreground"><span className="font-semibold">Click to upload</span> or drag and drop</p>
+                                                      <p className="text-xs text-muted-foreground">Add new images (MAX. 2MB each)</p>
+                                                      </div>
+                                                      <Input id="image-files" type="file" className="hidden" multiple onChange={(e) => handleFileChange(e, field)} />
+                                                  </label>
+                                              </div> 
+                                          </FormControl>
+                                          <FormMessage />
+                                          {newImageFiles && newImageFiles.length > 0 && (
+                                              <div className="mt-4 space-y-2">
+                                                  <h4 className="text-sm font-medium">New Files to Upload:</h4>
+                                                  <div className="grid gap-2 text-sm">
+                                                      {Array.from(newImageFiles).map((file: any, index: number) => (
+                                                          <div key={index} className="flex items-center justify-between p-2 bg-muted rounded-md">
+                                                              <div className="flex items-center gap-2">
+                                                                  <FileIcon className="h-4 w-4 text-muted-foreground" />
+                                                                  <span className="font-medium truncate max-w-xs">{file.name}</span>
+                                                              </div>
+                                                              <Button type="button" variant="ghost" size="icon" className="h-6 w-6 text-destructive" onClick={() => handleRemoveNewImage(index)}>
+                                                                  <X className="h-4 w-4" />
+                                                              </Button>
+                                                          </div>
+                                                      ))}
+                                                  </div>
+                                              </div>
+                                          )}
+                                      </div>
+                                  </FormItem>
+                                  )}
+                              />
+                          </CardContent>
+                      </Card>
+                  </div>
+                  
+                  <div className="lg:col-span-1 space-y-6">
+                    <Card>
+                      <CardHeader>
+                        <CardTitle>General Information</CardTitle>
+                      </CardHeader>
+                      <CardContent className="space-y-4">
+                        <FormField control={form.control} name="name" render={({ field }) => (<FormItem><FormLabel>Location Name</FormLabel><FormControl><Input placeholder="e.g., Eiffel Tower" {...field} /></FormControl><FormMessage /></FormItem>)} />
+                        <FormField control={form.control} name="place_type" render={({ field }) => ( <FormItem><FormLabel>Location Type</FormLabel><Select onValueChange={field.onChange} value={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Select a location type" /></SelectTrigger></FormControl><SelectContent>{locationTypeOptions.map(option => ( <SelectItem key={option} value={option}>{option}</SelectItem> ))}</SelectContent></Select><FormMessage /></FormItem> )} />
+                        <FormField control={form.control} name="city" render={({ field }) => (<FormItem><FormLabel>City</FormLabel><FormControl><Input placeholder="e.g., Paris" {...field} /></FormControl><FormMessage /></FormItem>)} />
+                        <FormField control={form.control} name="state" render={({ field }) => (<FormItem><FormLabel>State</FormLabel><FormControl><Input placeholder="e.g., Île-de-France" {...field} /></FormControl><FormMessage /></FormItem>)} />
+                        <FormField control={form.control} name="district" render={({ field }) => (<FormItem><FormLabel>District</FormLabel><FormControl><Input placeholder="e.g., Paris" {...field} /></FormControl><FormMessage /></FormItem>)} />
+                        <FormField control={form.control} name="country" render={({ field }) => (<FormItem><FormLabel>Country</FormLabel><FormControl><Input placeholder="e.g., France" {...field} /></FormControl><FormMessage /></FormItem>)} />
+                        <FormField control={form.control} name="code" render={({ field }) => (<FormItem><FormLabel>Location Code</FormLabel><FormControl><Input placeholder="e.g., PAR-EFL" {...field} /></FormControl><FormMessage /></FormItem>)} />
                       </CardContent>
-                  </Card>
-              </div>
-              
-              <div className="lg:col-span-1 space-y-6">
-                <Card>
-                  <CardHeader>
-                    <CardTitle>General Information</CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <FormField control={form.control} name="name" render={({ field }) => (<FormItem><FormLabel>Location Name</FormLabel><FormControl><Input placeholder="e.g., Eiffel Tower" {...field} /></FormControl><FormMessage /></FormItem>)} />
-                    <FormField control={form.control} name="place_type" render={({ field }) => ( <FormItem><FormLabel>Location Type</FormLabel><Select onValueChange={field.onChange} value={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Select a location type" /></SelectTrigger></FormControl><SelectContent>{locationTypeOptions.map(option => ( <SelectItem key={option} value={option}>{option}</SelectItem> ))}</SelectContent></Select><FormMessage /></FormItem> )} />
-                    <FormField control={form.control} name="city" render={({ field }) => (<FormItem><FormLabel>City</FormLabel><FormControl><Input placeholder="e.g., Paris" {...field} /></FormControl><FormMessage /></FormItem>)} />
-                    <FormField control={form.control} name="state" render={({ field }) => (<FormItem><FormLabel>State</FormLabel><FormControl><Input placeholder="e.g., Île-de-France" {...field} /></FormControl><FormMessage /></FormItem>)} />
-                    <FormField control={form.control} name="district" render={({ field }) => (<FormItem><FormLabel>District</FormLabel><FormControl><Input placeholder="e.g., Paris" {...field} /></FormControl><FormMessage /></FormItem>)} />
-                    <FormField control={form.control} name="country" render={({ field }) => (<FormItem><FormLabel>Country</FormLabel><FormControl><Input placeholder="e.g., France" {...field} /></FormControl><FormMessage /></FormItem>)} />
-                    <FormField control={form.control} name="code" render={({ field }) => (<FormItem><FormLabel>Location Code</FormLabel><FormControl><Input placeholder="e.g., PAR-EFL" {...field} /></FormControl><FormMessage /></FormItem>)} />
-                  </CardContent>
-                </Card>
-                <Card>
-                      <CardHeader><CardTitle>Description</CardTitle></CardHeader>
-                      <CardContent>
-                          <FormField control={form.control} name="description" render={({ field }) => (<FormItem><FormLabel>Place Description</FormLabel><FormControl><Textarea placeholder="A brief description of the location." {...field} value={field.value ?? ""} rows={5} /></FormControl><FormMessage /></FormItem>)} />
-                      </CardContent>
-                </Card>
-                 <Card>
-                    <CardHeader><CardTitle>Status</CardTitle></CardHeader>
-                    <CardContent>
-                      <FormField control={form.control} name="is_active" render={({ field }) => ( <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4"><div className="space-y-0.5"><FormLabel>Active Status</FormLabel></div><FormControl><Switch checked={field.value ?? false} onCheckedChange={field.onChange} /></FormControl></FormItem> )} />
-                    </CardContent>
-                  </Card>
-              </div>
-            </div>
-          </form>
-        </Form>
+                    </Card>
+                    <Card>
+                          <CardHeader><CardTitle>Description</CardTitle></CardHeader>
+                          <CardContent>
+                              <FormField control={form.control} name="description" render={({ field }) => (<FormItem><FormLabel>Place Description</FormLabel><FormControl><Textarea placeholder="A brief description of the location." {...field} value={field.value ?? ""} rows={5} /></FormControl><FormMessage /></FormItem>)} />
+                          </CardContent>
+                    </Card>
+                     <Card>
+                        <CardHeader><CardTitle>Status</CardTitle></CardHeader>
+                        <CardContent>
+                          <FormField control={form.control} name="is_active" render={({ field }) => ( <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4"><div className="space-y-0.5"><FormLabel>Active Status</FormLabel></div><FormControl><Switch checked={field.value ?? false} onCheckedChange={field.onChange} /></FormControl></FormItem> )} />
+                        </CardContent>
+                      </Card>
+                  </div>
+                </div>
+              </form>
+            </Form>
+        </>
       )}
     </div>
   );
 }
-
-    

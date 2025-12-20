@@ -96,17 +96,12 @@ export function LocationPicker({ initialPosition }: LocationPickerProps) {
 
   const addressValue = watch('address');
 
-  // Set initial position and address value from form
   useEffect(() => {
-    if (initialPosition) {
-        setPosition(initialPosition);
-    }
     const currentAddress = getValues('address');
     if (currentAddress && !searchQuery) {
         setSearchQuery(currentAddress);
     }
-  }, [initialPosition, getValues, searchQuery]);
-
+  }, [getValues, searchQuery]);
 
   useEffect(() => {
     if (debouncedSearch.length > 2) {
@@ -253,7 +248,7 @@ export function LocationPicker({ initialPosition }: LocationPickerProps) {
         </div>
 
         <div className="h-80 w-full rounded-md overflow-hidden border">
-             <MapContainer center={position} zoom={13} scrollWheelZoom={true} className="h-full w-full">
+             <MapContainer center={initialPosition} zoom={13} scrollWheelZoom={true} className="h-full w-full">
                 <MapUpdater position={position} onLocationChange={handleLocationChange} />
              </MapContainer>
         </div>
@@ -270,5 +265,3 @@ export function LocationPicker({ initialPosition }: LocationPickerProps) {
     </div>
   );
 }
-
-    

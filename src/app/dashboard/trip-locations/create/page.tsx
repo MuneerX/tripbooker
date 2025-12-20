@@ -17,12 +17,20 @@ import { createTripLocationWithImages } from "@/lib/supabase/queries"
 import { Switch } from "@/components/ui/switch"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import dynamic from 'next/dynamic'
-import type { TripLocation } from "@/lib/types"
 import { Skeleton } from "@/components/ui/skeleton"
 
 const LocationPicker = dynamic(() => import('./_components/LocationPicker').then(mod => mod.LocationPicker), {
   ssr: false,
-  loading: () => <Skeleton className="h-80 w-full" />,
+  loading: () => (
+      <div className="space-y-4">
+          <Skeleton className="h-10 w-full" />
+          <Skeleton className="h-80 w-full" />
+          <div className="grid grid-cols-2 gap-4">
+              <Skeleton className="h-10 w-full" />
+              <Skeleton className="h-10 w-full" />
+          </div>
+      </div>
+  ),
 });
 
 
@@ -250,5 +258,3 @@ export default function CreateTripLocationPage() {
     </div>
   )
 }
-
-    
