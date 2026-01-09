@@ -5,7 +5,7 @@
 import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
 
-import type { TourPackage, TripDay, Activity, TripLocation, PayInPart, Booking, Review } from '@/lib/types'
+import type { TourPackage, TripDay, Activity, TripLocation, PayInPart, Booking, Review, BookingGuest } from '@/lib/types'
 import { createClient } from '@supabase/supabase-js'
 
 // Correctly create a Supabase client with admin privileges (service_role)
@@ -868,6 +868,7 @@ export async function getBookings(packageId?: string): Promise<Booking[]> {
       booking_date,
       payment_method,
       payment_reference,
+      payment_status,
       total_amount,
       booking_status,
       referral_code,
@@ -904,77 +905,43 @@ export async function getBookings(packageId?: string): Promise<Booking[]> {
 export async function getBookingById(id: string): Promise<Booking | null> {
     const supabase = createAdminClient();
 
-    // Step 1: Fetch the core booking details
-    const { data: bookingData, error: bookingError } = await supabase
+    const { data, error } = await supabase
         .from('tour_bookings')
-        .select(`*`)
+        .select(`
+            *,
+            customer:user_id(*, address:addresses(*)),
+            tour_package:package_id(*, pay_in_parts(*), trip_days:trip_days(*, activities:trip_day_activities(*, place:place_id(*)))),
+            guests:booking_guests(*)
+        `)
         .eq('id', id)
         .single();
-
-    if (bookingError) {
-        console.error(`Error fetching booking ${id}:`, bookingError);
-        throw new Error(bookingError.message);
-    }
-    if (!bookingData) return null;
-
-    // Step 2: Fetch the related customer (profile) and their address
-    const { data: customerData, error: customerError } = await supabase
-        .from('profiles')
-        .select(`*`)
-        .eq('id', bookingData.user_id)
-        .single();
     
-    if (customerError) {
-        console.error(`Error fetching customer for booking ${id}:`, customerError);
+    if (error) {
+        console.error(`Error fetching booking ${id}:`, error);
+        throw new Error(error.message);
     }
 
-    if (customerData) {
-        const { data: addressData, error: addressError } = await supabase
-            .from('addresses')
-            .select('*')
-            .eq('user_id', customerData.id)
-            .single(); // Assuming one address per user for simplicity
-        
-        if (addressError && addressError.code !== 'PGRST116') {
-             console.error('Error fetching address for customer:', addressError);
-        }
-        (customerData as any).address = addressData || null;
-    }
+    if (!data) return null;
 
+    // Supabase v3 TypeScript support for relational queries is tricky.
+    // The query above fetches the relations, but we need to cast it carefully.
+    const booking = data as any;
 
-    // Step 3: Fetch the related tour package, its pay-in-parts, and its full itinerary
-    const { data: tourPackageData, error: tourPackageError } = await supabase
-        .from('tour_packages')
-        .select(`*, pay_in_parts(*)`)
-        .eq('id', bookingData.package_id)
-        .single();
-
-    if (tourPackageError) {
-        console.error(`Error fetching tour package for booking ${id}:`, tourPackageError);
-    }
-    
-    if (tourPackageData) {
-        const { data: tripDaysData, error: tripDaysError } = await supabase
-            .from('trip_days')
-            .select('*, activities:trip_day_activities(*, place:place_id(*))')
-            .eq('package_id', tourPackageData.id)
-            .order('day_number');
-        
-        if (tripDaysError) {
-             console.error(`Error fetching trip days for package ${tourPackageData.id}:`, tripDaysError);
-        }
-        (tourPackageData as any).trip_days = tripDaysData || [];
-    }
-
-
-    // Step 4: Combine all the fetched data
     const result: Booking = {
-        ...bookingData,
-        customer: customerData,
-        tour_package: tourPackageData,
-    } as unknown as Booking;
+      ...booking,
+      customer: booking.customer ? {
+        ...booking.customer,
+        // The address is fetched as an array, take the first one if it exists
+        address: Array.isArray(booking.customer.address) && booking.customer.address.length > 0
+          ? booking.customer.address[0]
+          : null,
+      } : null,
+      tour_package: booking.tour_package,
+      guests: booking.guests || [],
+    };
 
-    return result;
+
+    return result as Booking;
 }
 
 

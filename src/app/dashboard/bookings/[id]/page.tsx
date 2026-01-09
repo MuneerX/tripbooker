@@ -15,7 +15,7 @@ import { format } from "date-fns";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { getBookingById } from "@/lib/supabase/queries";
-import type { Booking, TripDay } from "@/lib/types";
+import type { Booking, BookingGuest, TripDay } from "@/lib/types";
 import { useBreadcrumb } from "../../layout";
 
 export default function BookingDetailPage() {
@@ -276,22 +276,20 @@ export default function BookingDetailPage() {
                                 <Table>
                                     <TableHeader><TableRow><TableHead>First Name</TableHead><TableHead>Last Name</TableHead><TableHead>Age</TableHead><TableHead>Gender</TableHead></TableRow></TableHeader>
                                     <TableBody>
-                                        {/* This is a placeholder as guest details are not in the schema */}
-                                        <TableRow>
-                                            <TableCell>John</TableCell>
-                                            <TableCell>Doe</TableCell>
-                                            <TableCell>34</TableCell>
-                                            <TableCell>Male</TableCell>
-                                        </TableRow>
-                                        <TableRow>
-                                            <TableCell>Jane</TableCell>
-                                            <TableCell>Doe</TableCell>
-                                            <TableCell>32</TableCell>
-                                            <TableCell>Female</TableCell>
-                                        </TableRow>
-                                        <TableRow>
-                                            <TableCell colSpan={4} className="text-center text-muted-foreground">Guest data structure not defined. This is mock data.</TableCell>
-                                        </TableRow>
+                                        {booking.guests && booking.guests.length > 0 ? (
+                                            booking.guests.map((guest: BookingGuest) => (
+                                                <TableRow key={guest.id}>
+                                                    <TableCell>{guest.first_name}</TableCell>
+                                                    <TableCell>{guest.last_name || 'N/A'}</TableCell>
+                                                    <TableCell>{guest.age || 'N/A'}</TableCell>
+                                                    <TableCell className="capitalize">{guest.gender || 'N/A'}</TableCell>
+                                                </TableRow>
+                                            ))
+                                        ) : (
+                                            <TableRow>
+                                                <TableCell colSpan={4} className="text-center text-muted-foreground">No guest details provided for this booking.</TableCell>
+                                            </TableRow>
+                                        )}
                                     </TableBody>
                                 </Table>
                             </CardContent>
@@ -350,5 +348,3 @@ export default function BookingDetailPage() {
     </div>
   );
 }
-
-    

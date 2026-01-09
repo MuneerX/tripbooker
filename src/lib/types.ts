@@ -116,6 +116,18 @@ type CustomerProfile = {
     address: CustomerAddress | null;
 };
 
+export type BookingGuest = {
+  id: string;
+  booking_id: string;
+  guest_type: string;
+  title: string | null;
+  first_name: string;
+  last_name: string | null;
+  date_of_birth: string | null;
+  gender: string | null;
+  age: number | null;
+};
+
 
 export type Booking = {
   id: string;
@@ -140,6 +152,7 @@ export type Booking = {
   avatar_url?: string | null;
   tour_package: TourPackage | null;
   referral_code?: string | null;
+  guests?: BookingGuest[];
 };
 
 
