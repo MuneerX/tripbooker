@@ -5,7 +5,7 @@
 import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
 
-import type { TourPackage, TripDay, Activity, TripLocation, PayInPart, Booking, Review, BookingGuest } from '@/lib/types'
+import type { TourPackage, TripDay, Activity, TripLocation, PayInPart, Booking, Review, BookingGuest, Payment } from '@/lib/types'
 import { createClient } from '@supabase/supabase-js'
 
 // Correctly create a Supabase client with admin privileges (service_role)
@@ -863,40 +863,32 @@ export async function getBookings(packageId?: string): Promise<Booking[]> {
   let query = supabase
     .from('tour_bookings')
     .select(`
-        id,
-        booking_reference,
-        booking_date,
-        payment_method,
-        payment_reference,
-        payment_status,
-        total_amount,
-        booking_status,
-        referral_code,
-        tour_package:package_id(name),
-        customer:user_id(full_name, email, avatar_url)
+      *,
+      tour_package:package_id (name),
+      customer:user_id (full_name, email, avatar_url)
     `)
-    .order('booking_date', { ascending: false });
+    .order('created_at', { ascending: false });
 
   if (packageId) {
     query = query.eq('package_id', packageId);
   }
 
   const { data, error } = await query;
-
+  
   if (error) {
     console.error('Error fetching bookings:', error);
     throw new Error(error.message);
   }
   
-  // Map the data to the Booking type
-  return (data || []).map((item: any) => ({
+  const bookings = (data || []).map((item: any) => ({
     ...item,
     customer_name: item.customer?.full_name || 'N/A',
     customer_email: item.customer?.email || 'N/A',
     avatar_url: item.customer?.avatar_url,
-    status: item.booking_status, // Ensure status field is mapped
-    tour_package: item.tour_package // This will be { name: 'Tour Name' } or null
-  })) as unknown as Booking[];
+    status: item.booking_status
+  }));
+
+  return bookings as Booking[];
 }
 
 
@@ -928,7 +920,6 @@ export async function getBookingById(id: string): Promise<Booking | null> {
 
     if (pkgError) {
         console.error(`Error fetching tour package for booking ${id}:`, pkgError);
-        // We can decide to return partial data or null
     }
 
     const { data: guests, error: guestsError } = await supabase
@@ -939,12 +930,23 @@ export async function getBookingById(id: string): Promise<Booking | null> {
     if (guestsError) {
         console.error(`Error fetching guests for booking ${id}:`, guestsError);
     }
+    
+    const { data: payments, error: paymentsError } = await supabase
+      .from('payments')
+      .eq('id', bookingData.payments_id)
+      .select('*');
+
+    if (paymentsError) {
+      console.error(`Error fetching payments for booking ${id}:`, paymentsError);
+    }
+
 
     const result: Booking = {
       ...bookingData,
       customer: bookingData.customer,
       tour_package: tourPackage || null,
       guests: guests || [],
+      payments: payments || [],
     } as Booking;
 
     return result;
@@ -985,3 +987,4 @@ export async function getReviews(packageId?: string): Promise<Review[]> {
     avatar_url: item.customer?.avatar_url,
   }));
 }
+

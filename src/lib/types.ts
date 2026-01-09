@@ -128,6 +128,17 @@ export type BookingGuest = {
   age: number | null;
 };
 
+export type Payment = {
+  id: string;
+  amount: number;
+  payment_method: string | null;
+  payment_reference: string | null;
+  transaction_id: string | null;
+  payment_date: string | null;
+  created_at: string;
+  user_id: string | null;
+  payment_status: string | null;
+};
 
 export type Booking = {
   id: string;
@@ -153,6 +164,7 @@ export type Booking = {
   tour_package: TourPackage | null;
   referral_code?: string | null;
   guests?: BookingGuest[];
+  payments?: Payment[];
 };
 
 
@@ -183,3 +195,4 @@ export type NavItem = {
   icon: React.ComponentType<{ className?: string }>;
   subItems?: NavItem[];
 };
+

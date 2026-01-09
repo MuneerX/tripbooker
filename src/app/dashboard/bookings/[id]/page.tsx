@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import * as React from "react";
@@ -15,7 +16,7 @@ import { format } from "date-fns";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { getBookingById } from "@/lib/supabase/queries";
-import type { Booking, BookingGuest, TripDay } from "@/lib/types";
+import type { Booking, BookingGuest, TripDay, Payment } from "@/lib/types";
 import { useBreadcrumb } from "../../layout";
 
 export default function BookingDetailPage() {
@@ -312,18 +313,22 @@ export default function BookingDetailPage() {
                                 <Table>
                                     <TableHeader><TableRow><TableHead>ID</TableHead><TableHead>Due On</TableHead><TableHead>Paid On</TableHead><TableHead>Mode</TableHead><TableHead>Amount</TableHead><TableHead>Actions</TableHead></TableRow></TableHeader>
                                     <TableBody>
-                                        {/* This is a placeholder as payment details are not in the schema */}
-                                        <TableRow>
-                                            <TableCell>pay_123</TableCell>
-                                            <TableCell>{format(new Date(), "PPP")}</TableCell>
-                                            <TableCell>{format(new Date(), "PPP")}</TableCell>
-                                            <TableCell>Credit Card</TableCell>
-                                            <TableCell>{formatCurrency(booking.total_amount)}</TableCell>
-                                            <TableCell><Button variant="outline" size="sm"><FileDown className="mr-2 h-4 w-4" /> Invoice</Button></TableCell>
-                                        </TableRow>
-                                         <TableRow>
-                                            <TableCell colSpan={6} className="text-center text-muted-foreground">Payment data structure not defined. This is mock data.</TableCell>
-                                        </TableRow>
+                                        {booking.payments && booking.payments.length > 0 ? (
+                                             booking.payments.map((payment: Payment) => (
+                                                <TableRow key={payment.id}>
+                                                    <TableCell className="font-mono text-xs">{payment.id.substring(0, 10)}...</TableCell>
+                                                    <TableCell>{format(new Date(booking.booking_date), "PPP")}</TableCell>
+                                                    <TableCell>{payment.payment_date ? format(new Date(payment.payment_date), "PPP") : 'N/A'}</TableCell>
+                                                    <TableCell className="capitalize">{payment.payment_method || 'N/A'}</TableCell>
+                                                    <TableCell>{formatCurrency(payment.amount)}</TableCell>
+                                                    <TableCell><Button variant="outline" size="sm"><FileDown className="mr-2 h-4 w-4" /> Invoice</Button></TableCell>
+                                                </TableRow>
+                                             ))
+                                        ) : (
+                                            <TableRow>
+                                                <TableCell colSpan={6} className="text-center text-muted-foreground">No payment records found for this booking.</TableCell>
+                                            </TableRow>
+                                        )}
                                     </TableBody>
                                 </Table>
                             </CardContent>
@@ -348,3 +353,4 @@ export default function BookingDetailPage() {
     </div>
   );
 }
+
