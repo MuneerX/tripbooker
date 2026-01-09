@@ -114,34 +114,61 @@ export default function BookingDetailPage() {
                 </CardHeader>
                 <CardContent className="p-6">
                     <TabsContent value="overview" className="space-y-8">
-                        {/* General Information */}
-                        <Card>
-                            <CardHeader><CardTitle>General Information</CardTitle></CardHeader>
-                            <CardContent className="grid grid-cols-2 md:grid-cols-3 gap-6">
-                                <div className="flex items-start gap-3"><Calendar className="h-5 w-5 text-muted-foreground mt-1" /><div><p className="text-sm text-muted-foreground">Created On</p><p className="font-medium">{format(new Date(booking.created_at), "PPP")}</p></div></div>
-                                <div className="flex items-start gap-3"><Calendar className="h-5 w-5 text-muted-foreground mt-1" /><div><p className="text-sm text-muted-foreground">Reservation Date</p><p className="font-medium">{format(new Date(booking.booking_date), "PPP")}</p></div></div>
-                                <div className="flex items-start gap-3"><Calendar className="h-5 w-5 text-muted-foreground mt-1" /><div><p className="text-sm text-muted-foreground">Travel Date</p><p className="font-medium">{booking.travel_date ? format(new Date(booking.travel_date), "PPP") : 'N/A'}</p></div></div>
-                                <div className="flex items-start gap-3"><Users className="h-5 w-5 text-muted-foreground mt-1" /><div><p className="text-sm text-muted-foreground">No. of Guests</p><p className="font-medium">{booking.total_adults} Adult(s), {booking.total_children} Child(ren)</p></div></div>
-                                <div className="flex items-start gap-3"><Hash className="h-5 w-5 text-muted-foreground mt-1" /><div><p className="text-sm text-muted-foreground">Referral Code</p><p className="font-medium">{booking.referral_code || 'N/A'}</p></div></div>
-                            </CardContent>
-                        </Card>
-                        {/* Customer Details */}
-                        <Card>
-                            <CardHeader><CardTitle>Customer Details</CardTitle></CardHeader>
-                            <CardContent className="grid grid-cols-2 md:grid-cols-3 gap-6">
-                                <div className="flex items-start gap-3"><User className="h-5 w-5 text-muted-foreground mt-1" /><div><p className="text-sm text-muted-foreground">Customer Name</p><p className="font-medium">{booking.customer.full_name}</p></div></div>
-                                <div className="flex items-start gap-3"><Phone className="h-5 w-5 text-muted-foreground mt-1" /><div><p className="text-sm text-muted-foreground">Contact Number</p><p className="font-medium">{booking.customer.address?.phone_number || 'N/A'}</p></div></div>
-                                <div className="flex items-start gap-3"><MapPinIcon className="h-5 w-5 text-muted-foreground mt-1" /><div><p className="text-sm text-muted-foreground">City</p><p className="font-medium">{booking.customer.address?.city || 'N/A'}</p></div></div>
-                                <div className="flex items-start gap-3"><Hash className="h-5 w-5 text-muted-foreground mt-1" /><div><p className="text-sm text-muted-foreground">Pincode</p><p className="font-medium">{booking.customer.address?.pincode || 'N/A'}</p></div></div>
-                            </CardContent>
-                        </Card>
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                            {/* General Information */}
+                            <Card>
+                                <CardHeader><CardTitle>General Information</CardTitle></CardHeader>
+                                <CardContent className="grid grid-cols-2 gap-6">
+                                    <div className="flex items-start gap-3"><Calendar className="h-5 w-5 text-muted-foreground mt-1" /><div><p className="text-sm text-muted-foreground">Created On</p><p className="font-medium">{format(new Date(booking.created_at), "PPP")}</p></div></div>
+                                    <div className="flex items-start gap-3"><Calendar className="h-5 w-5 text-muted-foreground mt-1" /><div><p className="text-sm text-muted-foreground">Reservation Date</p><p className="font-medium">{format(new Date(booking.booking_date), "PPP")}</p></div></div>
+                                    <div className="flex items-start gap-3 col-span-2"><Calendar className="h-5 w-5 text-muted-foreground mt-1" /><div><p className="text-sm text-muted-foreground">Travel Date</p><p className="font-medium">{booking.travel_date ? format(new Date(booking.travel_date), "PPP") : 'N/A'}</p></div></div>
+                                    <div className="flex items-start gap-3"><Users className="h-5 w-5 text-muted-foreground mt-1" /><div><p className="text-sm text-muted-foreground">No. of Guests</p><p className="font-medium">{booking.total_adults} Adult(s), {booking.total_children} Child(ren)</p></div></div>
+                                    <div className="flex items-start gap-3"><Hash className="h-5 w-5 text-muted-foreground mt-1" /><div><p className="text-sm text-muted-foreground">Referral Code</p><p className="font-medium">{booking.referral_code || 'N/A'}</p></div></div>
+                                </CardContent>
+                            </Card>
+                            {/* Customer Details */}
+                            <Card>
+                                <CardHeader><CardTitle>Customer Details</CardTitle></CardHeader>
+                                <CardContent className="grid grid-cols-2 gap-6">
+                                    <div className="flex items-start gap-3 col-span-2"><User className="h-5 w-5 text-muted-foreground mt-1" /><div><p className="text-sm text-muted-foreground">Customer Name</p><p className="font-medium">{booking.customer.full_name}</p></div></div>
+                                    <div className="flex items-start gap-3"><Phone className="h-5 w-5 text-muted-foreground mt-1" /><div><p className="text-sm text-muted-foreground">Contact Number</p><p className="font-medium">{booking.customer.address?.phone_number || 'N/A'}</p></div></div>
+                                    <div className="flex items-start gap-3"><MapPinIcon className="h-5 w-5 text-muted-foreground mt-1" /><div><p className="text-sm text-muted-foreground">City</p><p className="font-medium">{booking.customer.address?.city || 'N/A'}</p></div></div>
+                                    <div className="flex items-start gap-3"><Hash className="h-5 w-5 text-muted-foreground mt-1" /><div><p className="text-sm text-muted-foreground">Pincode</p><p className="font-medium">{booking.customer.address?.pincode || 'N/A'}</p></div></div>
+                                </CardContent>
+                            </Card>
+                        </div>
                          {/* Payment Overview */}
                         <Card>
                             <CardHeader><CardTitle>Payment Overview</CardTitle></CardHeader>
-                             <CardContent className="grid grid-cols-2 md:grid-cols-3 gap-6">
-                                <div className="flex items-start gap-3"><CreditCard className="h-5 w-5 text-muted-foreground mt-1" /><div><p className="text-sm text-muted-foreground">Base Price</p><p className="font-medium">{formatCurrency(tourPackage.base_price)}</p></div></div>
-                                <div className="flex items-start gap-3"><CreditCard className="h-5 w-5 text-muted-foreground mt-1" /><div><p className="text-sm text-muted-foreground">Pay In Parts</p><p className="font-medium">{tourPackage.pay_in_parts?.length > 0 ? 'Multiple Time' : 'One Time'}</p></div></div>
-                                <div className="flex items-start gap-3"><CreditCard className="h-5 w-5 text-muted-foreground mt-1" /><div><p className="text-sm text-muted-foreground">Payment Status</p><p className="font-medium capitalize">{booking.payment_status}</p></div></div>
+                             <CardContent className="space-y-6">
+                                <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
+                                    <div className="flex items-start gap-3"><CreditCard className="h-5 w-5 text-muted-foreground mt-1" /><div><p className="text-sm text-muted-foreground">Base Price</p><p className="font-medium">{formatCurrency(tourPackage.base_price)}</p></div></div>
+                                    <div className="flex items-start gap-3"><CreditCard className="h-5 w-5 text-muted-foreground mt-1" /><div><p className="text-sm text-muted-foreground">Pay In Parts</p><p className="font-medium">{tourPackage.pay_in_parts?.length > 0 ? 'Multiple Time' : 'One Time'}</p></div></div>
+                                    <div className="flex items-start gap-3"><CreditCard className="h-5 w-5 text-muted-foreground mt-1" /><div><p className="text-sm text-muted-foreground">Payment Status</p><p className="font-medium capitalize">{booking.payment_status}</p></div></div>
+                                </div>
+                                {tourPackage.pay_in_parts && tourPackage.pay_in_parts.length > 0 && (
+                                    <div className="mt-6">
+                                        <h4 className="text-sm font-medium mb-4">Payment Timeline</h4>
+                                        <div className="relative flex items-center">
+                                            {tourPackage.pay_in_parts.map((part, index) => (
+                                                <React.Fragment key={part.id || index}>
+                                                    <div className="flex-1 flex flex-col items-center text-center">
+                                                        <div className="h-6 w-6 rounded-full bg-primary flex items-center justify-center z-10">
+                                                            <Check className="h-4 w-4 text-primary-foreground" />
+                                                        </div>
+                                                        <div className="mt-2">
+                                                            <p className="text-sm font-semibold">{part.plan_name}</p>
+                                                            <p className="text-xs text-muted-foreground">{formatCurrency(part.total_amount)}</p>
+                                                        </div>
+                                                    </div>
+                                                    {index < tourPackage.pay_in_parts.length - 1 && (
+                                                        <div className="flex-auto border-t-2 border-dashed border-border absolute top-3 left-0 right-0 w-full -z-0"></div>
+                                                    )}
+                                                </React.Fragment>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
                             </CardContent>
                         </Card>
                     </TabsContent>
