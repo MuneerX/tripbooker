@@ -8,7 +8,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Check, X, Calendar, Users, Clock, Info, Star, CheckCircle, XCircle, ArrowUpRight, Sun, Moon, CreditCard, User, Phone, MapPinIcon, Hash, FileDown } from "lucide-react";
+import { ArrowLeft, Check, X, Calendar, Users, Clock, Info, Star, CheckCircle, XCircle, ArrowUpRight, Sun, Moon, CreditCard, User, Phone, MapPinIcon, Hash, FileDown, Plus } from "lucide-react";
 import { formatCurrency, getStatusBadgeColor, cn } from "@/lib/utils";
 import { Separator } from "@/components/ui/separator";
 import { format } from "date-fns";
