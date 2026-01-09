@@ -234,9 +234,9 @@ export default function BookingDetailPage() {
                                     <div className="mt-6">
                                         <h4 className="text-sm font-medium mb-4">Payment Timeline</h4>
                                         <div className="relative flex items-center justify-between">
-                                            <div className="absolute w-full top-1/2 -translate-y-1/2 h-0.5 bg-border -z-10" 
+                                            <div className="absolute w-full top-1/2 -translate-y-1/2 h-0.5 bg-repeat-x -z-10" 
                                                  style={{
-                                                     background: `repeating-linear-gradient(to right, hsl(var(--border)), hsl(var(--border)) 4px, transparent 4px, transparent 8px))`
+                                                     backgroundImage: `url("data:image/svg+xml,%3csvg width='100%25' height='100%25' xmlns='http://www.w3.org/2000/svg'%3e%3crect width='100%25' height='100%25' fill='none' stroke='%23e2e8f0' stroke-width='2' stroke-dasharray='6%2c 14' stroke-linecap='round'/%3e%3c/svg%3e")`
                                                  }}
                                             />
                                             {tourPackage.pay_in_parts.sort((a,b) => a.months - b.months).map((part, index) => {
@@ -505,3 +505,5 @@ export default function BookingDetailPage() {
     </div>
   );
 }
+
+    
