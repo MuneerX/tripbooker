@@ -871,8 +871,8 @@ export async function getBookings(packageId?: string): Promise<Booking[]> {
       total_amount,
       booking_status,
       referral_code,
-      tour_package:package_id (name),
-      customer:user_id (full_name, email, avatar_url)
+      tour_package:package_id(name),
+      customer:user_id(full_name, email, avatar_url)
     `)
     .order('booking_date', { ascending: false });
 
@@ -903,52 +903,78 @@ export async function getBookings(packageId?: string): Promise<Booking[]> {
  */
 export async function getBookingById(id: string): Promise<Booking | null> {
     const supabase = createAdminClient();
-    const { data, error } = await supabase
+
+    // Step 1: Fetch the core booking details
+    const { data: bookingData, error: bookingError } = await supabase
         .from('tour_bookings')
-        .select(`
-            *,
-            customer:user_id (
-                *
-            ),
-            tour_package:package_id (
-                *,
-                pay_in_parts(*),
-                trip_days(
-                    *,
-                    activities:trip_day_activities(
-                        *,
-                        place:place_id(*)
-                    )
-                )
-            )
-        `)
+        .select(`*`)
         .eq('id', id)
         .single();
 
-    if (error) {
-        console.error(`Error fetching booking ${id}:`, error);
-        throw new Error(error.message);
+    if (bookingError) {
+        console.error(`Error fetching booking ${id}:`, bookingError);
+        throw new Error(bookingError.message);
+    }
+    if (!bookingData) return null;
+
+    // Step 2: Fetch the related customer (profile) and their address
+    const { data: customerData, error: customerError } = await supabase
+        .from('profiles')
+        .select(`*`)
+        .eq('id', bookingData.user_id)
+        .single();
+    
+    if (customerError) {
+        console.error(`Error fetching customer for booking ${id}:`, customerError);
     }
 
-    if (!data) return null;
-    
-    // Manual join for address as it seems there's no direct relation in Supabase schema
-    const { data: addressData, error: addressError } = await supabase
-        .from('addresses')
-        .select('*')
-        .eq('user_id', data.customer.id)
+    if (customerData) {
+        const { data: addressData, error: addressError } = await supabase
+            .from('addresses')
+            .select('*')
+            .eq('user_id', customerData.id)
+            .single(); // Assuming one address per user for simplicity
+        
+        if (addressError && addressError.code !== 'PGRST116') {
+             console.error('Error fetching address for customer:', addressError);
+        }
+        (customerData as any).address = addressData || null;
+    }
+
+
+    // Step 3: Fetch the related tour package, its pay-in-parts, and its full itinerary
+    const { data: tourPackageData, error: tourPackageError } = await supabase
+        .from('tour_packages')
+        .select(`*, pay_in_parts(*)`)
+        .eq('id', bookingData.package_id)
         .single();
 
-    if (addressError && addressError.code !== 'PGRST116') { // PGROST116 is "exact one row not found"
-        console.error('Error fetching address for customer:', addressError);
+    if (tourPackageError) {
+        console.error(`Error fetching tour package for booking ${id}:`, tourPackageError);
+    }
+    
+    if (tourPackageData) {
+        const { data: tripDaysData, error: tripDaysError } = await supabase
+            .from('trip_days')
+            .select('*, activities:trip_day_activities(*, place:place_id(*))')
+            .eq('package_id', tourPackageData.id)
+            .order('day_number');
+        
+        if (tripDaysError) {
+             console.error(`Error fetching trip days for package ${tourPackageData.id}:`, tripDaysError);
+        }
+        (tourPackageData as any).trip_days = tripDaysData || [];
     }
 
-    const bookingData = { ...data };
-    if (bookingData.customer) {
-        (bookingData.customer as any).address = addressData || null;
-    }
 
-    return bookingData as Booking;
+    // Step 4: Combine all the fetched data
+    const result: Booking = {
+        ...bookingData,
+        customer: customerData,
+        tour_package: tourPackageData,
+    } as unknown as Booking;
+
+    return result;
 }
 
 
