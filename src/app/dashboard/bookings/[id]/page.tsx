@@ -83,13 +83,6 @@ export default function BookingDetailPage() {
                 </h1>
                 <p className="text-sm text-muted-foreground">Booking Ref: {booking.booking_reference}</p>
             </div>
-            <Image
-                alt={tourPackage.name}
-                className="aspect-video rounded-md object-cover"
-                height={64}
-                src={tourPackage.featured_image_url || "https://picsum.photos/seed/placeholder/200/100"}
-                width={128}
-            />
             <div className="ml-auto flex items-center gap-2">
                 <Button variant="destructive" size="sm">
                     <X className="mr-2 h-4 w-4" />
@@ -347,7 +340,3 @@ export default function BookingDetailPage() {
     </div>
   );
 }
-
-    
-
-    
