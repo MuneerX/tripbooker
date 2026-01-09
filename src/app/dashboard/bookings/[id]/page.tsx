@@ -308,30 +308,53 @@ export default function BookingDetailPage() {
                                     </div>
                                 </CardContent>
                             </Card>
-                            <Card>
+                             <Card>
                                 <CardHeader><CardTitle>Payment Details</CardTitle></CardHeader>
-                                <CardContent>
-                                    <Table>
-                                        <TableHeader><TableRow><TableHead>Transaction ID</TableHead><TableHead>Due On</TableHead><TableHead>Paid On</TableHead><TableHead>Mode</TableHead><TableHead>Amount</TableHead><TableHead>Actions</TableHead></TableRow></TableHeader>
-                                        <TableBody>
-                                            {booking.payments && booking.payments.length > 0 ? (
-                                                booking.payments.map((payment: Payment) => (
-                                                    <TableRow key={payment.id}>
-                                                        <TableCell className="font-mono text-xs">{payment.transaction_id || 'N/A'}</TableCell>
-                                                        <TableCell>{format(new Date(booking.booking_date), "PPP")}</TableCell>
-                                                        <TableCell>{payment.payment_date ? format(new Date(payment.payment_date), "PPP") : 'N/A'}</TableCell>
-                                                        <TableCell className="capitalize">{payment.payment_method || 'N/A'}</TableCell>
-                                                        <TableCell>{formatCurrency(payment.amount)}</TableCell>
-                                                        <TableCell><Button variant="outline" size="sm"><FileDown className="mr-2 h-4 w-4" /> Invoice</Button></TableCell>
-                                                    </TableRow>
-                                                ))
-                                            ) : (
-                                                <TableRow>
-                                                    <TableCell colSpan={6} className="text-center text-muted-foreground">No payment records found for this booking.</TableCell>
-                                                </TableRow>
-                                            )}
-                                        </TableBody>
-                                    </Table>
+                                <CardContent className="space-y-6">
+                                    {booking.payments && booking.payments.length > 0 ? (
+                                        booking.payments.map((payment: Payment) => (
+                                            <React.Fragment key={payment.id}>
+                                                <div className="grid grid-cols-2 gap-x-4 gap-y-6">
+                                                    <div className="flex items-start gap-3">
+                                                        <Hash className="h-5 w-5 text-muted-foreground mt-1" />
+                                                        <div>
+                                                            <p className="text-sm text-muted-foreground">Transaction ID</p>
+                                                            <p className="font-medium font-mono text-xs">{payment.transaction_id || 'N/A'}</p>
+                                                        </div>
+                                                    </div>
+                                                    <div className="flex items-start gap-3">
+                                                        <CreditCard className="h-5 w-5 text-muted-foreground mt-1" />
+                                                        <div>
+                                                            <p className="text-sm text-muted-foreground">Amount</p>
+                                                            <p className="font-medium">{formatCurrency(payment.amount)}</p>
+                                                        </div>
+                                                    </div>
+                                                    <div className="flex items-start gap-3">
+                                                        <Calendar className="h-5 w-5 text-muted-foreground mt-1" />
+                                                        <div>
+                                                            <p className="text-sm text-muted-foreground">Paid On</p>
+                                                            <p className="font-medium">{payment.payment_date ? format(new Date(payment.payment_date), "PPP") : 'N/A'}</p>
+                                                        </div>
+                                                    </div>
+                                                     <div className="flex items-start gap-3">
+                                                        <Info className="h-5 w-5 text-muted-foreground mt-1" />
+                                                        <div>
+                                                            <p className="text-sm text-muted-foreground">Payment Mode</p>
+                                                            <p className="font-medium capitalize">{payment.payment_method || 'N/A'}</p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                 <div className="mt-4">
+                                                    <Button variant="outline" size="sm"><FileDown className="mr-2 h-4 w-4" /> Download Invoice</Button>
+                                                 </div>
+                                                 {booking.payments.length > 1 && <Separator className="my-6" />}
+                                            </React.Fragment>
+                                        ))
+                                    ) : (
+                                        <div className="text-center py-10 text-muted-foreground">
+                                            <p>No payment records found for this booking.</p>
+                                        </div>
+                                    )}
                                 </CardContent>
                             </Card>
                          </div>
@@ -355,4 +378,3 @@ export default function BookingDetailPage() {
     </div>
   );
 }
-
