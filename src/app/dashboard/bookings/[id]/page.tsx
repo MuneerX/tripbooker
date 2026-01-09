@@ -1,5 +1,4 @@
 
-
 "use client";
 
 import * as React from "react";
@@ -18,6 +17,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { getBookingById } from "@/lib/supabase/queries";
 import type { Booking, BookingGuest, TripDay, Payment, PayInPart } from "@/lib/types";
 import { useBreadcrumb } from "../../layout";
+import { Progress } from "@/components/ui/progress";
 
 type TimelineStatus = 'paid' | 'overdue-paid' | 'overdue' | 'next-pay' | 'locked';
 
@@ -143,6 +143,42 @@ export default function BookingDetailPage() {
       </div>
     );
   }
+  
+  const paymentProgress = React.useMemo(() => {
+    if (!tourPackage || paymentTimeline.length === 0) {
+      return {
+        paidAmount: booking.total_amount,
+        pendingAmount: tourPackage.base_price - booking.total_amount,
+        progressValue: (booking.total_amount / tourPackage.base_price) * 100,
+        paidCount: booking.total_amount > 0 ? 1 : 0,
+        totalCount: 1,
+        nextDueDate: null,
+        paymentStatusText: booking.payment_status === 'completed' ? 'Fully Paid' : 'Payment due'
+      };
+    }
+    const paidAmount = paymentTimeline.filter(p => p.status === 'paid' || p.status === 'overdue-paid').reduce((sum, p) => sum + p.total_amount, 0);
+    const pendingAmount = tourPackage.base_price - paidAmount;
+    const progressValue = (paidAmount / tourPackage.base_price) * 100;
+    const paidCount = paymentTimeline.filter(p => p.status === 'paid' || p.status === 'overdue-paid').length;
+    const totalCount = paymentTimeline.length;
+    const nextPayment = paymentTimeline.find(p => p.status === 'next-pay' || p.status === 'overdue');
+    
+    let paymentStatusText = 'All installments paid';
+    if (nextPayment) {
+        paymentStatusText = nextPayment.status === 'overdue' ? 'Payment is Overdue' : 'Next payment is due';
+    }
+
+
+    return {
+        paidAmount,
+        pendingAmount,
+        progressValue,
+        paidCount,
+        totalCount,
+        nextDueDate: nextPayment?.dueDate || null,
+        paymentStatusText,
+    }
+  }, [paymentTimeline, tourPackage, booking]);
 
   const detailItems = [
     { icon: <Clock />, label: "Duration", value: `${tourPackage.days} Days / ${tourPackage.nights} Nights` },
@@ -222,43 +258,44 @@ export default function BookingDetailPage() {
                          {/* Payment Overview */}
                         <Card>
                             <CardHeader><CardTitle>Payment Overview</CardTitle></CardHeader>
-                             <CardContent className="space-y-6">
-                                <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
-                                    <div className="flex items-start gap-3"><CreditCard className="h-5 w-5 text-muted-foreground mt-1" /><div><p className="text-sm text-muted-foreground">Base Price</p><p className="font-medium">{formatCurrency(tourPackage.base_price)}</p></div></div>
-                                    <div className="flex items-start gap-3"><CreditCard className="h-5 w-5 text-muted-foreground mt-1" /><div><p className="text-sm text-muted-foreground">Pay In Parts</p><p className="font-medium">{tourPackage.pay_in_parts?.length > 0 ? `${tourPackage.pay_in_parts.length}-time payment` : 'One Time'}</p></div></div>
-                                    <div className="flex items-start gap-3"><CreditCard className="h-5 w-5 text-muted-foreground mt-1" /><div><p className="text-sm text-muted-foreground">Payment Status</p><p className="font-medium capitalize">{booking.payment_status}</p></div></div>
+                             <CardContent className="space-y-4">
+                               <div className="space-y-2">
+                                  <div className="flex justify-between items-center text-sm">
+                                      <p className="text-muted-foreground">{paymentProgress.paymentStatusText}</p>
+                                      {paymentProgress.nextDueDate && (
+                                        <p>Next due: <span className="font-medium">{format(paymentProgress.nextDueDate, "PPP")}</span></p>
+                                      )}
+                                  </div>
+                                  <div className="relative h-2 w-full rounded-full bg-muted">
+                                    <Progress value={paymentProgress.progressValue} className="h-2" />
+                                    {paymentTimeline.map((part, index) => {
+                                      const position = ((index + 1) / paymentTimeline.length) * 100;
+                                      const statusInfo = getTimelineStatusInfo(part.status);
+                                      return (
+                                        <div
+                                          key={part.id || index}
+                                          className={cn("absolute top-1/2 h-4 w-4 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-background", statusInfo.className)}
+                                          style={{ left: `${position}%` }}
+                                        />
+                                      )
+                                    })}
+                                  </div>
+                                  <p className="text-xs text-muted-foreground text-center pt-2">
+                                    {paymentProgress.paidCount} out of {paymentProgress.totalCount} installments paid
+                                  </p>
                                 </div>
-                                {tourPackage.pay_in_parts && tourPackage.pay_in_parts.length > 0 && (
-                                    <div className="mt-6">
-                                        <h4 className="text-sm font-medium mb-4">Payment Timeline</h4>
-                                        <div className="relative flex items-center justify-between">
-                                            <div className="absolute left-0 top-1/2 w-full -translate-y-1/2">
-                                                <div className="w-full border-t-2 border-dashed border-border"></div>
-                                            </div>
-                                            {tourPackage.pay_in_parts.sort((a,b) => a.months - b.months).map((part, index) => {
-                                                const scheduleItem = paymentTimeline.find(p => p.id === part.id);
-                                                const isPaid = scheduleItem && (scheduleItem.status === 'paid' || scheduleItem.status === 'overdue-paid');
-                                                const isNext = scheduleItem && scheduleItem.status === 'next-pay';
-                                                
-                                                return (
-                                                <div key={part.id || index} className="relative flex flex-col items-center text-center w-24">
-                                                    <div className={cn(
-                                                        "h-6 w-6 rounded-full flex items-center justify-center z-10 border-2 bg-background",
-                                                        isPaid ? 'border-green-500' : 'border-border',
-                                                        isNext ? 'border-blue-500' : 'border-border',
-                                                    )}>
-                                                        {isPaid ? <Check className="h-4 w-4 text-green-500" /> : <div className="h-2 w-2 rounded-full bg-border" />}
-                                                    </div>
-                                                    <div className="mt-2">
-                                                        <p className="text-sm font-semibold">{part.plan_name}</p>
-                                                        <p className="text-xs text-muted-foreground">{formatCurrency(part.total_amount)}</p>
-                                                    </div>
-                                                </div>
-                                            )})}
-                                        </div>
-                                    </div>
-                                )}
-                            </CardContent>
+                                <Separator />
+                                <div className="grid grid-cols-2 gap-4">
+                                  <div className="text-center">
+                                    <p className="text-sm text-muted-foreground">Total Paid</p>
+                                    <p className="text-lg font-bold text-green-600">{formatCurrency(paymentProgress.paidAmount)}</p>
+                                  </div>
+                                  <div className="text-center">
+                                    <p className="text-sm text-muted-foreground">Total Pending</p>
+                                    <p className="text-lg font-bold text-destructive">{formatCurrency(paymentProgress.pendingAmount)}</p>
+                                  </div>
+                                </div>
+                             </CardContent>
                         </Card>
                     </TabsContent>
 
@@ -501,6 +538,8 @@ export default function BookingDetailPage() {
     </div>
   );
 }
+
+    
 
     
 
