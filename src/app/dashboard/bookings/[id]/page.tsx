@@ -302,19 +302,14 @@ export default function BookingDetailPage() {
                                         <p>Next due: <span className="font-medium">{format(paymentProgress.nextDueDate, "PPP")}</span></p>
                                       )}
                                   </div>
-                                  <div className="relative h-2 w-full rounded-full bg-muted overflow-hidden">
-                                     <div className="absolute h-full flex" style={{ width: `${paymentProgress.progressValue}%`}}>
+                                   <div className="relative h-2 w-full rounded-full bg-muted">
+                                      <div className="absolute h-full flex" style={{ width: `${paymentProgress.progressValue}%` }}>
                                         {paymentProgress.progressSegments.map((seg, i) => (
                                           <div key={i} className={cn(seg.color)} style={{ width: seg.width }} />
                                         ))}
-                                     </div>
-                                    <div className="absolute top-0 left-0 h-full w-full border-t-2 border-dashed border-background/50"
-                                        style={{
-                                            backgroundImage: "linear-gradient(to right, hsl(var(--border)) 50%, transparent 50%)",
-                                            backgroundSize: "8px 2px",
-                                            backgroundRepeat: "repeat-x"
-                                        }}
-                                    ></div>
+                                      </div>
+                                    </div>
+                                    <div className="relative h-5">
                                     {paymentTimeline.map((part, index) => {
                                       let cumulativeAmount = 0;
                                       for (let i = 0; i <= index; i++) {
@@ -332,7 +327,8 @@ export default function BookingDetailPage() {
                                         </div>
                                       )
                                     })}
-                                  </div>
+                                    </div>
+
                                   <p className="text-sm text-muted-foreground text-center pt-2">
                                     {paymentProgress.paidCount} out of {paymentProgress.totalCount} installments paid
                                   </p>
@@ -589,3 +585,5 @@ export default function BookingDetailPage() {
     </div>
   );
 }
+
+    
