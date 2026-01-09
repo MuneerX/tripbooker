@@ -863,30 +863,9 @@ export async function getBookings(packageId?: string): Promise<Booking[]> {
   let query = supabase
     .from('tour_bookings')
     .select(`
-      id,
-      booking_reference,
-      user_id,
-      package_id,
-      booking_date,
-      travel_date,
-      total_adults,
-      total_children,
-      total_amount,
-      booking_status,
-      payment_status,
-      payment_method,
-      payment_reference,
-      special_requests,
-      created_at,
-      referral_code,
-      tour_package:package_id (
-        name
-      ),
-      customer:user_id (
-        full_name,
-        email,
-        avatar_url
-      )
+        *,
+        tour_package:package_id (name),
+        customer:user_id (full_name, email, avatar_url)
     `)
     .order('booking_date', { ascending: false });
 
@@ -903,27 +882,11 @@ export async function getBookings(packageId?: string): Promise<Booking[]> {
   
   // Map the data to the Booking type
   return (data || []).map((item: any) => ({
-    id: item.id,
-    booking_reference: item.booking_reference,
-    user_id: item.user_id,
-    package_id: item.package_id,
-    booking_date: item.booking_date,
-    travel_date: item.travel_date,
-    total_adults: item.total_adults,
-    total_children: item.total_children,
-    total_amount: item.total_amount,
-    booking_status: item.booking_status,
-    payment_status: item.payment_status,
-    payment_method: item.payment_method,
-    payment_reference: item.payment_reference,
-    special_requests: item.special_requests,
-    created_at: item.created_at,
+    ...item,
     customer_name: item.customer?.full_name || 'N/A',
     customer_email: item.customer?.email || 'N/A',
-    status: item.booking_status,
     avatar_url: item.customer?.avatar_url,
-    tour_package: item.tour_package,
-    referral_code: item.referral_code,
+    status: item.booking_status
   }));
 }
 
