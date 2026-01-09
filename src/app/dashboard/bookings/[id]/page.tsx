@@ -9,7 +9,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Check, X, Calendar, Users, Clock, Info, Star, CheckCircle, XCircle, ArrowUpRight, Sun, Moon, CreditCard, User, Phone, MapPinIcon, Hash, FileDown } from "lucide-react";
+import { ArrowLeft, Check, X, Calendar, Users, Clock, Info, Star, CheckCircle, XCircle, ArrowUpRight, Sun, Moon, CreditCard, User, Phone, MapPinIcon, Hash, FileDown, Plus } from "lucide-react";
 import { formatCurrency, getStatusBadgeColor, cn } from "@/lib/utils";
 import { Separator } from "@/components/ui/separator";
 import { format } from "date-fns";
@@ -298,41 +298,43 @@ export default function BookingDetailPage() {
                     </TabsContent>
 
                     <TabsContent value="payment" className="space-y-8">
-                         <Card>
-                            <CardHeader><CardTitle>Payment Timeline</CardTitle></CardHeader>
-                            <CardContent>
-                                {/* This is a placeholder for vertical timeline */}
-                                <div className="text-center py-10 text-muted-foreground">
-                                    <p>Payment timeline visualization coming soon.</p>
-                                </div>
-                            </CardContent>
-                        </Card>
-                         <Card>
-                            <CardHeader><CardTitle>Payment Details</CardTitle></CardHeader>
-                            <CardContent>
-                                <Table>
-                                    <TableHeader><TableRow><TableHead>Transaction ID</TableHead><TableHead>Due On</TableHead><TableHead>Paid On</TableHead><TableHead>Mode</TableHead><TableHead>Amount</TableHead><TableHead>Actions</TableHead></TableRow></TableHeader>
-                                    <TableBody>
-                                        {booking.payments && booking.payments.length > 0 ? (
-                                             booking.payments.map((payment: Payment) => (
-                                                <TableRow key={payment.id}>
-                                                    <TableCell className="font-mono text-xs">{payment.transaction_id || 'N/A'}</TableCell>
-                                                    <TableCell>{format(new Date(booking.booking_date), "PPP")}</TableCell>
-                                                    <TableCell>{payment.payment_date ? format(new Date(payment.payment_date), "PPP") : 'N/A'}</TableCell>
-                                                    <TableCell className="capitalize">{payment.payment_method || 'N/A'}</TableCell>
-                                                    <TableCell>{formatCurrency(payment.amount)}</TableCell>
-                                                    <TableCell><Button variant="outline" size="sm"><FileDown className="mr-2 h-4 w-4" /> Invoice</Button></TableCell>
+                         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                            <Card>
+                                <CardHeader><CardTitle>Payment Timeline</CardTitle></CardHeader>
+                                <CardContent>
+                                    {/* This is a placeholder for vertical timeline */}
+                                    <div className="text-center py-10 text-muted-foreground">
+                                        <p>Payment timeline visualization coming soon.</p>
+                                    </div>
+                                </CardContent>
+                            </Card>
+                            <Card>
+                                <CardHeader><CardTitle>Payment Details</CardTitle></CardHeader>
+                                <CardContent>
+                                    <Table>
+                                        <TableHeader><TableRow><TableHead>Transaction ID</TableHead><TableHead>Due On</TableHead><TableHead>Paid On</TableHead><TableHead>Mode</TableHead><TableHead>Amount</TableHead><TableHead>Actions</TableHead></TableRow></TableHeader>
+                                        <TableBody>
+                                            {booking.payments && booking.payments.length > 0 ? (
+                                                booking.payments.map((payment: Payment) => (
+                                                    <TableRow key={payment.id}>
+                                                        <TableCell className="font-mono text-xs">{payment.transaction_id || 'N/A'}</TableCell>
+                                                        <TableCell>{format(new Date(booking.booking_date), "PPP")}</TableCell>
+                                                        <TableCell>{payment.payment_date ? format(new Date(payment.payment_date), "PPP") : 'N/A'}</TableCell>
+                                                        <TableCell className="capitalize">{payment.payment_method || 'N/A'}</TableCell>
+                                                        <TableCell>{formatCurrency(payment.amount)}</TableCell>
+                                                        <TableCell><Button variant="outline" size="sm"><FileDown className="mr-2 h-4 w-4" /> Invoice</Button></TableCell>
+                                                    </TableRow>
+                                                ))
+                                            ) : (
+                                                <TableRow>
+                                                    <TableCell colSpan={6} className="text-center text-muted-foreground">No payment records found for this booking.</TableCell>
                                                 </TableRow>
-                                             ))
-                                        ) : (
-                                            <TableRow>
-                                                <TableCell colSpan={6} className="text-center text-muted-foreground">No payment records found for this booking.</TableCell>
-                                            </TableRow>
-                                        )}
-                                    </TableBody>
-                                </Table>
-                            </CardContent>
-                        </Card>
+                                            )}
+                                        </TableBody>
+                                    </Table>
+                                </CardContent>
+                            </Card>
+                         </div>
                          <Card>
                             <CardHeader><CardTitle>Overall Payment Summary</CardTitle></CardHeader>
                             <CardContent className="grid grid-cols-2 gap-4">
