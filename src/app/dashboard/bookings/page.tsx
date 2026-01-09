@@ -42,6 +42,7 @@ export default function BookingsPage() {
     const fetchBookings = async () => {
       setLoading(true);
       const bookings = await getBookings();
+      console.log('Fetched Bookings:', bookings); // Console log for debugging
       setAllBookings(bookings);
       setLoading(false);
     };
