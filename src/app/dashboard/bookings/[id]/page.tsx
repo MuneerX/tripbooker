@@ -58,92 +58,95 @@ export default function BookingDetailPage() {
   }, [id, setBreadcrumbName]);
 
   const tourPackage = booking?.tour_package;
-
-  const renderPointList = (text: string | null | undefined) => {
-    if (!text) return <p className="text-sm text-muted-foreground leading-relaxed">N/A</p>;
-    const points = text.split(/[\n,]+/).map(p => p.trim()).filter(p => p);
-    return (
-      <ul className="list-disc list-inside space-y-1 text-sm text-muted-foreground leading-relaxed">
-        {points.map((point, index) => (
-          <li key={index}>{point}</li>
-        ))}
-      </ul>
-    );
-  };
-  
-    const paymentTimeline = React.useMemo(() => {
-        if (!booking || !tourPackage?.pay_in_parts || tourPackage.pay_in_parts.length === 0) {
-            return [];
-        }
-
-        const bookingDate = new Date(booking.booking_date);
-        let lastPaidIndex = -1;
-        
-        const availablePayments = [...(booking.payments || [])].sort((a,b) => new Date(a.payment_date || 0).getTime() - new Date(b.payment_date || 0).getTime());
-        const matchedPaymentIds = new Set<string>();
-
-        const schedule = tourPackage.pay_in_parts
-            .sort((a, b) => a.months - b.months)
-            .map((part, index) => {
-                const dueDate = addMonths(bookingDate, part.months);
-                
-                // Find the first available payment that could match this part.
-                const paymentIndex = availablePayments.findIndex(p => !matchedPaymentIds.has(p.id));
-                const payment = paymentIndex !== -1 ? availablePayments[paymentIndex] : null;
-
-                if(payment) {
-                    matchedPaymentIds.add(payment.id);
-                }
-
-                const paidOn = payment?.payment_date ? new Date(payment.payment_date) : null;
-                
-                let status: TimelineStatus = 'locked';
-                const today = new Date();
-
-                if (paidOn) {
-                    lastPaidIndex = index;
-                    status = isAfter(paidOn, dueDate) ? 'overdue-paid' : 'paid';
-                } else {
-                    if (index === lastPaidIndex + 1) {
-                         status = isAfter(today, dueDate) ? 'overdue' : 'next-pay';
-                    } else if(index > lastPaidIndex + 1) {
-                        status = 'locked';
-                    } else if (isAfter(today, dueDate)) {
-                        status = 'overdue';
-                    }
-                }
-
-                return {
-                    ...part,
-                    dueDate,
-                    paidOn,
-                    status
-                };
-            });
-
-        // Ensure there is one 'next-pay' if not all are paid
-        const isAllPaid = schedule.every(s => s.status === 'paid' || s.status === 'overdue-paid');
-        if (!isAllPaid) {
-            const firstUnpaidIndex = schedule.findIndex(s => s.status !== 'paid' && s.status !== 'overdue-paid');
-            if(firstUnpaidIndex !== -1 && schedule[firstUnpaidIndex].status !== 'overdue') {
-                schedule[firstUnpaidIndex].status = 'next-pay';
-            }
-        }
-
-
-        return schedule;
-    }, [booking, tourPackage]);
     
+  const paymentTimeline = React.useMemo(() => {
+    if (!booking || !tourPackage?.pay_in_parts || tourPackage.pay_in_parts.length === 0) {
+        return [];
+    }
+
+    const bookingDate = new Date(booking.booking_date);
+    let lastPaidIndex = -1;
+    
+    const availablePayments = [...(booking.payments || [])].sort((a,b) => new Date(a.payment_date || 0).getTime() - new Date(b.payment_date || 0).getTime());
+    const matchedPaymentIds = new Set<string>();
+
+    const schedule = tourPackage.pay_in_parts
+        .sort((a, b) => a.months - b.months)
+        .map((part, index) => {
+            const dueDate = addMonths(bookingDate, part.months);
+            
+            // Find the first available payment that could match this part.
+            const paymentIndex = availablePayments.findIndex(p => !matchedPaymentIds.has(p.id));
+            const payment = paymentIndex !== -1 ? availablePayments[paymentIndex] : null;
+
+            if(payment) {
+                matchedPaymentIds.add(payment.id);
+            }
+
+            const paidOn = payment?.payment_date ? new Date(payment.payment_date) : null;
+            
+            let status: TimelineStatus = 'locked';
+            const today = new Date();
+
+            if (paidOn) {
+                lastPaidIndex = index;
+                status = isAfter(paidOn, dueDate) ? 'overdue-paid' : 'paid';
+            } else {
+                if (index === lastPaidIndex + 1) {
+                     status = isAfter(today, dueDate) ? 'overdue' : 'next-pay';
+                } else if(index > lastPaidIndex + 1) {
+                    status = 'locked';
+                } else if (isAfter(today, dueDate)) {
+                    status = 'overdue';
+                }
+            }
+
+            return {
+                ...part,
+                dueDate,
+                paidOn,
+                status
+            };
+        });
+
+    // Ensure there is one 'next-pay' if not all are paid
+    const isAllPaid = schedule.every(s => s.status === 'paid' || s.status === 'overdue-paid');
+    if (!isAllPaid) {
+        const firstUnpaidIndex = schedule.findIndex(s => s.status !== 'paid' && s.status !== 'overdue-paid');
+        if(firstUnpaidIndex !== -1 && schedule[firstUnpaidIndex].status !== 'overdue') {
+            schedule[firstUnpaidIndex].status = 'next-pay';
+        }
+    }
+
+
+    return schedule;
+  }, [booking, tourPackage]);
+
   const paymentProgress = React.useMemo(() => {
-    if (!tourPackage || !booking || paymentTimeline.length === 0) {
+    if (!tourPackage || !booking) {
       return {
-        paidAmount: booking?.total_amount ?? 0,
-        pendingAmount: (tourPackage?.base_price ?? 0) - (booking?.total_amount ?? 0),
-        progressValue: tourPackage?.base_price ? ((booking?.total_amount ?? 0) / tourPackage.base_price) * 100 : 0,
-        paidCount: (booking?.total_amount ?? 0) > 0 ? 1 : 0,
+        paidAmount: 0,
+        pendingAmount: 0,
+        progressValue: 0,
+        paidCount: 0,
+        totalCount: 0,
+        nextDueDate: null,
+        paymentStatusText: 'Loading...',
+        progressSegments: []
+      };
+    }
+    
+    if (paymentTimeline.length === 0) {
+      const isPaid = booking.total_amount >= tourPackage.base_price;
+      return {
+        paidAmount: booking.total_amount ?? 0,
+        pendingAmount: Math.max(0, (tourPackage.base_price ?? 0) - (booking.total_amount ?? 0)),
+        progressValue: tourPackage.base_price ? ((booking.total_amount ?? 0) / tourPackage.base_price) * 100 : 0,
+        paidCount: isPaid ? 1 : 0,
         totalCount: 1,
         nextDueDate: null,
-        paymentStatusText: booking?.payment_status === 'completed' ? 'Fully Paid' : 'Payment due'
+        paymentStatusText: isPaid ? 'Fully Paid' : 'Payment due',
+        progressSegments: isPaid ? [{ color: 'bg-green-500', width: '100%' }] : [{ color: 'bg-blue-500', width: `${((booking.total_amount ?? 0) / tourPackage.base_price) * 100}%` }]
       };
     }
     const paidAmount = paymentTimeline.filter(p => p.status === 'paid' || p.status === 'overdue-paid').reduce((sum, p) => sum + p.total_amount, 0);
@@ -158,6 +161,16 @@ export default function BookingDetailPage() {
         paymentStatusText = nextPayment.status === 'overdue' ? 'Payment is Overdue' : 'Next payment is due';
     }
 
+    const progressSegments = paymentTimeline.map(part => {
+        const width = (part.total_amount / tourPackage.base_price) * 100;
+        const statusInfo = getTimelineStatusInfo(part.status);
+        let color = 'bg-gray-200'; // Default for locked
+        if (part.status === 'paid') color = 'bg-green-500';
+        if (part.status === 'overdue-paid') color = 'bg-yellow-500';
+
+        return { color, width: `${width}%` };
+    });
+
 
     return {
         paidAmount,
@@ -167,6 +180,7 @@ export default function BookingDetailPage() {
         totalCount,
         nextDueDate: nextPayment?.dueDate || null,
         paymentStatusText,
+        progressSegments
     }
   }, [paymentTimeline, tourPackage, booking]);
 
@@ -179,6 +193,18 @@ export default function BookingDetailPage() {
       </div>
     );
   }
+  
+  const renderPointList = (text: string | null | undefined) => {
+    if (!text) return <p className="text-sm text-muted-foreground leading-relaxed">N/A</p>;
+    const points = text.split(/[\n,]+/).map(p => p.trim()).filter(p => p);
+    return (
+      <ul className="list-disc list-inside space-y-1 text-sm text-muted-foreground leading-relaxed">
+        {points.map((point, index) => (
+          <li key={index}>{point}</li>
+        ))}
+      </ul>
+    );
+  };
 
   const detailItems = [
     { icon: <Clock />, label: "Duration", value: `${tourPackage.days} Days / ${tourPackage.nights} Nights` },
@@ -266,10 +292,22 @@ export default function BookingDetailPage() {
                                         <p>Next due: <span className="font-medium">{format(paymentProgress.nextDueDate, "PPP")}</span></p>
                                       )}
                                   </div>
-                                  <div className="relative h-2 w-full rounded-full bg-muted">
-                                    <Progress value={paymentProgress.progressValue} className="h-2" />
+                                  <div className="relative h-2 w-full rounded-full bg-muted overflow-hidden">
+                                     <div className="absolute h-full w-full flex">
+                                        {paymentProgress.progressSegments.map((seg, i) => (
+                                          <div key={i} className={seg.color} style={{ width: seg.width }} />
+                                        ))}
+                                     </div>
+                                    <div 
+                                        className="absolute top-0 left-0 h-full border-r-2 border-dashed border-background"
+                                        style={{
+                                            backgroundImage: "linear-gradient(to right, hsl(var(--border)) 50%, transparent 50%)",
+                                            backgroundSize: "8px 2px",
+                                            width: '100%',
+                                        }}
+                                    ></div>
                                     {paymentTimeline.map((part, index) => {
-                                      const position = ((index + 1) / paymentTimeline.length) * 100;
+                                      const position = (paymentTimeline.slice(0, index + 1).reduce((sum, p) => sum + p.total_amount, 0) / tourPackage.base_price) * 100;
                                       const statusInfo = getTimelineStatusInfo(part.status);
                                       return (
                                         <div
@@ -428,19 +466,17 @@ export default function BookingDetailPage() {
                                 <CardContent>
                                     {paymentTimeline.length > 0 ? (
                                         <div className="relative space-y-8">
+                                            <div className="absolute left-4 top-0 h-full w-px bg-border" />
                                             {paymentTimeline.map((item, index) => {
                                                 const statusInfo = getTimelineStatusInfo(item.status);
                                                 return (
-                                                    <div key={item.id || index} className="flex gap-4">
-                                                        <div className="flex flex-col items-center">
-                                                            <div className={cn("h-8 w-8 rounded-full flex items-center justify-center text-white", statusInfo.className)}>
+                                                    <div key={item.id || index} className="flex gap-4 pl-4">
+                                                         <div className="relative h-full">
+                                                            <div className={cn("absolute top-1 -left-[22px] h-8 w-8 rounded-full flex items-center justify-center text-white z-10", statusInfo.className)}>
                                                                 {statusInfo.icon}
                                                             </div>
-                                                            {index < paymentTimeline.length - 1 && (
-                                                                <div className="w-px h-full bg-border flex-1" />
-                                                            )}
                                                         </div>
-                                                        <div className="flex-1 pb-8">
+                                                        <div className="flex-1 pb-8 pl-6">
                                                             <div className="flex justify-between items-start">
                                                                 <div>
                                                                     <p className="font-semibold">{item.plan_name}</p>
@@ -471,7 +507,7 @@ export default function BookingDetailPage() {
                                 </CardContent>
                             </Card>
                              <Card>
-                                <CardHeader><CardTitle>Payment Details</CardTitle></CardHeader>
+                                <CardHeader><CardTitle>Payment Records</CardTitle></CardHeader>
                                 <CardContent className="space-y-6">
                                     {booking.payments && booking.payments.length > 0 ? (
                                         booking.payments.map((payment: Payment) => (
@@ -540,9 +576,3 @@ export default function BookingDetailPage() {
     </div>
   );
 }
-
-    
-
-    
-
-    
