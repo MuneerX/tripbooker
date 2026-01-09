@@ -88,8 +88,6 @@ export default function BookingDetailPage() {
                 const dueDate = addMonths(bookingDate, part.months);
                 
                 // Find the first available payment that could match this part.
-                // A more robust system might match on amount or have a direct link.
-                // For now, we'll take them in order.
                 const paymentIndex = availablePayments.findIndex(p => !matchedPaymentIds.has(p.id));
                 const payment = paymentIndex !== -1 ? availablePayments[paymentIndex] : null;
 
@@ -234,11 +232,9 @@ export default function BookingDetailPage() {
                                     <div className="mt-6">
                                         <h4 className="text-sm font-medium mb-4">Payment Timeline</h4>
                                         <div className="relative flex items-center justify-between">
-                                            <div className="absolute w-full top-1/2 -translate-y-1/2 h-0.5 bg-repeat-x -z-10" 
-                                                 style={{
-                                                     backgroundImage: `url("data:image/svg+xml,%3csvg width='100%25' height='100%25' xmlns='http://www.w3.org/2000/svg'%3e%3crect width='100%25' height='100%25' fill='none' stroke='%23e2e8f0' stroke-width='2' stroke-dasharray='6%2c 14' stroke-linecap='round'/%3e%3c/svg%3e")`
-                                                 }}
-                                            />
+                                            <div className="absolute left-0 top-1/2 w-full -translate-y-1/2">
+                                                <div className="w-full border-t-2 border-dashed border-border"></div>
+                                            </div>
                                             {tourPackage.pay_in_parts.sort((a,b) => a.months - b.months).map((part, index) => {
                                                 const scheduleItem = paymentTimeline.find(p => p.id === part.id);
                                                 const isPaid = scheduleItem && (scheduleItem.status === 'paid' || scheduleItem.status === 'overdue-paid');
@@ -505,5 +501,7 @@ export default function BookingDetailPage() {
     </div>
   );
 }
+
+    
 
     
