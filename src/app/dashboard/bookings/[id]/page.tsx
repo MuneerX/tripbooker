@@ -87,8 +87,10 @@ export default function BookingDetailPage() {
             .map((part, index) => {
                 const dueDate = addMonths(bookingDate, part.months);
                 
-                // Find the first available payment that matches the amount and hasn't been used yet
-                const paymentIndex = availablePayments.findIndex(p => p.amount === part.total_amount && !matchedPaymentIds.has(p.id));
+                // Find the first available payment that could match this part.
+                // A more robust system might match on amount or have a direct link.
+                // For now, we'll take them in order.
+                const paymentIndex = availablePayments.findIndex(p => !matchedPaymentIds.has(p.id));
                 const payment = paymentIndex !== -1 ? availablePayments[paymentIndex] : null;
 
                 if(payment) {
