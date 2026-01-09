@@ -9,7 +9,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Check, X, Calendar, Users, Clock, Info, Star, CheckCircle, XCircle, ArrowUpRight, Sun, Moon, CreditCard, User, Phone, MapPinIcon, Hash, FileDown } from "lucide-react";
+import { ArrowLeft, Check, X, Calendar, Users, Clock, Info, Star, CheckCircle, XCircle, ArrowUpRight, Sun, Moon, CreditCard, User, Phone, MapPinIcon, Hash, FileDown, Plus } from "lucide-react";
 import { formatCurrency, getStatusBadgeColor, cn } from "@/lib/utils";
 import { Separator } from "@/components/ui/separator";
 import { addMonths, format, isBefore, isAfter } from "date-fns";
@@ -79,13 +79,24 @@ export default function BookingDetailPage() {
         const bookingDate = new Date(booking.booking_date);
         let lastPaidIndex = -1;
         
+        const availablePayments = [...(booking.payments || [])].sort((a,b) => new Date(a.payment_date || 0).getTime() - new Date(b.payment_date || 0).getTime());
+        const matchedPaymentIds = new Set<string>();
+
         const schedule = tourPackage.pay_in_parts
             .sort((a, b) => a.months - b.months)
             .map((part, index) => {
                 const dueDate = addMonths(bookingDate, part.months);
-                const payment = booking.payments?.find(p => p.amount === part.total_amount); // Simplified matching
-                const paidOn = payment?.payment_date ? new Date(payment.payment_date) : null;
+                
+                // Find the first available payment that matches the amount and hasn't been used yet
+                const paymentIndex = availablePayments.findIndex(p => p.amount === part.total_amount && !matchedPaymentIds.has(p.id));
+                const payment = paymentIndex !== -1 ? availablePayments[paymentIndex] : null;
 
+                if(payment) {
+                    matchedPaymentIds.add(payment.id);
+                }
+
+                const paidOn = payment?.payment_date ? new Date(payment.payment_date) : null;
+                
                 let status: TimelineStatus = 'locked';
                 const today = new Date();
 
@@ -221,22 +232,27 @@ export default function BookingDetailPage() {
                                     <div className="mt-6">
                                         <h4 className="text-sm font-medium mb-4">Payment Timeline</h4>
                                         <div className="relative flex items-center justify-between">
-                                            {tourPackage.pay_in_parts.map((part, index) => (
-                                                <React.Fragment key={part.id || index}>
-                                                    <div className="relative z-10 flex flex-col items-center text-center w-24">
-                                                        <div className={cn("h-6 w-6 rounded-full flex items-center justify-center z-10", index === 0 ? 'bg-primary' : 'bg-gray-300')}>
-                                                            <Check className="h-4 w-4 text-primary-foreground" />
-                                                        </div>
-                                                        <div className="mt-2">
-                                                            <p className="text-sm font-semibold">{part.plan_name}</p>
-                                                            <p className="text-xs text-muted-foreground">{formatCurrency(part.total_amount)}</p>
-                                                        </div>
+                                            <div className="absolute w-full top-1/2 -translate-y-1/2 h-0.5 bg-border -z-10" />
+                                            {tourPackage.pay_in_parts.sort((a,b) => a.months - b.months).map((part, index) => {
+                                                const scheduleItem = paymentTimeline.find(p => p.id === part.id);
+                                                const isPaid = scheduleItem && (scheduleItem.status === 'paid' || scheduleItem.status === 'overdue-paid');
+                                                const isNext = scheduleItem && scheduleItem.status === 'next-pay';
+                                                
+                                                return (
+                                                <div key={part.id || index} className="relative flex flex-col items-center text-center w-24">
+                                                    <div className={cn(
+                                                        "h-6 w-6 rounded-full flex items-center justify-center z-10 border-2 bg-background",
+                                                        isPaid ? 'border-green-500' : 'border-border',
+                                                        isNext ? 'border-blue-500' : 'border-border',
+                                                    )}>
+                                                        {isPaid ? <Check className="h-4 w-4 text-green-500" /> : <div className="h-2 w-2 rounded-full bg-border" />}
                                                     </div>
-                                                    {index < tourPackage.pay_in_parts.length - 1 && (
-                                                        <div className="flex-1 border-t-2 border-dashed border-border absolute top-3 left-0 right-0 w-full -z-0"></div>
-                                                    )}
-                                                </React.Fragment>
-                                            ))}
+                                                    <div className="mt-2">
+                                                        <p className="text-sm font-semibold">{part.plan_name}</p>
+                                                        <p className="text-xs text-muted-foreground">{formatCurrency(part.total_amount)}</p>
+                                                    </div>
+                                                </div>
+                                            )})}
                                         </div>
                                     </div>
                                 )}
@@ -255,7 +271,7 @@ export default function BookingDetailPage() {
                                 
                                 <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                                     <div className="space-y-4">
-                                        <h3 className="text-lg font-semibold flex items-center gap-2"><CheckCircle className="text-blue-500"/> Highlights</h3>
+                                        <h3 className="text-lg font-semibold flex items-center gap-2"><Plus className="text-blue-500"/> Highlights</h3>
                                         {renderPointList(tourPackage.highlights)}
                                     </div>
                                     <div className="space-y-4">
