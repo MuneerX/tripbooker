@@ -11,7 +11,8 @@ import {
   LogOut,
   MountainSnow,
   ChevronDown,
-  LayoutGrid
+  LayoutGrid,
+  Book,
 } from 'lucide-react';
 import {
   Sidebar,
@@ -43,6 +44,12 @@ const navItems: NavItem[] = [
       { title: 'All Packages', href: '/dashboard/tour-packages', icon: Package },
       { title: 'Create New', href: '/dashboard/tour-packages/create', icon: PlusCircle },
     ],
+  },
+  {
+    title: 'Bookings',
+    href: '/dashboard/bookings',
+    icon: Book,
+    subItems: [],
   },
   {
     title: 'Trip Days',

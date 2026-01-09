@@ -108,12 +108,15 @@ export type Booking = {
   booking_status: 'pending' | 'confirmed' | 'cancelled' | 'completed';
   payment_status: 'pending' | 'completed' | 'failed' | 'refunded';
   payment_method: string | null;
+  payment_reference: string | null;
   special_requests: string | null;
   created_at: string;
   customer_name: string;
   customer_email: string;
   status: 'pending' | 'confirmed' | 'cancelled' | 'completed';
   avatar_url?: string | null;
+  tour_package?: { name: string } | null;
+  referral_code?: string | null; // Assuming this might come from a join
 };
 
 
