@@ -8,7 +8,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Check, X, Calendar, Users, Clock, Info, Star, CheckCircle, XCircle, ArrowUpRight, Sun, Moon, CreditCard, User, Phone, MapPinIcon, Hash, FileDown, Plus } from "lucide-react";
+import { ArrowLeft, Check, X, Calendar, Users, Clock, Info, Star, CheckCircle, XCircle, ArrowUpRight, Sun, Moon, CreditCard, User, Phone, MapPinIcon, Hash, FileDown } from "lucide-react";
 import { formatCurrency, getStatusBadgeColor, cn } from "@/lib/utils";
 import { Separator } from "@/components/ui/separator";
 import { format } from "date-fns";
@@ -69,16 +69,26 @@ export default function BookingDetailPage() {
     { icon: <Clock />, label: "Duration", value: `${tourPackage.days} Days / ${tourPackage.nights} Nights` },
     { icon: <Users />, label: "Max Guests", value: tourPackage.max_guests },
   ];
+  
+  const packageImage = tourPackage.featured_image_url || tourPackage.image_urls?.[0] || "https://picsum.photos/seed/placeholder/200/200";
 
   return (
     <div className="space-y-6">
        <div className="flex items-center gap-4">
-            <Button variant="outline" size="icon" className="h-7 w-7" onClick={() => router.back()}>
+            <Button variant="outline" size="icon" className="h-7 w-7 shrink-0" onClick={() => router.back()}>
                 <ArrowLeft className="h-4 w-4" />
                 <span className="sr-only">Back</span>
             </Button>
+            <div className="relative h-16 w-16 rounded-md overflow-hidden shrink-0">
+                <Image
+                    src={packageImage}
+                    alt={tourPackage.name}
+                    fill
+                    className="object-cover"
+                />
+            </div>
             <div className="flex-1">
-                <h1 className="text-xl font-semibold tracking-tight">
+                <h1 className="text-xl font-semibold tracking-tight truncate">
                     {tourPackage.name}
                 </h1>
                 <p className="text-sm text-muted-foreground">Booking Ref: {booking.booking_reference}</p>
@@ -177,7 +187,7 @@ export default function BookingDetailPage() {
                                 
                                 <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                                     <div className="space-y-4">
-                                        <h3 className="text-lg font-semibold flex items-center gap-2"><Plus className="text-blue-500"/> Highlights</h3>
+                                        <h3 className="text-lg font-semibold flex items-center gap-2"><CheckCircle className="text-blue-500"/> Highlights</h3>
                                         {renderPointList(tourPackage.highlights)}
                                     </div>
                                     <div className="space-y-4">
@@ -340,3 +350,5 @@ export default function BookingDetailPage() {
     </div>
   );
 }
+
+    
