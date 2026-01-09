@@ -863,17 +863,17 @@ export async function getBookings(packageId?: string): Promise<Booking[]> {
   let query = supabase
     .from('tour_bookings')
     .select(`
-      id,
-      booking_reference,
-      booking_date,
-      payment_method,
-      payment_reference,
-      payment_status,
-      total_amount,
-      booking_status,
-      referral_code,
-      tour_package:package_id(name),
-      customer:user_id(full_name, email, avatar_url)
+        id,
+        booking_reference,
+        booking_date,
+        payment_method,
+        payment_reference,
+        payment_status,
+        total_amount,
+        booking_status,
+        referral_code,
+        tour_package:package_id(name),
+        customer:user_id(full_name, email, avatar_url)
     `)
     .order('booking_date', { ascending: false });
 
@@ -884,8 +884,8 @@ export async function getBookings(packageId?: string): Promise<Booking[]> {
   const { data, error } = await query;
 
   if (error) {
-    console.error('Error fetching bookings:', error.message);
-    return [];
+    console.error('Error fetching bookings:', error);
+    throw new Error(error.message);
   }
   
   // Map the data to the Booking type
@@ -894,10 +894,11 @@ export async function getBookings(packageId?: string): Promise<Booking[]> {
     customer_name: item.customer?.full_name || 'N/A',
     customer_email: item.customer?.email || 'N/A',
     avatar_url: item.customer?.avatar_url,
-    status: item.booking_status,
+    status: item.booking_status, // Ensure status field is mapped
     tour_package: item.tour_package // This will be { name: 'Tour Name' } or null
   })) as unknown as Booking[];
 }
+
 
 /**
  * Fetches all details for a single booking by its ID.
@@ -905,14 +906,9 @@ export async function getBookings(packageId?: string): Promise<Booking[]> {
 export async function getBookingById(id: string): Promise<Booking | null> {
     const supabase = createAdminClient();
 
-    const { data, error } = await supabase
+    const { data: bookingData, error } = await supabase
         .from('tour_bookings')
-        .select(`
-            *,
-            customer:user_id(*, address:addresses(*)),
-            tour_package:package_id(*, pay_in_parts(*), trip_days:trip_days(*, activities:trip_day_activities(*, place:place_id(*)))),
-            guests:booking_guests(*)
-        `)
+        .select(`*, customer:user_id(*)`)
         .eq('id', id)
         .single();
     
@@ -921,27 +917,37 @@ export async function getBookingById(id: string): Promise<Booking | null> {
         throw new Error(error.message);
     }
 
-    if (!data) return null;
+    if (!bookingData) return null;
 
-    // Supabase v3 TypeScript support for relational queries is tricky.
-    // The query above fetches the relations, but we need to cast it carefully.
-    const booking = data as any;
+    // Fetch related data in separate queries
+    const { data: tourPackage, error: pkgError } = await supabase
+        .from('tour_packages')
+        .select(`*, pay_in_parts(*), trip_days:trip_days(*, activities:trip_day_activities(*, place:place_id(*)))`)
+        .eq('id', bookingData.package_id)
+        .single();
+
+    if (pkgError) {
+        console.error(`Error fetching tour package for booking ${id}:`, pkgError);
+        // We can decide to return partial data or null
+    }
+
+    const { data: guests, error: guestsError } = await supabase
+        .from('booking_guests')
+        .select('*')
+        .eq('booking_id', id);
+
+    if (guestsError) {
+        console.error(`Error fetching guests for booking ${id}:`, guestsError);
+    }
 
     const result: Booking = {
-      ...booking,
-      customer: booking.customer ? {
-        ...booking.customer,
-        // The address is fetched as an array, take the first one if it exists
-        address: Array.isArray(booking.customer.address) && booking.customer.address.length > 0
-          ? booking.customer.address[0]
-          : null,
-      } : null,
-      tour_package: booking.tour_package,
-      guests: booking.guests || [],
-    };
+      ...bookingData,
+      customer: bookingData.customer,
+      tour_package: tourPackage || null,
+      guests: guests || [],
+    } as Booking;
 
-
-    return result as Booking;
+    return result;
 }
 
 
