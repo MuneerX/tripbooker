@@ -125,7 +125,7 @@ export default function BookingDetailPage() {
                                 <CardContent className="grid grid-cols-2 gap-6">
                                     <div className="flex items-start gap-3"><Calendar className="h-5 w-5 text-muted-foreground mt-1" /><div><p className="text-sm text-muted-foreground">Created On</p><p className="font-medium">{format(new Date(booking.created_at), "PPP")}</p></div></div>
                                     <div className="flex items-start gap-3"><Calendar className="h-5 w-5 text-muted-foreground mt-1" /><div><p className="text-sm text-muted-foreground">Reservation Date</p><p className="font-medium">{format(new Date(booking.booking_date), "PPP")}</p></div></div>
-                                    <div className="flex items-start gap-3"><Hash className="h-5 w-5 text-muted-foreground mt-1" /><div><p className="text-sm text-muted-foreground">Referral Code</p><p className="font-medium">{booking.referral_code || 'N/A'}</p></div></div>
+                                    <div className="flex items-start gap-3 col-span-2"><Hash className="h-5 w-5 text-muted-foreground mt-1" /><div><p className="text-sm text-muted-foreground">Referral Code</p><p className="font-medium">{booking.referral_code || 'N/A'}</p></div></div>
                                     <div className="flex items-start gap-3"><Calendar className="h-5 w-5 text-muted-foreground mt-1" /><div><p className="text-sm text-muted-foreground">Travel Date</p><p className="font-medium">{booking.travel_date ? format(new Date(booking.travel_date), "PPP") : 'N/A'}</p></div></div>
                                     <div className="flex items-start gap-3 col-span-2"><Users className="h-5 w-5 text-muted-foreground mt-1" /><div><p className="text-sm text-muted-foreground">No. of Guests</p><p className="font-medium">{booking.total_adults} Adult(s), {booking.total_children} Child(ren)</p></div></div>
                                 </CardContent>
@@ -311,12 +311,12 @@ export default function BookingDetailPage() {
                             <CardHeader><CardTitle>Payment Details</CardTitle></CardHeader>
                             <CardContent>
                                 <Table>
-                                    <TableHeader><TableRow><TableHead>ID</TableHead><TableHead>Due On</TableHead><TableHead>Paid On</TableHead><TableHead>Mode</TableHead><TableHead>Amount</TableHead><TableHead>Actions</TableHead></TableRow></TableHeader>
+                                    <TableHeader><TableRow><TableHead>Transaction ID</TableHead><TableHead>Due On</TableHead><TableHead>Paid On</TableHead><TableHead>Mode</TableHead><TableHead>Amount</TableHead><TableHead>Actions</TableHead></TableRow></TableHeader>
                                     <TableBody>
                                         {booking.payments && booking.payments.length > 0 ? (
                                              booking.payments.map((payment: Payment) => (
                                                 <TableRow key={payment.id}>
-                                                    <TableCell className="font-mono text-xs">{payment.id.substring(0, 10)}...</TableCell>
+                                                    <TableCell className="font-mono text-xs">{payment.transaction_id || 'N/A'}</TableCell>
                                                     <TableCell>{format(new Date(booking.booking_date), "PPP")}</TableCell>
                                                     <TableCell>{payment.payment_date ? format(new Date(payment.payment_date), "PPP") : 'N/A'}</TableCell>
                                                     <TableCell className="capitalize">{payment.payment_method || 'N/A'}</TableCell>
