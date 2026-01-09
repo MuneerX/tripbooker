@@ -234,7 +234,11 @@ export default function BookingDetailPage() {
                                     <div className="mt-6">
                                         <h4 className="text-sm font-medium mb-4">Payment Timeline</h4>
                                         <div className="relative flex items-center justify-between">
-                                            <div className="absolute w-full top-1/2 -translate-y-1/2 h-0.5 bg-border -z-10" />
+                                            <div className="absolute w-full top-1/2 -translate-y-1/2 h-0.5 bg-border -z-10" 
+                                                 style={{
+                                                     background: `repeating-linear-gradient(to right, hsl(var(--border)), hsl(var(--border)) 4px, transparent 4px, transparent 8px))`
+                                                 }}
+                                            />
                                             {tourPackage.pay_in_parts.sort((a,b) => a.months - b.months).map((part, index) => {
                                                 const scheduleItem = paymentTimeline.find(p => p.id === part.id);
                                                 const isPaid = scheduleItem && (scheduleItem.status === 'paid' || scheduleItem.status === 'overdue-paid');
