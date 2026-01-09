@@ -133,27 +133,17 @@ export default function BookingDetailPage() {
 
         return schedule;
     }, [booking, tourPackage]);
-
-
-  if (!booking || !tourPackage) {
-    return (
-      <div className="flex flex-col items-center justify-center h-full text-center">
-        <h1 className="text-2xl font-bold">Loading Booking Details...</h1>
-        <p className="text-muted-foreground">Please wait a moment.</p>
-      </div>
-    );
-  }
-  
+    
   const paymentProgress = React.useMemo(() => {
-    if (!tourPackage || paymentTimeline.length === 0) {
+    if (!tourPackage || !booking || paymentTimeline.length === 0) {
       return {
-        paidAmount: booking.total_amount,
-        pendingAmount: tourPackage.base_price - booking.total_amount,
-        progressValue: (booking.total_amount / tourPackage.base_price) * 100,
-        paidCount: booking.total_amount > 0 ? 1 : 0,
+        paidAmount: booking?.total_amount ?? 0,
+        pendingAmount: (tourPackage?.base_price ?? 0) - (booking?.total_amount ?? 0),
+        progressValue: tourPackage?.base_price ? ((booking?.total_amount ?? 0) / tourPackage.base_price) * 100 : 0,
+        paidCount: (booking?.total_amount ?? 0) > 0 ? 1 : 0,
         totalCount: 1,
         nextDueDate: null,
-        paymentStatusText: booking.payment_status === 'completed' ? 'Fully Paid' : 'Payment due'
+        paymentStatusText: booking?.payment_status === 'completed' ? 'Fully Paid' : 'Payment due'
       };
     }
     const paidAmount = paymentTimeline.filter(p => p.status === 'paid' || p.status === 'overdue-paid').reduce((sum, p) => sum + p.total_amount, 0);
@@ -179,6 +169,16 @@ export default function BookingDetailPage() {
         paymentStatusText,
     }
   }, [paymentTimeline, tourPackage, booking]);
+
+
+  if (!booking || !tourPackage) {
+    return (
+      <div className="flex flex-col items-center justify-center h-full text-center">
+        <h1 className="text-2xl font-bold">Loading Booking Details...</h1>
+        <p className="text-muted-foreground">Please wait a moment.</p>
+      </div>
+    );
+  }
 
   const detailItems = [
     { icon: <Clock />, label: "Duration", value: `${tourPackage.days} Days / ${tourPackage.nights} Nights` },
@@ -274,9 +274,11 @@ export default function BookingDetailPage() {
                                       return (
                                         <div
                                           key={part.id || index}
-                                          className={cn("absolute top-1/2 h-4 w-4 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-background", statusInfo.className)}
+                                          className={cn("absolute top-1/2 h-4 w-4 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-background flex items-center justify-center text-white", statusInfo.className)}
                                           style={{ left: `${position}%` }}
-                                        />
+                                        >
+                                          {(part.status === 'paid' || part.status === 'overdue-paid') && <Check className="h-3 w-3"/>}
+                                        </div>
                                       )
                                     })}
                                   </div>
