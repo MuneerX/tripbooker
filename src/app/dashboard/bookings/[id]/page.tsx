@@ -17,7 +17,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { getBookingById } from "@/lib/supabase/queries";
 import type { Booking, BookingGuest, TripDay, Payment, PayInPart } from "@/lib/types";
 import { useBreadcrumb } from "../../layout";
-import { Progress } from "@/components/ui/progress";
 
 type TimelineStatus = 'paid' | 'overdue-paid' | 'overdue' | 'next-pay' | 'locked';
 
@@ -56,17 +55,17 @@ export default function BookingDetailPage() {
     }
     return () => setBreadcrumbName('');
   }, [id, setBreadcrumbName]);
-
-  const tourPackage = booking?.tour_package;
     
   const paymentTimeline = React.useMemo(() => {
-    if (!booking || !tourPackage?.pay_in_parts || tourPackage.pay_in_parts.length === 0) {
+    if (!booking || !booking.tour_package?.pay_in_parts || booking.tour_package.pay_in_parts.length === 0) {
         return [];
     }
 
+    const tourPackage = booking.tour_package;
     const bookingDate = new Date(booking.booking_date);
     let lastPaidIndex = -1;
     
+    // Sort payments by date to process them chronologically
     const availablePayments = [...(booking.payments || [])].sort((a,b) => new Date(a.payment_date || 0).getTime() - new Date(b.payment_date || 0).getTime());
     const matchedPaymentIds = new Set<string>();
 
@@ -76,6 +75,7 @@ export default function BookingDetailPage() {
             const dueDate = addMonths(bookingDate, part.months);
             
             // Find the first available payment that could match this part.
+            // This assumes payments are made in order of installments.
             const paymentIndex = availablePayments.findIndex(p => !matchedPaymentIds.has(p.id));
             const payment = paymentIndex !== -1 ? availablePayments[paymentIndex] : null;
 
@@ -92,11 +92,12 @@ export default function BookingDetailPage() {
                 lastPaidIndex = index;
                 status = isAfter(paidOn, dueDate) ? 'overdue-paid' : 'paid';
             } else {
-                if (index === lastPaidIndex + 1) {
+                // Logic for unpaid installments
+                if (index === lastPaidIndex + 1) { // This is the next one to be paid
                      status = isAfter(today, dueDate) ? 'overdue' : 'next-pay';
-                } else if(index > lastPaidIndex + 1) {
+                } else if(index > lastPaidIndex + 1) { // Future installment
                     status = 'locked';
-                } else if (isAfter(today, dueDate)) {
+                } else if (isAfter(today, dueDate)) { // A previously unlocked but unpaid installment
                     status = 'overdue';
                 }
             }
@@ -109,21 +110,23 @@ export default function BookingDetailPage() {
             };
         });
 
-    // Ensure there is one 'next-pay' if not all are paid
+    // Ensure there is one 'next-pay' if not all are paid and none are 'overdue'
     const isAllPaid = schedule.every(s => s.status === 'paid' || s.status === 'overdue-paid');
-    if (!isAllPaid) {
+    const hasOverdue = schedule.some(s => s.status === 'overdue');
+
+    if (!isAllPaid && !hasOverdue) {
         const firstUnpaidIndex = schedule.findIndex(s => s.status !== 'paid' && s.status !== 'overdue-paid');
-        if(firstUnpaidIndex !== -1 && schedule[firstUnpaidIndex].status !== 'overdue') {
+        if(firstUnpaidIndex !== -1) {
             schedule[firstUnpaidIndex].status = 'next-pay';
         }
     }
 
 
     return schedule;
-  }, [booking, tourPackage]);
+  }, [booking]);
 
   const paymentProgress = React.useMemo(() => {
-    if (!tourPackage || !booking) {
+    if (!booking || !booking.tour_package) {
       return {
         paidAmount: 0,
         pendingAmount: 0,
@@ -136,22 +139,27 @@ export default function BookingDetailPage() {
       };
     }
     
+    const tourPackage = booking.tour_package;
+    // Correctly calculate total paid amount directly from payments
+    const paidAmount = booking.payments?.reduce((sum, p) => sum + p.amount, 0) ?? 0;
+    const basePrice = tourPackage.base_price ?? 0;
+    const pendingAmount = Math.max(0, basePrice - paidAmount);
+    const progressValue = basePrice > 0 ? (paidAmount / basePrice) * 100 : 0;
+    
     if (paymentTimeline.length === 0) {
-      const isPaid = booking.total_amount >= tourPackage.base_price;
+      const isPaid = paidAmount >= basePrice;
       return {
-        paidAmount: booking.total_amount ?? 0,
-        pendingAmount: Math.max(0, (tourPackage.base_price ?? 0) - (booking.total_amount ?? 0)),
-        progressValue: tourPackage.base_price ? ((booking.total_amount ?? 0) / tourPackage.base_price) * 100 : 0,
+        paidAmount,
+        pendingAmount,
+        progressValue,
         paidCount: isPaid ? 1 : 0,
         totalCount: 1,
         nextDueDate: null,
         paymentStatusText: isPaid ? 'Fully Paid' : 'Payment due',
-        progressSegments: isPaid ? [{ color: 'bg-green-500', width: '100%' }] : [{ color: 'bg-blue-500', width: `${((booking.total_amount ?? 0) / tourPackage.base_price) * 100}%` }]
+        progressSegments: [{ color: isPaid ? 'bg-green-500' : 'bg-blue-500', width: `${progressValue}%` }]
       };
     }
-    const paidAmount = paymentTimeline.filter(p => p.status === 'paid' || p.status === 'overdue-paid').reduce((sum, p) => sum + p.total_amount, 0);
-    const pendingAmount = tourPackage.base_price - paidAmount;
-    const progressValue = (paidAmount / tourPackage.base_price) * 100;
+    
     const paidCount = paymentTimeline.filter(p => p.status === 'paid' || p.status === 'overdue-paid').length;
     const totalCount = paymentTimeline.length;
     const nextPayment = paymentTimeline.find(p => p.status === 'next-pay' || p.status === 'overdue');
@@ -159,12 +167,13 @@ export default function BookingDetailPage() {
     let paymentStatusText = 'All installments paid';
     if (nextPayment) {
         paymentStatusText = nextPayment.status === 'overdue' ? 'Payment is Overdue' : 'Next payment is due';
+    } else if (paidCount < totalCount) {
+        paymentStatusText = 'Payment processing';
     }
 
     const progressSegments = paymentTimeline.map(part => {
-        const width = (part.total_amount / tourPackage.base_price) * 100;
-        const statusInfo = getTimelineStatusInfo(part.status);
-        let color = 'bg-gray-200'; // Default for locked
+        const width = (part.total_amount / basePrice) * 100;
+        let color = 'bg-gray-300'; // Default for locked
         if (part.status === 'paid') color = 'bg-green-500';
         if (part.status === 'overdue-paid') color = 'bg-yellow-500';
 
@@ -182,10 +191,10 @@ export default function BookingDetailPage() {
         paymentStatusText,
         progressSegments
     }
-  }, [paymentTimeline, tourPackage, booking]);
+  }, [paymentTimeline, booking]);
 
 
-  if (!booking || !tourPackage) {
+  if (!booking || !booking.tour_package) {
     return (
       <div className="flex flex-col items-center justify-center h-full text-center">
         <h1 className="text-2xl font-bold">Loading Booking Details...</h1>
@@ -193,6 +202,7 @@ export default function BookingDetailPage() {
       </div>
     );
   }
+  const tourPackage = booking.tour_package;
   
   const renderPointList = (text: string | null | undefined) => {
     if (!text) return <p className="text-sm text-muted-foreground leading-relaxed">N/A</p>;
@@ -293,34 +303,37 @@ export default function BookingDetailPage() {
                                       )}
                                   </div>
                                   <div className="relative h-2 w-full rounded-full bg-muted overflow-hidden">
-                                     <div className="absolute h-full w-full flex">
+                                     <div className="absolute h-full flex" style={{ width: `${paymentProgress.progressValue}%`}}>
                                         {paymentProgress.progressSegments.map((seg, i) => (
-                                          <div key={i} className={seg.color} style={{ width: seg.width }} />
+                                          <div key={i} className={cn(seg.color)} style={{ width: seg.width }} />
                                         ))}
                                      </div>
-                                    <div 
-                                        className="absolute top-0 left-0 h-full border-r-2 border-dashed border-background"
+                                    <div className="absolute top-0 left-0 h-full w-full border-t-2 border-dashed border-background/50"
                                         style={{
                                             backgroundImage: "linear-gradient(to right, hsl(var(--border)) 50%, transparent 50%)",
                                             backgroundSize: "8px 2px",
-                                            width: '100%',
+                                            backgroundRepeat: "repeat-x"
                                         }}
                                     ></div>
                                     {paymentTimeline.map((part, index) => {
-                                      const position = (paymentTimeline.slice(0, index + 1).reduce((sum, p) => sum + p.total_amount, 0) / tourPackage.base_price) * 100;
+                                      let cumulativeAmount = 0;
+                                      for (let i = 0; i <= index; i++) {
+                                          cumulativeAmount += paymentTimeline[i].total_amount;
+                                      }
+                                      const position = (cumulativeAmount / tourPackage.base_price) * 100;
                                       const statusInfo = getTimelineStatusInfo(part.status);
                                       return (
                                         <div
                                           key={part.id || index}
-                                          className={cn("absolute top-1/2 h-4 w-4 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-background flex items-center justify-center text-white", statusInfo.className)}
+                                          className={cn("absolute top-1/2 h-5 w-5 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-background flex items-center justify-center text-white", statusInfo.className)}
                                           style={{ left: `${position}%` }}
                                         >
-                                          {(part.status === 'paid' || part.status === 'overdue-paid') && <Check className="h-3 w-3"/>}
+                                           {React.cloneElement(statusInfo.icon, { className: 'h-3 w-3' })}
                                         </div>
                                       )
                                     })}
                                   </div>
-                                  <p className="text-xs text-muted-foreground text-center pt-2">
+                                  <p className="text-sm text-muted-foreground text-center pt-2">
                                     {paymentProgress.paidCount} out of {paymentProgress.totalCount} installments paid
                                   </p>
                                 </div>
