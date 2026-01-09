@@ -863,9 +863,16 @@ export async function getBookings(packageId?: string): Promise<Booking[]> {
   let query = supabase
     .from('tour_bookings')
     .select(`
-        *,
-        tour_package:package_id (name),
-        customer:user_id (full_name, email, avatar_url)
+      id,
+      booking_reference,
+      booking_date,
+      payment_method,
+      payment_reference,
+      total_amount,
+      booking_status,
+      referral_code,
+      tour_package:package_id (name),
+      customer:user_id (full_name, email, avatar_url)
     `)
     .order('booking_date', { ascending: false });
 
@@ -886,8 +893,9 @@ export async function getBookings(packageId?: string): Promise<Booking[]> {
     customer_name: item.customer?.full_name || 'N/A',
     customer_email: item.customer?.email || 'N/A',
     avatar_url: item.customer?.avatar_url,
-    status: item.booking_status
-  }));
+    status: item.booking_status,
+    tour_package: item.tour_package // This will be { name: 'Tour Name' } or null
+  })) as unknown as Booking[];
 }
 
 /**
@@ -900,13 +908,12 @@ export async function getBookingById(id: string): Promise<Booking | null> {
         .select(`
             *,
             customer:user_id (
-                *,
-                address:addresses(*)
+                *
             ),
             tour_package:package_id (
                 *,
                 pay_in_parts(*),
-                trip_days:trip_days(
+                trip_days(
                     *,
                     activities:trip_day_activities(
                         *,
@@ -923,8 +930,27 @@ export async function getBookingById(id: string): Promise<Booking | null> {
         throw new Error(error.message);
     }
 
-    return data as Booking | null;
+    if (!data) return null;
+    
+    // Manual join for address as it seems there's no direct relation in Supabase schema
+    const { data: addressData, error: addressError } = await supabase
+        .from('addresses')
+        .select('*')
+        .eq('user_id', data.customer.id)
+        .single();
+
+    if (addressError && addressError.code !== 'PGRST116') { // PGROST116 is "exact one row not found"
+        console.error('Error fetching address for customer:', addressError);
+    }
+
+    const bookingData = { ...data };
+    if (bookingData.customer) {
+        (bookingData.customer as any).address = addressData || null;
+    }
+
+    return bookingData as Booking;
 }
+
 
 /**
  * Fetches all reviews from Supabase, or reviews for a specific package.

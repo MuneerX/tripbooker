@@ -99,13 +99,13 @@ export type TripLocation = {
 type CustomerAddress = {
     id: string;
     user_id: string;
-    address_line_1: string;
+    address_line_1: string | null;
     address_line_2: string | null;
-    city: string;
-    state: string;
-    country: string;
-    pincode: string;
-    phone_number: string;
+    city: string | null;
+    state: string | null;
+    country: string | null;
+    pincode: string | null;
+    phone_number: string | null;
 };
 
 type CustomerProfile = {
