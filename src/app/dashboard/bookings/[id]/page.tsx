@@ -9,15 +9,29 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Check, X, Calendar, Users, Clock, Info, Star, CheckCircle, XCircle, ArrowUpRight, Sun, Moon, CreditCard, User, Phone, MapPinIcon, Hash, FileDown, Plus } from "lucide-react";
+import { ArrowLeft, Check, X, Calendar, Users, Clock, Info, Star, CheckCircle, XCircle, ArrowUpRight, Sun, Moon, CreditCard, User, Phone, MapPinIcon, Hash, FileDown } from "lucide-react";
 import { formatCurrency, getStatusBadgeColor, cn } from "@/lib/utils";
 import { Separator } from "@/components/ui/separator";
-import { format } from "date-fns";
+import { addMonths, format, isBefore, isAfter } from "date-fns";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { getBookingById } from "@/lib/supabase/queries";
-import type { Booking, BookingGuest, TripDay, Payment } from "@/lib/types";
+import type { Booking, BookingGuest, TripDay, Payment, PayInPart } from "@/lib/types";
 import { useBreadcrumb } from "../../layout";
+
+type TimelineStatus = 'paid' | 'overdue-paid' | 'overdue' | 'next-pay' | 'locked';
+
+const getTimelineStatusInfo = (status: TimelineStatus) => {
+    switch (status) {
+        case 'paid': return { text: 'Paid', className: 'bg-green-500', icon: <Check className="h-4 w-4" /> };
+        case 'overdue-paid': return { text: 'Overdue Paid', className: 'bg-yellow-500', icon: <Check className="h-4 w-4" /> };
+        case 'overdue': return { text: 'Overdue', className: 'bg-red-500', icon: <X className="h-4 w-4" /> };
+        case 'next-pay': return { text: 'Next Pay', className: 'bg-blue-500', icon: <Clock className="h-4 w-4" /> };
+        case 'locked':
+        default: return { text: 'Locked', className: 'bg-gray-400', icon: <Clock className="h-4 w-4" /> };
+    }
+}
+
 
 export default function BookingDetailPage() {
   const router = useRouter();
@@ -57,6 +71,59 @@ export default function BookingDetailPage() {
     );
   };
   
+    const paymentTimeline = React.useMemo(() => {
+        if (!booking || !tourPackage?.pay_in_parts || tourPackage.pay_in_parts.length === 0) {
+            return [];
+        }
+
+        const bookingDate = new Date(booking.booking_date);
+        let lastPaidIndex = -1;
+        
+        const schedule = tourPackage.pay_in_parts
+            .sort((a, b) => a.months - b.months)
+            .map((part, index) => {
+                const dueDate = addMonths(bookingDate, part.months);
+                const payment = booking.payments?.find(p => p.amount === part.total_amount); // Simplified matching
+                const paidOn = payment?.payment_date ? new Date(payment.payment_date) : null;
+
+                let status: TimelineStatus = 'locked';
+                const today = new Date();
+
+                if (paidOn) {
+                    lastPaidIndex = index;
+                    status = isAfter(paidOn, dueDate) ? 'overdue-paid' : 'paid';
+                } else {
+                    if (index === lastPaidIndex + 1) {
+                         status = isAfter(today, dueDate) ? 'overdue' : 'next-pay';
+                    } else if(index > lastPaidIndex + 1) {
+                        status = 'locked';
+                    } else if (isAfter(today, dueDate)) {
+                        status = 'overdue';
+                    }
+                }
+
+                return {
+                    ...part,
+                    dueDate,
+                    paidOn,
+                    status
+                };
+            });
+
+        // Ensure there is one 'next-pay' if not all are paid
+        const isAllPaid = schedule.every(s => s.status === 'paid' || s.status === 'overdue-paid');
+        if (!isAllPaid) {
+            const firstUnpaidIndex = schedule.findIndex(s => s.status !== 'paid' && s.status !== 'overdue-paid');
+            if(firstUnpaidIndex !== -1 && schedule[firstUnpaidIndex].status !== 'overdue') {
+                schedule[firstUnpaidIndex].status = 'next-pay';
+            }
+        }
+
+
+        return schedule;
+    }, [booking, tourPackage]);
+
+
   if (!booking || !tourPackage) {
     return (
       <div className="flex flex-col items-center justify-center h-full text-center">
@@ -122,7 +189,7 @@ export default function BookingDetailPage() {
                             {/* General Information */}
                             <Card>
                                 <CardHeader><CardTitle>General Information</CardTitle></CardHeader>
-                                <CardContent className="grid grid-cols-2 gap-6">
+                                <CardContent className="grid grid-cols-2 gap-x-6 gap-y-4">
                                     <div className="flex items-start gap-3"><Calendar className="h-5 w-5 text-muted-foreground mt-1" /><div><p className="text-sm text-muted-foreground">Created On</p><p className="font-medium">{format(new Date(booking.created_at), "PPP")}</p></div></div>
                                     <div className="flex items-start gap-3"><Calendar className="h-5 w-5 text-muted-foreground mt-1" /><div><p className="text-sm text-muted-foreground">Reservation Date</p><p className="font-medium">{format(new Date(booking.booking_date), "PPP")}</p></div></div>
                                     <div className="flex items-start gap-3 col-span-2"><Hash className="h-5 w-5 text-muted-foreground mt-1" /><div><p className="text-sm text-muted-foreground">Referral Code</p><p className="font-medium">{booking.referral_code || 'N/A'}</p></div></div>
@@ -133,7 +200,7 @@ export default function BookingDetailPage() {
                             {/* Customer Details */}
                             <Card>
                                 <CardHeader><CardTitle>Customer Details</CardTitle></CardHeader>
-                                <CardContent className="grid grid-cols-2 gap-6">
+                                <CardContent className="grid grid-cols-2 gap-x-6 gap-y-4">
                                     <div className="flex items-start gap-3"><User className="h-5 w-5 text-muted-foreground mt-1" /><div><p className="text-sm text-muted-foreground">Customer Name</p><p className="font-medium">{booking.customer.full_name}</p></div></div>
                                     <div className="flex items-start gap-3"><MapPinIcon className="h-5 w-5 text-muted-foreground mt-1" /><div><p className="text-sm text-muted-foreground">City</p><p className="font-medium">{booking.customer.address?.city || 'N/A'}</p></div></div>
                                     <div className="flex items-start gap-3"><Phone className="h-5 w-5 text-muted-foreground mt-1" /><div><p className="text-sm text-muted-foreground">Contact Number</p><p className="font-medium">{booking.customer.address?.phone_number || 'N/A'}</p></div></div>
@@ -153,11 +220,11 @@ export default function BookingDetailPage() {
                                 {tourPackage.pay_in_parts && tourPackage.pay_in_parts.length > 0 && (
                                     <div className="mt-6">
                                         <h4 className="text-sm font-medium mb-4">Payment Timeline</h4>
-                                        <div className="relative flex items-center">
+                                        <div className="relative flex items-center justify-between">
                                             {tourPackage.pay_in_parts.map((part, index) => (
                                                 <React.Fragment key={part.id || index}>
-                                                    <div className="flex-1 flex flex-col items-center text-center">
-                                                        <div className="h-6 w-6 rounded-full bg-primary flex items-center justify-center z-10">
+                                                    <div className="relative z-10 flex flex-col items-center text-center w-24">
+                                                        <div className={cn("h-6 w-6 rounded-full flex items-center justify-center z-10", index === 0 ? 'bg-primary' : 'bg-gray-300')}>
                                                             <Check className="h-4 w-4 text-primary-foreground" />
                                                         </div>
                                                         <div className="mt-2">
@@ -166,7 +233,7 @@ export default function BookingDetailPage() {
                                                         </div>
                                                     </div>
                                                     {index < tourPackage.pay_in_parts.length - 1 && (
-                                                        <div className="flex-auto border-t-2 border-dashed border-border absolute top-3 left-0 right-0 w-full -z-0"></div>
+                                                        <div className="flex-1 border-t-2 border-dashed border-border absolute top-3 left-0 right-0 w-full -z-0"></div>
                                                     )}
                                                 </React.Fragment>
                                             ))}
@@ -302,10 +369,48 @@ export default function BookingDetailPage() {
                             <Card>
                                 <CardHeader><CardTitle>Payment Timeline</CardTitle></CardHeader>
                                 <CardContent>
-                                    {/* This is a placeholder for vertical timeline */}
-                                    <div className="text-center py-10 text-muted-foreground">
-                                        <p>Payment timeline visualization coming soon.</p>
-                                    </div>
+                                    {paymentTimeline.length > 0 ? (
+                                        <div className="relative space-y-8">
+                                            {paymentTimeline.map((item, index) => {
+                                                const statusInfo = getTimelineStatusInfo(item.status);
+                                                return (
+                                                    <div key={item.id || index} className="flex gap-4">
+                                                        <div className="flex flex-col items-center">
+                                                            <div className={cn("h-8 w-8 rounded-full flex items-center justify-center text-white", statusInfo.className)}>
+                                                                {statusInfo.icon}
+                                                            </div>
+                                                            {index < paymentTimeline.length - 1 && (
+                                                                <div className="w-px h-full bg-border flex-1" />
+                                                            )}
+                                                        </div>
+                                                        <div className="flex-1 pb-8">
+                                                            <div className="flex justify-between items-start">
+                                                                <div>
+                                                                    <p className="font-semibold">{item.plan_name}</p>
+                                                                    <Badge variant="secondary" className="mt-1">{statusInfo.text}</Badge>
+                                                                </div>
+                                                                <p className="font-semibold text-lg">{formatCurrency(item.total_amount)}</p>
+                                                            </div>
+                                                            <div className="mt-2 grid grid-cols-2 gap-2 text-sm text-muted-foreground">
+                                                                <div>
+                                                                    <p>Due Date:</p>
+                                                                    <p className="font-medium text-foreground">{format(item.dueDate, "PPP")}</p>
+                                                                </div>
+                                                                <div>
+                                                                    <p>Paid On:</p>
+                                                                    <p className="font-medium text-foreground">{item.paidOn ? format(item.paidOn, "PPP") : 'N/A'}</p>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                );
+                                            })}
+                                        </div>
+                                    ) : (
+                                        <div className="text-center py-10 text-muted-foreground">
+                                            <p>No payment plan is set for this package.</p>
+                                        </div>
+                                    )}
                                 </CardContent>
                             </Card>
                              <Card>
