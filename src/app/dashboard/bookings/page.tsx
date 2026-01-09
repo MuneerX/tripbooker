@@ -121,6 +121,9 @@ export default function BookingsPage() {
                 <TableHead className="hidden md:table-cell">Amount</TableHead>
                 <TableHead className="hidden lg:table-cell">Referral</TableHead>
                 <TableHead>Status</TableHead>
+                 <TableHead>
+                  <span className="sr-only">Actions</span>
+                </TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -132,7 +135,7 @@ export default function BookingsPage() {
                 </TableRow>
               ) : paginatedBookings.length > 0 ? (
                 paginatedBookings.map((booking: Booking) => (
-                  <TableRow key={booking.id}>
+                  <TableRow key={booking.id} className="cursor-pointer" onClick={() => router.push(`/dashboard/bookings/${booking.id}`)}>
                     <TableCell className="font-mono text-xs">{booking.booking_reference}</TableCell>
                     <TableCell className="font-medium">{booking.tour_package?.name || 'N/A'}</TableCell>
                     <TableCell>{format(new Date(booking.booking_date), "dd MMM, yyyy")}</TableCell>
@@ -142,6 +145,28 @@ export default function BookingsPage() {
                     <TableCell className="hidden lg:table-cell">{booking.referral_code || 'N/A'}</TableCell>
                     <TableCell>
                       <Badge variant="outline" className={cn("capitalize", getStatusBadgeColor(booking.booking_status))}>{booking.booking_status}</Badge>
+                    </TableCell>
+                     <TableCell>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button aria-haspopup="true" size="icon" variant="ghost" onClick={(e) => e.stopPropagation()}>
+                            <MoreHorizontal className="h-4 w-4" />
+                            <span className="sr-only">Toggle menu</span>
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                          <DropdownMenuItem onSelect={(e) => {e.stopPropagation(); router.push(`/dashboard/bookings/${booking.id}`)}}>
+                            <View className="mr-2 h-4 w-4" /> View
+                          </DropdownMenuItem>
+                          <DropdownMenuItem
+                            className="text-red-600 focus:text-red-600 focus:bg-red-50"
+                            onSelect={(e) => {e.stopPropagation(); setItemToDelete(booking)}}
+                          >
+                            <Trash2 className="mr-2 h-4 w-4" /> Delete
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
                     </TableCell>
                   </TableRow>
                 ))

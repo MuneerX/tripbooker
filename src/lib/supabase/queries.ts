@@ -891,6 +891,42 @@ export async function getBookings(packageId?: string): Promise<Booking[]> {
 }
 
 /**
+ * Fetches all details for a single booking by its ID.
+ */
+export async function getBookingById(id: string): Promise<Booking | null> {
+    const supabase = createAdminClient();
+    const { data, error } = await supabase
+        .from('tour_bookings')
+        .select(`
+            *,
+            customer:user_id (
+                *,
+                address:addresses(*)
+            ),
+            tour_package:package_id (
+                *,
+                pay_in_parts(*),
+                trip_days:trip_days(
+                    *,
+                    activities:trip_day_activities(
+                        *,
+                        place:place_id(*)
+                    )
+                )
+            )
+        `)
+        .eq('id', id)
+        .single();
+
+    if (error) {
+        console.error(`Error fetching booking ${id}:`, error);
+        throw new Error(error.message);
+    }
+
+    return data as Booking | null;
+}
+
+/**
  * Fetches all reviews from Supabase, or reviews for a specific package.
  */
 export async function getReviews(packageId?: string): Promise<Review[]> {

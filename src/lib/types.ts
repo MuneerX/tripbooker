@@ -40,6 +40,7 @@ export type TourPackage = {
   updated_at: string;
   bookings: Booking[];
   reviews: Review[];
+  trip_days?: TripDay[];
 };
 
 export type Activity = {
@@ -95,6 +96,27 @@ export type TripLocation = {
   updated_at: string | null;
 };
 
+type CustomerAddress = {
+    id: string;
+    user_id: string;
+    address_line_1: string;
+    address_line_2: string | null;
+    city: string;
+    state: string;
+    country: string;
+    pincode: string;
+    phone_number: string;
+};
+
+type CustomerProfile = {
+    id: string;
+    full_name: string;
+    email: string;
+    avatar_url: string | null;
+    address: CustomerAddress | null;
+};
+
+
 export type Booking = {
   id: string;
   booking_reference: string;
@@ -111,11 +133,12 @@ export type Booking = {
   payment_reference: string | null;
   special_requests: string | null;
   created_at: string;
+  customer: CustomerProfile;
   customer_name: string;
   customer_email: string;
   status: 'pending' | 'confirmed' | 'cancelled' | 'completed';
   avatar_url?: string | null;
-  tour_package?: { name: string } | null;
+  tour_package: TourPackage | null;
   referral_code?: string | null;
 };
 
