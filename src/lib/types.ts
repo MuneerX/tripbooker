@@ -116,7 +116,7 @@ export type Booking = {
   status: 'pending' | 'confirmed' | 'cancelled' | 'completed';
   avatar_url?: string | null;
   tour_package?: { name: string } | null;
-  referral_code?: string | null; // Assuming this might come from a join
+  referral_code?: string | null;
 };
 
 
