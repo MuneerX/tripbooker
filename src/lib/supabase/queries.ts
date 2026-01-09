@@ -898,6 +898,7 @@ export async function getBookings(packageId?: string): Promise<Booking[]> {
 export async function getBookingById(id: string): Promise<Booking | null> {
     const supabase = createAdminClient();
 
+    // Fetch the main booking data and the customer profile in one go
     const { data: bookingData, error } = await supabase
         .from('tour_bookings')
         .select(`*, customer:user_id(*)`)
@@ -933,8 +934,8 @@ export async function getBookingById(id: string): Promise<Booking | null> {
     
     const { data: payments, error: paymentsError } = await supabase
       .from('payments')
-      .eq('id', bookingData.payments_id)
-      .select('*');
+      .select('*')
+      .eq('id', bookingData.payments_id);
 
     if (paymentsError) {
       console.error(`Error fetching payments for booking ${id}:`, paymentsError);
