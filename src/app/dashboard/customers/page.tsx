@@ -163,20 +163,20 @@ export default function CustomersPage() {
                     <TableCell>
                       <Badge variant="outline" className={cn("capitalize", getStatusBadgeColor(profile.status === 'active' ? 'active' : 'inactive'))}>{profile.status}</Badge>
                     </TableCell>
-                     <TableCell>
+                     <TableCell onClick={(e) => e.stopPropagation()}>
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                          <Button aria-haspopup="true" size="icon" variant="ghost" onClick={(e) => e.stopPropagation()}>
+                          <Button aria-haspopup="true" size="icon" variant="ghost">
                             <MoreHorizontal className="h-4 w-4" />
                             <span className="sr-only">Toggle menu</span>
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
                           <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                          <DropdownMenuItem onSelect={(e) => { e.stopPropagation(); router.push(`/dashboard/customers/${profile.id}`)}}>
+                          <DropdownMenuItem onSelect={() => router.push(`/dashboard/customers/${profile.id}`)}>
                             <View className="mr-2 h-4 w-4" /> View
                           </DropdownMenuItem>
-                          <DropdownMenuItem onSelect={(e) => { e.stopPropagation(); setItemToToggle(profile); }}>
+                          <DropdownMenuItem onSelect={() => setItemToToggle(profile)}>
                             {profile.status === 'active' ? (
                                 <>
                                     <UserX className="mr-2 h-4 w-4" /> Block
