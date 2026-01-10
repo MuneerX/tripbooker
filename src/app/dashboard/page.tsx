@@ -10,7 +10,7 @@ import { BookingCancellationChart } from '@/components/dashboard/charts/BookingC
 import { BookingSummaryChart } from '@/components/dashboard/charts/BookingSummaryChart';
 import { PopularPackagesTable } from '@/components/dashboard/tables/PopularPackagesTable';
 import { ExpiringPackagesTable } from '@/components/dashboard/tables/ExpiringPackagesTable';
-import { formatCurrency } from '@/lib/utils';
+import { formatCurrency, cn } from '@/lib/utils';
 import { Skeleton } from '@/components/ui/skeleton';
 
 const StatItem = ({
@@ -18,20 +18,22 @@ const StatItem = ({
     label,
     value,
     iconBg,
+    iconColor,
     layout = 'vertical'
 }: {
     icon: React.ReactNode,
     label: string,
     value: string | number,
     iconBg?: string,
+    iconColor?: string,
     layout?: 'vertical' | 'horizontal'
 }) => {
 
     if (layout === 'horizontal') {
         return (
              <div className="flex items-center gap-4">
-                <div className="bg-primary/10 text-primary p-3 rounded-lg">
-                    {icon}
+                <div className={cn("p-3 rounded-lg", iconBg)}>
+                    {React.cloneElement(icon as React.ReactElement, { className: cn('h-6 w-6', iconColor) })}
                 </div>
                 <div>
                     <div className="text-2xl font-bold">{value}</div>
@@ -43,8 +45,8 @@ const StatItem = ({
 
     return (
         <div className="flex items-center gap-3">
-            <div className={`p-2 rounded-lg ${iconBg}`}>
-                {React.cloneElement(icon as React.ReactElement, { className: 'h-5 w-5 text-white' })}
+            <div className={cn("p-2 rounded-lg", iconBg)}>
+                {React.cloneElement(icon as React.ReactElement, { className: cn('h-5 w-5', iconColor) })}
             </div>
             <div>
                 <div className="text-xl font-bold">{value}</div>
@@ -102,24 +104,24 @@ export default function DashboardPage() {
         
         setStats({
           bookingOverview: [
-            { label: 'Sales', value: formatCurrency(totalSales), icon: <DollarSign className="h-6 w-6"/>, iconBg: 'bg-green-500' },
-            { label: 'Received', value: formatCurrency(totalReceived), icon: <TrendingUp className="h-6 w-6"/>, iconBg: 'bg-blue-500' },
-            { label: 'Pending', value: formatCurrency(Math.max(0, totalPending)), icon: <CalendarX className="h-6 w-6"/>, iconBg: 'bg-yellow-500' }
+            { label: 'Sales', value: formatCurrency(totalSales), icon: <DollarSign />, iconBg: 'bg-green-500/10', iconColor: 'text-green-500' },
+            { label: 'Received', value: formatCurrency(totalReceived), icon: <TrendingUp />, iconBg: 'bg-blue-500/10', iconColor: 'text-blue-500' },
+            { label: 'Pending', value: formatCurrency(Math.max(0, totalPending)), icon: <CalendarX />, iconBg: 'bg-yellow-500/10', iconColor: 'text-yellow-500' }
           ],
           customerSummary: [
-            { label: 'Booked Customers', value: bookedCustomers, icon: <UserCheck className="h-6 w-6"/>, iconBg: 'bg-green-500' },
-            { label: 'Unbooked Customers', value: unbookedCustomers, icon: <UserX className="h-6 w-6"/>, iconBg: 'bg-red-500' }
+            { label: 'Booked Customers', value: bookedCustomers, icon: <UserCheck />, iconBg: 'bg-green-500/10', iconColor: 'text-green-500' },
+            { label: 'Unbooked Customers', value: unbookedCustomers, icon: <UserX />, iconBg: 'bg-red-500/10', iconColor: 'text-red-500' }
           ],
           packageOverview: [
-            { label: 'Tours', value: packages.length, icon: <Package className="h-6 w-6"/>, iconBg: 'bg-sky-500' },
-            { label: 'Tripdays', value: tripDays.length, icon: <Calendar className="h-6 w-6"/>, iconBg: 'bg-purple-500' },
-            { label: 'Operators', value: operators.length, icon: <UserCog className="h-6 w-6"/>, iconBg: 'bg-red-500' },
-            { label: 'Customers', value: profiles.length, icon: <Users className="h-6 w-6"/>, iconBg: 'bg-green-500' },
-            { label: 'Locations', value: locations.length, icon: <MapPin className="h-6 w-6"/>, iconBg: 'bg-yellow-500' }
+            { label: 'Tours', value: packages.length, icon: <Package />, iconBg: 'bg-sky-500/10', iconColor: 'text-sky-500' },
+            { label: 'Tripdays', value: tripDays.length, icon: <Calendar />, iconBg: 'bg-purple-500/10', iconColor: 'text-purple-500' },
+            { label: 'Operators', value: operators.length, icon: <UserCog />, iconBg: 'bg-red-500/10', iconColor: 'text-red-500' },
+            { label: 'Customers', value: profiles.length, icon: <Users />, iconBg: 'bg-green-500/10', iconColor: 'text-green-500' },
+            { label: 'Locations', value: locations.length, icon: <MapPin />, iconBg: 'bg-yellow-500/10', iconColor: 'text-yellow-500' }
           ],
           operatorSummary: [
-            { label: 'Referred Operator', value: referredOperators, icon: <UserPlus className="h-6 w-6"/>, iconBg: 'bg-green-500' },
-            { label: 'Unreferred Operator', value: unReferredOperators, icon: <User className="h-6 w-6"/>, iconBg: 'bg-red-500' }
+            { label: 'Referred Operator', value: referredOperators, icon: <UserPlus />, iconBg: 'bg-green-500/10', iconColor: 'text-green-500' },
+            { label: 'Unreferred Operator', value: unReferredOperators, icon: <User />, iconBg: 'bg-red-500/10', iconColor: 'text-red-500' }
           ],
         });
         
@@ -218,7 +220,7 @@ export default function DashboardPage() {
                 <CardDescription>An overview of your sales and revenue.</CardDescription>
             </CardHeader>
             <CardContent className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-              {stats.bookingOverview.map((stat:any) => <StatItem key={stat.label} {...stat} />)}
+              {stats.bookingOverview.map((stat:any) => <StatItem key={stat.label} {...stat} layout="horizontal" />)}
             </CardContent>
           </Card>
           
