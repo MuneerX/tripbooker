@@ -206,8 +206,6 @@ export type Operator = {
   email: string | null;
   phone: string | null;
   address: string | null;
-  license_number: string | null;
-  license_expiry: string | null;
   rating: number | null;
   total_reviews: number | null;
   description: string | null;
@@ -218,6 +216,9 @@ export type Operator = {
   updated_at: string;
   referral_code: string | null;
   status: 'active' | 'blocked';
+  agent_commission_enabled: boolean;
+  commission_type: 'percentage' | 'amount';
+  commission_value: number;
 };
 
 // For stats cards

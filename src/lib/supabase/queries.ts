@@ -1129,15 +1129,13 @@ export async function createOperator(formData: FormData) {
     logoUrl = publicUrl;
   }
 
-  const operatorData: Omit<Operator, 'id' | 'created_at' | 'updated_at' | 'status'> = {
+  const operatorData = {
     name: formData.get('name') as string,
     code: formData.get('code') as string || null,
     contact_person: formData.get('contact_person') as string || null,
     email: formData.get('email') as string || null,
     phone: formData.get('phone') as string || null,
     address: formData.get('address') as string || null,
-    license_number: formData.get('license_number') as string || null,
-    license_expiry: formData.get('license_expiry') as string || null,
     rating: 0,
     total_reviews: 0,
     description: formData.get('description') as string || null,
@@ -1145,6 +1143,9 @@ export async function createOperator(formData: FormData) {
     is_verified: formData.get('is_verified') === 'true',
     is_active: formData.get('is_active') === 'true',
     referral_code: formData.get('referral_code') as string || null,
+    agent_commission_enabled: formData.get('agent_commission_enabled') === 'true',
+    commission_type: formData.get('commission_type') as 'percentage' | 'amount' || 'percentage',
+    commission_value: Number(formData.get('commission_value')) || 0,
   };
 
   const { data, error } = await supabase.from('operators').insert([operatorData]).select().single();
@@ -1201,14 +1202,15 @@ export async function updateOperator(id: string, formData: FormData): Promise<Op
         email: formData.get('email') as string,
         phone: formData.get('phone') as string,
         address: formData.get('address') as string,
-        license_number: formData.get('license_number') as string,
-        license_expiry: formData.get('license_expiry') as string || null,
         description: formData.get('description') as string,
         referral_code: formData.get('referral_code') as string,
         is_verified: formData.get('is_verified') === 'true',
         is_active: formData.get('is_active') === 'true',
         logo_url: logoUrl,
-        updated_at: new Date().toISOString()
+        updated_at: new Date().toISOString(),
+        agent_commission_enabled: formData.get('agent_commission_enabled') === 'true',
+        commission_type: formData.get('commission_type') as 'percentage' | 'amount' || 'percentage',
+        commission_value: Number(formData.get('commission_value')) || 0,
     };
     
     const { data, error } = await supabase.from('operators').update(updateData).eq('id', id).select().single();

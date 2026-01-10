@@ -13,8 +13,9 @@ import { Textarea } from "@/components/ui/textarea"
 import { useRouter } from "next/navigation"
 import { useToast } from "@/hooks/use-toast"
 import { Switch } from "@/components/ui/switch"
-import { Upload, File as FileIcon, X, ArrowLeft } from "lucide-react"
+import { Upload, File as FileIcon, X, ArrowLeft, RefreshCw } from "lucide-react"
 import { createOperator } from "@/lib/supabase/queries"
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 
 const MAX_FILE_SIZE = 2 * 1024 * 1024; // 2MB
 const ACCEPTED_IMAGE_TYPES = ["image/jpeg", "image/jpg", "image/png", "image/webp"];
@@ -28,8 +29,6 @@ const operatorSchema = z.object({
   code: z.string().optional(),
   referral_code: z.string().optional(),
   description: z.string().optional(),
-  license_number: z.string().optional(),
-  license_expiry: z.string().optional(),
   is_verified: z.boolean().default(false),
   is_active: z.boolean().default(true),
   logo_file: z.any()
@@ -39,6 +38,9 @@ const operatorSchema = z.object({
       (files) => !files || ACCEPTED_IMAGE_TYPES.includes(files?.[0]?.type),
       ".jpg, .jpeg, .png and .webp files are accepted."
     ),
+  agent_commission_enabled: z.boolean().default(false),
+  commission_type: z.enum(["percentage", "amount"]).default("percentage"),
+  commission_value: z.coerce.number().min(0).default(0),
 });
 
 type OperatorFormValues = z.infer<typeof operatorSchema>;
@@ -58,14 +60,32 @@ export default function CreateOperatorPage() {
       code: "",
       referral_code: "",
       description: "",
-      license_number: "",
-      license_expiry: "",
       is_verified: false,
       is_active: true,
+      agent_commission_enabled: false,
+      commission_type: "percentage",
+      commission_value: 0,
     },
   });
 
   const logoFile = form.watch("logo_file");
+  const agentCommissionEnabled = form.watch("agent_commission_enabled");
+  const operatorName = form.watch("name");
+
+  const generateReferralCode = () => {
+    if (!operatorName) {
+        toast({
+            variant: "destructive",
+            title: "Operator Name Required",
+            description: "Please enter an operator name to generate a referral code.",
+        });
+        return;
+    }
+    const namePrefix = operatorName.substring(0, 3).toUpperCase();
+    const randomSuffix = Math.random().toString(36).substring(2, 8).toUpperCase();
+    const newCode = `${namePrefix}-${randomSuffix}`;
+    form.setValue("referral_code", newCode);
+  };
 
   const onSubmit = async (data: OperatorFormValues) => {
     const formData = new FormData();
@@ -117,9 +137,9 @@ export default function CreateOperatorPage() {
                 </div>
             </div>
             
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                 {/* Left Column */}
-                <div className="lg:col-span-2 space-y-6">
+                <div className="space-y-6">
                     <Card>
                         <CardHeader>
                             <CardTitle>Operator Details</CardTitle>
@@ -167,10 +187,19 @@ export default function CreateOperatorPage() {
                             />
                         </CardContent>
                     </Card>
+                     <Card>
+                        <CardHeader>
+                            <CardTitle>Status</CardTitle>
+                        </CardHeader>
+                        <CardContent className="space-y-4">
+                            <FormField control={form.control} name="is_verified" render={({ field }) => ( <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3"><FormLabel>Verified</FormLabel><FormControl><Switch checked={field.value} onCheckedChange={field.onChange} /></FormControl></FormItem>)} />
+                            <FormField control={form.control} name="is_active" render={({ field }) => ( <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3"><FormLabel>Active</FormLabel><FormControl><Switch checked={field.value} onCheckedChange={field.onChange} /></FormControl></FormItem>)} />
+                        </CardContent>
+                    </Card>
                 </div>
 
                 {/* Right Column */}
-                <div className="lg:col-span-1 space-y-6">
+                <div className="space-y-6">
                     <Card>
                         <CardHeader>
                             <CardTitle>Contact Information</CardTitle>
@@ -183,23 +212,87 @@ export default function CreateOperatorPage() {
                     </Card>
                     <Card>
                         <CardHeader>
-                            <CardTitle>Codes & Licensing</CardTitle>
+                            <CardTitle>Codes</CardTitle>
                         </CardHeader>
                         <CardContent className="space-y-4">
                             <FormField control={form.control} name="code" render={({ field }) => ( <FormItem><FormLabel>Operator Code</FormLabel><FormControl><Input placeholder="e.g., HTI001" {...field} /></FormControl><FormMessage /></FormItem> )} />
-                            <FormField control={form.control} name="referral_code" render={({ field }) => ( <FormItem><FormLabel>Referral Code</FormLabel><FormControl><Input placeholder="e.g., HTI-REF" {...field} /></FormControl><FormMessage /></FormItem> )} />
-                             <FormField control={form.control} name="license_number" render={({ field }) => ( <FormItem><FormLabel>License Number</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem> )} />
-                              <FormField control={form.control} name="license_expiry" render={({ field }) => ( <FormItem><FormLabel>License Expiry</FormLabel><FormControl><Input type="date" {...field} /></FormControl><FormMessage /></FormItem> )} />
+                            <FormField control={form.control} name="referral_code" render={({ field }) => ( 
+                                <FormItem>
+                                    <FormLabel>Referral Code</FormLabel>
+                                    <div className="flex items-center gap-2">
+                                        <FormControl><Input placeholder="e.g., HTI-REF" {...field} /></FormControl>
+                                        <Button type="button" variant="outline" size="icon" onClick={generateReferralCode}>
+                                            <RefreshCw className="h-4 w-4"/>
+                                        </Button>
+                                    </div>
+                                    <FormMessage />
+                                </FormItem> 
+                            )} />
                         </CardContent>
                     </Card>
                     <Card>
                         <CardHeader>
-                            <CardTitle>Status</CardTitle>
+                             <FormField
+                                control={form.control}
+                                name="agent_commission_enabled"
+                                render={({ field }) => (
+                                <FormItem className="flex flex-row items-center justify-between">
+                                    <div className="space-y-0.5">
+                                        <CardTitle>Agent Commission</CardTitle>
+                                        <CardDescription>Enable commissions for agents.</CardDescription>
+                                    </div>
+                                    <FormControl><Switch checked={field.value} onCheckedChange={field.onChange} /></FormControl>
+                                </FormItem>
+                                )}
+                            />
                         </CardHeader>
-                        <CardContent className="space-y-4">
-                            <FormField control={form.control} name="is_verified" render={({ field }) => ( <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3"><FormLabel>Verified</FormLabel><FormControl><Switch checked={field.value} onCheckedChange={field.onChange} /></FormControl></FormItem>)} />
-                            <FormField control={form.control} name="is_active" render={({ field }) => ( <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3"><FormLabel>Active</FormLabel><FormControl><Switch checked={field.value} onCheckedChange={field.onChange} /></FormControl></FormItem>)} />
-                        </CardContent>
+                        {agentCommissionEnabled && (
+                            <CardContent className="space-y-4">
+                                <FormField
+                                    control={form.control}
+                                    name="commission_type"
+                                    render={({ field }) => (
+                                    <FormItem className="space-y-3">
+                                        <FormLabel>Commission Type</FormLabel>
+                                        <FormControl>
+                                        <RadioGroup
+                                            onValueChange={field.onChange}
+                                            defaultValue={field.value}
+                                            className="flex space-x-4"
+                                        >
+                                            <FormItem className="flex items-center space-x-3 space-y-0">
+                                            <FormControl>
+                                                <RadioGroupItem value="percentage" />
+                                            </FormControl>
+                                            <FormLabel className="font-normal">Percentage</FormLabel>
+                                            </FormItem>
+                                            <FormItem className="flex items-center space-x-3 space-y-0">
+                                            <FormControl>
+                                                <RadioGroupItem value="amount" />
+                                            </FormControl>
+                                            <FormLabel className="font-normal">Amount</FormLabel>
+                                            </FormItem>
+                                        </RadioGroup>
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                    )}
+                                />
+                                <FormField
+                                    control={form.control}
+                                    name="commission_value"
+                                    render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>Commission Value</FormLabel>
+                                        <FormControl>
+                                            <Input type="number" {...field} />
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                    )}
+                                />
+                            </CardContent>
+                        )}
                     </Card>
                 </div>
             </div>
