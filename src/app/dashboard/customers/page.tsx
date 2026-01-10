@@ -2,7 +2,7 @@
 "use client";
 
 import * as React from "react";
-import { MoreHorizontal, UserCheck, UserX, Users } from "lucide-react";
+import { MoreHorizontal, UserCheck, UserX, Users, View } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -166,6 +166,9 @@ export default function CustomersPage() {
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
                           <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                          <DropdownMenuItem onSelect={(e) => { e.stopPropagation(); router.push(`/dashboard/customers/${profile.id}`) }}>
+                            <View className="mr-2 h-4 w-4" /> View
+                          </DropdownMenuItem>
                           <DropdownMenuItem onSelect={(e) => { e.stopPropagation(); setItemToToggle(profile)}}>
                             {profile.status === 'active' ? 'Block' : 'Unblock'}
                           </DropdownMenuItem>

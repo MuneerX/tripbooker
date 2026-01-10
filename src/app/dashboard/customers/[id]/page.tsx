@@ -92,10 +92,6 @@ export default function CustomerDetailPage() {
                 <ArrowLeft className="h-4 w-4" />
                 <span className="sr-only">Back</span>
             </Button>
-            <Avatar className="h-12 w-12 border">
-                <AvatarImage src={profile.avatar_url || ''} alt={profile.full_name || 'customer'} />
-                <AvatarFallback>{profile.full_name?.charAt(0) || 'C'}</AvatarFallback>
-            </Avatar>
             <h1 className="flex-1 shrink-0 whitespace-nowrap text-xl font-semibold tracking-tight sm:grow-0">
                 {profile.full_name}
             </h1>
