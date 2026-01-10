@@ -1011,3 +1011,28 @@ export async function getProfiles(): Promise<Profile[]> {
 
     return profilesWithStatus as Profile[];
 }
+
+
+export async function getProfileById(id: string): Promise<Profile | null> {
+    const supabase = createAdminClient();
+    const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', id)
+        .single();
+        
+    if (error) {
+        console.error(`Error fetching profile ${id}:`, error);
+        return null;
+    }
+    
+    if (!data) return null;
+
+    // Add mock status to the single profile
+    const profileWithStatus = {
+        ...data,
+        status: data.id.charCodeAt(data.id.length - 1) % 3 === 0 ? 'blocked' : 'active', // Consistent mock status
+    };
+
+    return profileWithStatus as Profile;
+}

@@ -25,9 +25,11 @@ import {
 import { getProfiles } from "@/lib/supabase/queries";
 import { useToast } from "@/hooks/use-toast";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { useRouter } from "next/navigation";
 
 export default function CustomersPage() {
   const { toast } = useToast();
+  const router = useRouter();
   const [searchTerm, setSearchTerm] = React.useState("");
   const [currentPage, setCurrentPage] = React.useState(1);
   const [allProfiles, setAllProfiles] = React.useState<Profile[]>([]);
@@ -138,7 +140,7 @@ export default function CustomersPage() {
                 </TableRow>
               ) : paginatedProfiles.length > 0 ? (
                 paginatedProfiles.map((profile: Profile) => (
-                  <TableRow key={profile.id}>
+                  <TableRow key={profile.id} className="cursor-pointer" onClick={() => router.push(`/dashboard/customers/${profile.id}`)}>
                     <TableCell>
                       <div className="flex items-center gap-3">
                         <Avatar className="h-9 w-9">
@@ -157,14 +159,14 @@ export default function CustomersPage() {
                      <TableCell>
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                          <Button aria-haspopup="true" size="icon" variant="ghost">
+                          <Button aria-haspopup="true" size="icon" variant="ghost" onClick={(e) => e.stopPropagation()}>
                             <MoreHorizontal className="h-4 w-4" />
                             <span className="sr-only">Toggle menu</span>
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
                           <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                          <DropdownMenuItem onSelect={() => setItemToToggle(profile)}>
+                          <DropdownMenuItem onSelect={(e) => { e.stopPropagation(); setItemToToggle(profile)}}>
                             {profile.status === 'active' ? 'Block' : 'Unblock'}
                           </DropdownMenuItem>
                         </DropdownMenuContent>

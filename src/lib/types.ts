@@ -185,6 +185,14 @@ export type Profile = {
     full_name: string | null;
     email: string | null;
     phone_number: string | null;
+    whatsapp_number: string | null;
+    dob: string | null;
+    gender: string | null;
+    address: string | null;
+    state: string | null;
+    district: string | null;
+    city: string | null;
+    pincode: string | null;
     avatar_url: string | null;
     is_kv_customer: boolean | null;
     status: 'active' | 'blocked';
