@@ -1001,7 +1001,10 @@ export async function getProfiles(): Promise<Profile[]> {
         throw new Error(error.message);
     }
     
-    return data as Profile[];
+    return (data || []).map(profile => ({
+      ...profile,
+      status: profile.is_kv_customer ? 'active' : 'blocked'
+    })) as Profile[];
 }
 
 
@@ -1020,5 +1023,30 @@ export async function getProfileById(id: string): Promise<Profile | null> {
     
     if (!data) return null;
 
-    return data as Profile;
+    return {
+      ...data,
+      status: data.is_kv_customer ? 'active' : 'blocked'
+    } as Profile;
+}
+
+
+export async function updateProfileStatus(id: string, newStatus: 'active' | 'blocked') {
+    const supabase = createAdminClient();
+    const is_kv_customer = newStatus === 'active';
+    const { data, error } = await supabase
+        .from('profiles')
+        .update({ is_kv_customer, updated_at: new Date().toISOString() })
+        .eq('id', id)
+        .select()
+        .single();
+
+    if (error) {
+        console.error(`Error updating profile status for ${id}:`, error);
+        throw new Error(error.message);
+    }
+    
+    return {
+      ...data,
+      status: data.is_kv_customer ? 'active' : 'blocked'
+    } as Profile;
 }

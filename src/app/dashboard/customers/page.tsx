@@ -22,7 +22,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { getProfiles } from "@/lib/supabase/queries";
+import { getProfiles, updateProfileStatus } from "@/lib/supabase/queries";
 import { useToast } from "@/hooks/use-toast";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useRouter } from "next/navigation";
@@ -43,12 +43,7 @@ export default function CustomersPage() {
       setLoading(true);
       try {
         const profiles = await getProfiles();
-        // Initialize a mock status if it doesn't exist
-        const profilesWithStatus = profiles.map((p, index) => ({
-          ...p,
-          status: p.status || (index % 3 === 0 ? 'blocked' : 'active'),
-        }));
-        setAllProfiles(profilesWithStatus);
+        setAllProfiles(profiles);
       } catch (error: any) {
         toast({
           variant: "destructive",
@@ -66,15 +61,22 @@ export default function CustomersPage() {
     
     const newStatus = itemToToggle.status === 'active' ? 'blocked' : 'active';
     
-    // NOTE: This is a mock implementation that updates the local state.
-    // In a real app, you would call an update function to change the user's status in the DB.
-    setAllProfiles(prev => prev.map(p => p.id === itemToToggle.id ? { ...p, status: newStatus } : p));
-    
-    toast({
-      title: "Success",
-      description: `Customer "${itemToToggle.full_name}" has been ${newStatus}.`,
-    });
-    setItemToToggle(null);
+    try {
+        const updatedProfile = await updateProfileStatus(itemToToggle.id, newStatus);
+        setAllProfiles(prev => prev.map(p => p.id === itemToToggle.id ? { ...p, status: updatedProfile.status } : p));
+        toast({
+            title: "Success",
+            description: `Customer "${itemToToggle.full_name}" has been ${newStatus}.`,
+        });
+    } catch (error: any) {
+        toast({
+            variant: "destructive",
+            title: "Error updating status",
+            description: error.message,
+        });
+    } finally {
+        setItemToToggle(null);
+    }
   };
 
   const filteredProfiles = allProfiles.filter((profile) =>

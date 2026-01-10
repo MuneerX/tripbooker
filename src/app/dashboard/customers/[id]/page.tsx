@@ -10,7 +10,7 @@ import { ArrowLeft, Edit, UserCheck, UserX, Mail, Phone, MessageSquare, MapPin, 
 import { getStatusBadgeColor, cn } from "@/lib/utils";
 import { Separator } from "@/components/ui/separator";
 import { format, isValid } from "date-fns";
-import { getProfileById } from "@/lib/supabase/queries";
+import { getProfileById, updateProfileStatus } from "@/lib/supabase/queries";
 import type { Profile } from "@/lib/types";
 import {
   AlertDialog,
@@ -25,7 +25,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { useToast } from "@/hooks/use-toast";
 import { useBreadcrumb } from "../../layout";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 
 export default function CustomerDetailPage() {
   const router = useRouter();
@@ -43,11 +43,7 @@ export default function CustomerDetailPage() {
         setLoading(true);
         const data = await getProfileById(id as string);
         if (data) {
-          // Initialize a mock status if it doesn't exist
-          setProfile({
-            ...data,
-            status: data.status || 'active'
-          });
+          setProfile(data);
           setBreadcrumbName(data.full_name || 'Customer');
         } else {
           toast({ variant: "destructive", title: "Error", description: "Customer not found." });
@@ -67,14 +63,20 @@ export default function CustomerDetailPage() {
     
     const newStatus = profile.status === 'active' ? 'blocked' : 'active';
     
-    // NOTE: This is a mock implementation for the UI that updates local state.
-    // In a real app, you would call an update function here to persist the change.
-    setProfile({ ...profile, status: newStatus });
-    
-    toast({
-      title: "Success",
-      description: `Customer "${profile.full_name}" has been ${newStatus}.`,
-    });
+    try {
+        const updatedProfile = await updateProfileStatus(profile.id, newStatus);
+        setProfile(updatedProfile);
+        toast({
+            title: "Success",
+            description: `Customer "${profile.full_name}" has been ${newStatus}.`,
+        });
+    } catch (error: any) {
+         toast({
+            variant: "destructive",
+            title: "Error",
+            description: `Failed to ${newStatus} customer.`,
+        });
+    }
   };
 
   if (loading || !profile) {
@@ -121,7 +123,6 @@ export default function CustomerDetailPage() {
                     <CardContent className="space-y-6">
                         <div className="flex justify-center">
                             <Avatar className="h-40 w-40 border-4 border-primary/20">
-                                <AvatarImage src={profile.avatar_url || ''} alt={profile.full_name || 'customer'} className="object-cover" />
                                 <AvatarFallback className="text-6xl">{profile.full_name?.charAt(0) || 'C'}</AvatarFallback>
                             </Avatar>
                         </div>
