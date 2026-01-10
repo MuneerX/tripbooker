@@ -143,12 +143,13 @@ export default function NotificationsPage() {
                     {selectedNotification ? (
                         <Card>
                             <CardHeader>
-                                <div className="flex items-center justify-between">
-                                    <div>
-                                        <CardTitle>Notification Details</CardTitle>
-                                        <CardDescription>
+                                 <div className="flex items-start justify-between">
+                                    <div className="grid gap-1">
+                                        <CardTitle className="text-lg">New booking created</CardTitle>
+                                        <CardDescription className="text-sm">A new reservation is awaiting approval.</CardDescription>
+                                        <p className="text-xs text-muted-foreground pt-1">
                                             For tour: <Link href={`/dashboard/tour-packages/${selectedNotification.package_id}`} className="text-primary hover:underline">{selectedNotification.tour_package?.name}</Link>
-                                        </CardDescription>
+                                        </p>
                                     </div>
                                     <Button variant="ghost" size="sm" asChild>
                                         <Link href={`/dashboard/bookings/${selectedNotification.id}`}>
