@@ -170,7 +170,15 @@ export default function CustomersPage() {
                             <View className="mr-2 h-4 w-4" /> View
                           </DropdownMenuItem>
                           <DropdownMenuItem onSelect={(e) => { e.stopPropagation(); setItemToToggle(profile)}}>
-                            {profile.status === 'active' ? 'Block' : 'Unblock'}
+                            {profile.status === 'active' ? (
+                                <>
+                                    <UserX className="mr-2 h-4 w-4" /> Block
+                                </>
+                            ) : (
+                                <>
+                                    <UserCheck className="mr-2 h-4 w-4" /> Unblock
+                                </>
+                            )}
                           </DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>
