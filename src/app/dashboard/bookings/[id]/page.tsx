@@ -710,9 +710,3 @@ export default function BookingDetailPage() {
 }
 
     
-
-    
-
-    
-
-    
