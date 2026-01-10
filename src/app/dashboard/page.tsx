@@ -31,9 +31,9 @@ const StatItem = ({
 
     if (layout === 'horizontal') {
         return (
-             <div className="flex items-center gap-4">
-                <div className={cn("p-3 rounded-lg", iconBg)}>
-                    {React.cloneElement(icon as React.ReactElement, { className: cn('h-6 w-6', iconColor) })}
+             <div className="flex items-center gap-3">
+                <div className={cn("p-2 rounded-lg", iconBg)}>
+                    {React.cloneElement(icon as React.ReactElement, { className: cn('h-5 w-5', iconColor) })}
                 </div>
                 <div>
                     <div className="text-xl font-bold">{value}</div>
@@ -271,3 +271,5 @@ export default function DashboardPage() {
     </div>
   );
 }
+
+    
