@@ -106,7 +106,7 @@ export default function NotificationsPage() {
                      <Card className="h-full">
                         <CardHeader>
                             <CardTitle>Notifications</CardTitle>
-                            <CardDescription>A new reservation is awaiting approval.</CardDescription>
+                            <CardDescription>View and manage pending actions.</CardDescription>
                         </CardHeader>
                         <CardContent className="space-y-3 max-h-[70vh] overflow-y-auto">
                             {notifications.map((booking) => (
@@ -127,8 +127,8 @@ export default function NotificationsPage() {
                                         </Avatar>
                                         <div className="grid gap-0.5">
                                             <p className="font-semibold text-sm line-clamp-1">New booking created</p>
-                                            <p className="text-xs text-muted-foreground">For {booking.tour_package?.name}</p>
-                                            <p className="text-xs text-muted-foreground">
+                                            <p className="text-xs text-muted-foreground">A new reservation is awaiting approval.</p>
+                                            <p className="text-xs text-muted-foreground mt-1">
                                                 {formatDistanceToNow(new Date(booking.created_at), { addSuffix: true })}
                                             </p>
                                         </div>
