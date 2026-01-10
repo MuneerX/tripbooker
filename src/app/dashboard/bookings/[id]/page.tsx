@@ -40,7 +40,19 @@ export default function BookingDetailPage() {
   const { setBreadcrumbName } = useBreadcrumb();
 
   const [booking, setBooking] = React.useState<Booking | null>(null);
-  const [showAllDays, setShowAllDays] = React.useState(false);
+  const [openDays, setOpenDays] = React.useState<Record<string, boolean>>({});
+
+  const handleShowAllDays = () => {
+    if (!booking?.tour_package?.trip_days) return;
+    const allOpen = Object.values(openDays).every(Boolean);
+    const newOpenDays: Record<string, boolean> = {};
+    booking.tour_package.trip_days.forEach(day => {
+      newOpenDays[day.id] = !allOpen;
+    });
+    setOpenDays(newOpenDays);
+  };
+
+  const allDaysInitiallyOpen = Object.values(openDays).every(Boolean);
 
 
   React.useEffect(() => {
@@ -395,18 +407,25 @@ export default function BookingDetailPage() {
                                   <div>
                                     <div className="flex justify-between items-center mb-4">
                                         <h3 className="text-xl font-semibold">Itinerary</h3>
-                                        <Button variant="outline" size="sm" onClick={() => setShowAllDays(!showAllDays)}>
-                                            {showAllDays ? "Show Less" : "Show All Days"}
+                                        <Button variant="outline" size="sm" onClick={handleShowAllDays}>
+                                            {allDaysInitiallyOpen ? "Show Less" : "Show All Days"}
                                         </Button>
                                     </div>
                                     <div className="space-y-6">
                                         {tourPackage.trip_days.sort((a,b) => a.day_number - b.day_number).map((day: TripDay) => (
-                                            <Collapsible asChild key={day.id} open={showAllDays}>
+                                            <Collapsible 
+                                              asChild 
+                                              key={day.id} 
+                                              open={openDays[day.id] || false}
+                                              onOpenChange={(isOpen) => setOpenDays(prev => ({...prev, [day.id]: isOpen}))}
+                                            >
                                                 <Card>
                                                     <CollapsibleTrigger asChild>
                                                         <div className="flex items-center justify-between cursor-pointer p-6">
                                                             <CardTitle className="text-lg">Day {day.day_number}: {day.day_name}</CardTitle>
-                                                            <ChevronDown className="h-5 w-5 transition-transform ui-open:rotate-180" />
+                                                            <Button variant="ghost" size="icon" className="h-8 w-8">
+                                                                <ChevronDown className="h-5 w-5 transition-transform data-[state=open]:rotate-180" />
+                                                            </Button>
                                                         </div>
                                                     </CollapsibleTrigger>
                                                     <CollapsibleContent>
@@ -414,7 +433,9 @@ export default function BookingDetailPage() {
                                                             <p className="text-muted-foreground mb-4">{day.description}</p>
                                                             {day.activities.map((activity, actIndex) => (
                                                               <div key={actIndex} className="flex items-start gap-4 p-3 border-b last:border-b-0">
-                                                                <Clock className="h-5 w-5 text-muted-foreground shrink-0" />
+                                                                <div className="flex-shrink-0 pt-1">
+                                                                    <Clock className="h-5 w-5 text-muted-foreground" />
+                                                                </div>
                                                                 <div>
                                                                   <p className="font-semibold">{activity.title}</p>
                                                                   <p className="text-sm text-muted-foreground">{activity.description}</p>
@@ -616,7 +637,5 @@ export default function BookingDetailPage() {
     </div>
   );
 }
-
-    
 
     
