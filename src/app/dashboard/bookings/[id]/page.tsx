@@ -310,7 +310,7 @@ export default function BookingDetailPage() {
                                       )}
                                   </div>
                                   <div className="relative pt-4">
-                                      <div className="relative h-2 w-full rounded-full bg-muted overflow-hidden">
+                                      <div className="relative h-2 w-full rounded-full bg-muted overflow">
                                           {/* Segmented bar */}
                                           <div className="flex h-full w-full">
                                             {paymentProgress.progressSegments.map((seg, index) => (
