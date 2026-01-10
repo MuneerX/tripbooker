@@ -76,6 +76,16 @@ export default function CustomersPage() {
         });
     } finally {
         setItemToToggle(null);
+        document.body.style.pointerEvents = '';
+    }
+  };
+
+  const handleOpenChange = (open: boolean) => {
+    if (open) {
+      document.body.style.pointerEvents = 'none';
+    } else {
+      document.body.style.pointerEvents = '';
+      setItemToToggle(null);
     }
   };
 
@@ -228,7 +238,7 @@ export default function CustomersPage() {
       </Card>
 
       {itemToToggle && (
-        <AlertDialog open={!!itemToToggle} onOpenChange={(open) => !open && setItemToToggle(null)}>
+        <AlertDialog open={!!itemToToggle} onOpenChange={handleOpenChange}>
           <AlertDialogContent>
             <AlertDialogHeader>
               <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
@@ -237,7 +247,10 @@ export default function CustomersPage() {
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
-              <AlertDialogCancel onClick={() => setItemToToggle(null)}>Cancel</AlertDialogCancel>
+              <AlertDialogCancel onClick={() => {
+                setItemToToggle(null);
+                document.body.style.pointerEvents = '';
+              }}>Cancel</AlertDialogCancel>
               <AlertDialogAction onClick={handleStatusToggle} className={cn(itemToToggle.status === 'active' && "bg-destructive hover:bg-destructive/90")}>
                 {itemToToggle.status === 'active' ? 'Block' : 'Unblock'}
               </AlertDialogAction>
@@ -248,3 +261,5 @@ export default function CustomersPage() {
     </div>
   );
 }
+
+  
