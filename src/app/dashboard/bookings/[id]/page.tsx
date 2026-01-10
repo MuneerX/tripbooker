@@ -302,32 +302,30 @@ export default function BookingDetailPage() {
                                         <p>Next due: <span className="font-medium">{format(paymentProgress.nextDueDate, "PPP")}</span></p>
                                       )}
                                   </div>
-                                   <div className="relative h-2 w-full rounded-full bg-muted">
-                                      <div className="absolute h-full flex" style={{ width: `${paymentProgress.progressValue}%` }}>
-                                        {paymentProgress.progressSegments.map((seg, i) => (
-                                          <div key={i} className={cn(seg.color)} style={{ width: seg.width }} />
-                                        ))}
-                                      </div>
+                                  <div className="relative pt-4">
+                                    <div className="relative h-2 w-full rounded-full bg-muted">
+                                        <div className="h-full rounded-full bg-green-500" style={{ width: `${paymentProgress.progressValue}%` }} />
                                     </div>
-                                    <div className="relative h-5">
-                                    {paymentTimeline.map((part, index) => {
-                                      let cumulativeAmount = 0;
-                                      for (let i = 0; i <= index; i++) {
-                                          cumulativeAmount += paymentTimeline[i].total_amount;
-                                      }
-                                      const position = (cumulativeAmount / tourPackage.base_price) * 100;
-                                      const statusInfo = getTimelineStatusInfo(part.status);
-                                      return (
-                                        <div
-                                          key={part.id || index}
-                                          className={cn("absolute top-1/2 h-5 w-5 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-background flex items-center justify-center text-white", statusInfo.className)}
-                                          style={{ left: `${position}%` }}
-                                        >
-                                           {React.cloneElement(statusInfo.icon, { className: 'h-3 w-3' })}
-                                        </div>
-                                      )
-                                    })}
+                                    <div className="absolute top-1/2 -translate-y-1/2 w-full h-2">
+                                        {paymentTimeline.map((part, index) => {
+                                            let cumulativeAmount = 0;
+                                            for (let i = 0; i <= index; i++) {
+                                                cumulativeAmount += paymentTimeline[i].total_amount;
+                                            }
+                                            const position = (cumulativeAmount / tourPackage.base_price) * 100;
+                                            const statusInfo = getTimelineStatusInfo(part.status);
+                                            return (
+                                                <div
+                                                key={part.id || index}
+                                                className={cn("absolute top-1/2 h-5 w-5 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-background flex items-center justify-center text-white", statusInfo.className)}
+                                                style={{ left: `${position}%` }}
+                                                >
+                                                {React.cloneElement(statusInfo.icon, { className: 'h-3 w-3' })}
+                                                </div>
+                                            )
+                                        })}
                                     </div>
+                                  </div>
 
                                   <p className="text-sm text-muted-foreground text-center pt-2">
                                     {paymentProgress.paidCount} out of {paymentProgress.totalCount} installments paid
