@@ -14,6 +14,7 @@ import {
   LayoutGrid,
   Book,
   Users,
+  UserCog,
 } from 'lucide-react';
 import {
   Sidebar,
@@ -56,6 +57,12 @@ const navItems: NavItem[] = [
     title: 'Customers',
     href: '/dashboard/customers',
     icon: Users,
+    subItems: [],
+  },
+  {
+    title: 'Operators',
+    href: '/dashboard/operators',
+    icon: UserCog,
     subItems: [],
   },
   {

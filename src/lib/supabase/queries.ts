@@ -5,7 +5,7 @@
 import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
 
-import type { TourPackage, TripDay, Activity, TripLocation, PayInPart, Booking, Review, BookingGuest, Payment, Profile } from '@/lib/types'
+import type { TourPackage, TripDay, Activity, TripLocation, PayInPart, Booking, Review, BookingGuest, Payment, Profile, Operator } from '@/lib/types'
 import { createClient } from '@supabase/supabase-js'
 
 // Correctly create a Supabase client with admin privileges (service_role)
@@ -1072,4 +1072,53 @@ export async function updateProfile(id: string, profileData: Partial<Profile>) {
       ...data,
       status: data.is_kv_customer ? 'active' : 'blocked'
     } as Profile;
+}
+
+
+// --- Operator Functions ---
+
+export async function getOperators(): Promise<Operator[]> {
+  const supabase = createAdminClient();
+  const { data, error } = await supabase.from('operators').select('*').order('created_at', { ascending: false });
+
+  if (error) {
+    console.error('Error fetching operators:', error);
+    throw new Error(error.message);
+  }
+
+  return (data || []).map(op => ({
+    ...op,
+    status: op.is_active ? 'active' : 'blocked',
+  })) as Operator[];
+}
+
+export async function deleteOperator(id: string) {
+  const supabase = createAdminClient();
+  const { error } = await supabase.from('operators').delete().eq('id', id);
+  if (error) {
+    console.error('Error deleting operator:', error);
+    throw new Error(error.message);
+  }
+  return { success: true };
+}
+
+export async function updateOperatorStatus(id: string, newStatus: 'active' | 'blocked'): Promise<Operator> {
+  const supabase = createAdminClient();
+  const is_active = newStatus === 'active';
+  const { data, error } = await supabase
+    .from('operators')
+    .update({ is_active, updated_at: new Date().toISOString() })
+    .eq('id', id)
+    .select()
+    .single();
+
+  if (error) {
+    console.error(`Error updating operator status for ${id}:`, error);
+    throw new Error(error.message);
+  }
+
+  return {
+    ...data,
+    status: data.is_active ? 'active' : 'blocked',
+  } as Operator;
 }

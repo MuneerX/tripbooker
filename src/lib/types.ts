@@ -198,6 +198,28 @@ export type Profile = {
     status: 'active' | 'blocked';
 };
 
+export type Operator = {
+  id: string;
+  name: string;
+  code: string | null;
+  contact_person: string | null;
+  email: string | null;
+  phone: string | null;
+  address: string | null;
+  license_number: string | null;
+  license_expiry: string | null;
+  rating: number | null;
+  total_reviews: number | null;
+  description: string | null;
+  logo_url: string | null;
+  is_verified: boolean;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+  referral_code: string | null;
+  status: 'active' | 'blocked';
+};
+
 // For stats cards
 export type StatCard = {
   label: string;
