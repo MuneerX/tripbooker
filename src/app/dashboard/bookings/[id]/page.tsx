@@ -14,10 +14,22 @@ import { Separator } from "@/components/ui/separator";
 import { addMonths, format, isBefore, isAfter } from "date-fns";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { getBookingById } from "@/lib/supabase/queries";
+import { getBookingById, acceptBooking, cancelBooking } from "@/lib/supabase/queries";
 import type { Booking, BookingGuest, TripDay, Payment, PayInPart } from "@/lib/types";
 import { useBreadcrumb } from "../../layout";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { useToast } from "@/hooks/use-toast";
+
 
 type TimelineStatus = 'paid' | 'overdue-paid' | 'overdue' | 'next-pay' | 'locked';
 
@@ -38,9 +50,29 @@ export default function BookingDetailPage() {
   const params = useParams();
   const { id } = params as { id: string };
   const { setBreadcrumbName } = useBreadcrumb();
+  const { toast } = useToast();
 
   const [booking, setBooking] = React.useState<Booking | null>(null);
   const [openDays, setOpenDays] = React.useState<Record<string, boolean>>({});
+  const [actionToConfirm, setActionToConfirm] = React.useState<'accept' | 'cancel' | null>(null);
+  
+  const fetchBooking = React.useCallback(async () => {
+    if (id) {
+      const data = await getBookingById(id);
+      setBooking(data);
+      if (data) {
+        setBreadcrumbName(`Booking #${data.booking_reference}`);
+      } else {
+        setBreadcrumbName('Booking Not Found');
+      }
+    }
+  }, [id, setBreadcrumbName]);
+
+  React.useEffect(() => {
+    fetchBooking();
+    return () => setBreadcrumbName('');
+  }, [fetchBooking, setBreadcrumbName]);
+
 
   const handleShowAllDays = () => {
     if (!booking?.tour_package?.trip_days) return;
@@ -54,22 +86,30 @@ export default function BookingDetailPage() {
 
   const allDaysInitiallyOpen = Object.values(openDays).every(Boolean);
 
+  const handleActionConfirm = async () => {
+    if (!actionToConfirm || !booking) return;
 
-  React.useEffect(() => {
-    if (id) {
-      const fetchBooking = async () => {
-        const data = await getBookingById(id);
-        setBooking(data);
-        if (data) {
-          setBreadcrumbName(`Booking #${data.booking_reference}`);
-        } else {
-          setBreadcrumbName('Booking Not Found');
-        }
-      };
-      fetchBooking();
+    try {
+      if (actionToConfirm === 'accept') {
+        await acceptBooking(booking.id);
+        toast({ title: "Success", description: "Booking has been confirmed." });
+      } else {
+        await cancelBooking(booking.id);
+        toast({ title: "Success", description: "Booking has been cancelled." });
+      }
+      fetchBooking(); // Refresh data
+      router.refresh();
+    } catch (error: any) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: error.message || `Failed to ${actionToConfirm} booking.`,
+      });
+    } finally {
+      setActionToConfirm(null);
     }
-    return () => setBreadcrumbName('');
-  }, [id, setBreadcrumbName]);
+  };
+
     
   const paymentTimeline = React.useMemo(() => {
     if (!booking || !booking.tour_package?.pay_in_parts || booking.tour_package.pay_in_parts.length === 0) {
@@ -247,7 +287,8 @@ export default function BookingDetailPage() {
 
   return (
     <div className="space-y-6">
-       <div className="flex items-center gap-4">
+       <AlertDialog open={!!actionToConfirm} onOpenChange={(open) => !open && setActionToConfirm(null)}>
+        <div className="flex items-center gap-4">
             <Button variant="outline" size="icon" className="h-7 w-7 shrink-0" onClick={() => router.back()}>
                 <ArrowLeft className="h-4 w-4" />
                 <span className="sr-only">Back</span>
@@ -264,17 +305,32 @@ export default function BookingDetailPage() {
                 <h1 className="text-xl font-semibold tracking-tight truncate">
                     {tourPackage.name}
                 </h1>
-                <p className="text-sm text-muted-foreground">Booking Ref: {booking.booking_reference}</p>
+                <div className="flex items-center gap-2">
+                  <p className="text-sm text-muted-foreground">Ref: {booking.booking_reference}</p>
+                  <Badge variant="outline" className={cn("capitalize", getStatusBadgeColor(booking.booking_status))}>
+                    {booking.booking_status}
+                  </Badge>
+                </div>
             </div>
             <div className="ml-auto flex items-center gap-2">
-                <Button variant="destructive" size="sm">
-                    <X className="mr-2 h-4 w-4" />
-                    Cancel Booking
-                </Button>
-                <Button size="sm" variant="default">
-                    <Check className="mr-2 h-4 w-4" />
-                    Accept Reservation
-                </Button>
+                 {booking.booking_status === 'pending' && (
+                    <>
+                        <Button variant="destructive" size="sm" onClick={() => setActionToConfirm('cancel')}>
+                            <X className="mr-2 h-4 w-4" />
+                            Cancel Booking
+                        </Button>
+                        <Button size="sm" variant="default" onClick={() => setActionToConfirm('accept')}>
+                            <Check className="mr-2 h-4 w-4" />
+                            Accept Reservation
+                        </Button>
+                    </>
+                 )}
+                 {booking.booking_status === 'confirmed' && (
+                     <Button variant="destructive" size="sm" onClick={() => setActionToConfirm('cancel')}>
+                        <X className="mr-2 h-4 w-4" />
+                        Cancel Booking
+                    </Button>
+                 )}
             </div>
         </div>
 
@@ -634,8 +690,25 @@ export default function BookingDetailPage() {
                 </CardContent>
             </Card>
         </Tabs>
+        <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+              <AlertDialogDescription>
+                This action will {actionToConfirm === 'accept' ? 'confirm' : 'cancel'} the booking with reference "{booking.booking_reference}".
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel onClick={() => setActionToConfirm(null)}>Cancel</AlertDialogCancel>
+              <AlertDialogAction onClick={handleActionConfirm} className={cn(actionToConfirm === 'cancel' && "bg-destructive hover:bg-destructive/90")}>
+                {actionToConfirm === 'accept' ? 'Accept' : 'Confirm Cancellation'}
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
+
+    
 
     
