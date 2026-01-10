@@ -43,12 +43,12 @@ const StatItem = ({
 
     return (
         <div className="flex items-center gap-3">
-            <div className={`p-3 rounded-lg ${iconBg}`}>
-                {React.cloneElement(icon as React.ReactElement, { className: 'h-6 w-6 text-white' })}
+            <div className={`p-2 rounded-lg ${iconBg}`}>
+                {React.cloneElement(icon as React.ReactElement, { className: 'h-5 w-5 text-white' })}
             </div>
             <div>
-                <div className="text-2xl font-bold">{value}</div>
-                <p className="text-sm text-muted-foreground">{label}</p>
+                <div className="text-xl font-bold">{value}</div>
+                <p className="text-xs text-muted-foreground">{label}</p>
             </div>
         </div>
     );
@@ -218,7 +218,7 @@ export default function DashboardPage() {
                 <CardDescription>An overview of your sales and revenue.</CardDescription>
             </CardHeader>
             <CardContent className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-              {stats.bookingOverview.map((stat:any) => <StatItem key={stat.label} {...stat} layout="horizontal" />)}
+              {stats.bookingOverview.map((stat:any) => <StatItem key={stat.label} {...stat} />)}
             </CardContent>
           </Card>
           
