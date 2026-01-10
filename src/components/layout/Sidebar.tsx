@@ -1,9 +1,9 @@
 
-
 "use client";
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import * as React from 'react';
 import {
   Package,
   PlusCircle,
@@ -149,6 +149,11 @@ function NavMenu({ items }: { items: NavItem[] }) {
 export function AppSidebar() {
   const router = useRouter();
   const { theme } = useTheme();
+  const [mounted, setMounted] = React.useState(false);
+
+  React.useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const handleLogout = () => {
     // In a real app, you would handle logout logic here (e.g., clearing session, calling Firebase signOut)
@@ -163,7 +168,7 @@ export function AppSidebar() {
       <Sidebar>
         <SidebarHeader>
           <Link href="/dashboard" className="flex items-center justify-center gap-2 py-2">
-            <Image src={logoUrl} alt="Yes To Go Logo" width={150} height={150} />
+            {mounted && <Image src={logoUrl} alt="Yes To Go Logo" width={150} height={150} />}
           </Link>
         </SidebarHeader>
         <SidebarContent className="p-2">
