@@ -193,7 +193,7 @@ export default function OperatorsPage() {
                     <TableCell>
                       <Badge variant="outline" className={cn("capitalize", getStatusBadgeColor(operator.status === 'active' ? 'active' : 'inactive'))}>{operator.status}</Badge>
                     </TableCell>
-                     <TableCell>
+                     <TableCell onClick={(e) => e.stopPropagation()}>
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                           <Button aria-haspopup="true" size="icon" variant="ghost" onClick={e => e.stopPropagation()}>
@@ -302,3 +302,5 @@ export default function OperatorsPage() {
     </div>
   );
 }
+
+    
