@@ -68,7 +68,7 @@ export default function NotificationsPage() {
   };
 
   const renderSkeleton = () => (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
         <div className="md:col-span-1 space-y-4">
              <Card>
                 <CardHeader>
@@ -80,7 +80,7 @@ export default function NotificationsPage() {
                 </CardContent>
             </Card>
         </div>
-        <div className="md:col-span-2">
+        <div className="md:col-span-1">
             <Card>
                 <CardHeader>
                     <Skeleton className="h-6 w-1/2" />
@@ -100,7 +100,7 @@ export default function NotificationsPage() {
        {loading ? (
              renderSkeleton()
         ) : notifications.length > 0 ? (
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
                 {/* Left Column: Notification List */}
                 <div className="lg:col-span-1 space-y-4">
                      <Card className="h-full">
@@ -139,7 +139,7 @@ export default function NotificationsPage() {
                     </Card>
                 </div>
                 {/* Right Column: Detailed View */}
-                <div className="lg:col-span-2">
+                <div className="lg:col-span-1">
                     {selectedNotification ? (
                         <Card>
                             <CardHeader>
