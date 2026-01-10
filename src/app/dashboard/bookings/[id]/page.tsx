@@ -63,67 +63,68 @@ export default function BookingDetailPage() {
 
     const tourPackage = booking.tour_package;
     const bookingDate = new Date(booking.booking_date);
+    const totalPaid = booking.payments?.reduce((sum, p) => sum + p.amount, 0) ?? 0;
+    let cumulativeAmountDue = 0;
     let lastPaidIndex = -1;
-    
-    const availablePayments = [...(booking.payments || [])].sort((a,b) => new Date(a.payment_date || 0).getTime() - new Date(b.payment_date || 0).getTime());
-    let paymentIndex = 0;
 
-    const schedule = tourPackage.pay_in_parts
-        .sort((a, b) => a.months - b.months)
-        .map((part, index) => {
-            const dueDate = addMonths(bookingDate, part.months);
-            
-            const payment = paymentIndex < availablePayments.length ? availablePayments[paymentIndex] : null;
+    const sortedParts = tourPackage.pay_in_parts.sort((a, b) => a.months - b.months);
+    const paymentsByDate = (booking.payments || []).sort((a, b) => new Date(a.payment_date || 0).getTime() - new Date(b.payment_date || 0).getTime());
 
-            let isPartPaid = false;
-            let paidOn: Date | null = null;
-            if (payment) {
-                // A simple logic: assume one payment corresponds to one installment
-                isPartPaid = true;
-                paidOn = new Date(payment.payment_date!);
-                paymentIndex++;
-            }
-
-            let status: TimelineStatus = 'locked';
-            const today = new Date();
-
-            if (isPartPaid) {
-                lastPaidIndex = index;
-                status = paidOn && isAfter(paidOn, dueDate) ? 'overdue-paid' : 'paid';
-            } else {
-                if (index === lastPaidIndex + 1) { 
-                     status = isAfter(today, dueDate) ? 'overdue' : 'next-pay';
-                } else if(index > lastPaidIndex + 1) {
-                    status = 'locked';
-                } else if (isAfter(today, dueDate)) {
-                    status = 'overdue';
+    const schedule = sortedParts.map((part, index) => {
+        const dueDate = addMonths(bookingDate, part.months);
+        cumulativeAmountDue += part.total_amount;
+        
+        const isPartPaid = totalPaid >= cumulativeAmountDue;
+        let paidOn: Date | null = null;
+        
+        if (isPartPaid) {
+            lastPaidIndex = index;
+            // Find the first payment that meets the cumulative amount
+            let paidAmountSoFar = 0;
+            for (const p of paymentsByDate) {
+                paidAmountSoFar += p.amount;
+                if (paidAmountSoFar >= cumulativeAmountDue) {
+                    paidOn = p.payment_date ? new Date(p.payment_date) : null;
+                    break;
                 }
             }
+        }
+        
+        let status: TimelineStatus = 'locked';
+        const today = new Date();
 
-            return {
-                ...part,
-                dueDate,
-                paidOn,
-                status
-            };
-        });
+        if (isPartPaid) {
+            status = paidOn && isAfter(paidOn, dueDate) ? 'overdue-paid' : 'paid';
+        } else if (index === lastPaidIndex + 1) {
+            status = isAfter(today, dueDate) ? 'overdue' : 'next-pay';
+        } else if (index > lastPaidIndex + 1) {
+            status = 'locked';
+        } else if (isAfter(today, dueDate)) {
+            status = 'overdue';
+        }
 
+        return {
+            ...part,
+            dueDate,
+            paidOn,
+            status
+        };
+    });
+    
+    // Ensure there is always a 'next-pay' if not fully paid and no overdues
     const isAllPaid = schedule.every(s => s.status === 'paid' || s.status === 'overdue-paid');
     const hasOverdue = schedule.some(s => s.status === 'overdue');
-
     if (!isAllPaid && !hasOverdue) {
         const firstUnpaidIndex = schedule.findIndex(s => s.status !== 'paid' && s.status !== 'overdue-paid');
-        if(firstUnpaidIndex !== -1) {
-             const anyNextPay = schedule.some(s => s.status === 'next-pay');
-             if (!anyNextPay) {
-                schedule[firstUnpaidIndex].status = 'next-pay';
-             }
+        if (firstUnpaidIndex !== -1 && !schedule.some(s => s.status === 'next-pay')) {
+            schedule[firstUnpaidIndex].status = 'next-pay';
         }
     }
 
 
     return schedule;
-  }, [booking]);
+}, [booking]);
+
 
   const paymentProgress = React.useMemo(() => {
     if (!booking || !booking.tour_package) {
@@ -285,7 +286,7 @@ export default function BookingDetailPage() {
                                 <CardContent className="grid grid-cols-2 gap-x-6 gap-y-4">
                                     <div className="flex items-start gap-3"><User className="h-5 w-5 text-muted-foreground mt-1" /><div><p className="text-sm text-muted-foreground">Customer Name</p><p className="font-medium">{booking.customer.full_name}</p></div></div>
                                     <div className="flex items-start gap-3"><MapPinIcon className="h-5 w-5 text-muted-foreground mt-1" /><div><p className="text-sm text-muted-foreground">City</p><p className="font-medium">{booking.customer.address?.city || 'N/A'}</p></div></div>
-                                    <div className="flex items-start gap-3"><Phone className="h-5 w-5 text-muted-foreground mt-1" /><div><p className="text-sm text-muted-foreground">Contact Number</p><p className="font-medium">{booking.customer.address?.phone_number || 'N/A'}</p></div></div>
+                                    <div className="flex items-start gap_3"><Phone className="h_5 w_5 text_muted_foreground mt_1" /><div><p className="text_sm text_muted_foreground">Contact Number</p><p className="font_medium">{booking.customer.address?.phone_number || 'N/A'}</p></div></div>
                                     <div className="flex items-start gap-3"><Hash className="h-5 w-5 text-muted-foreground mt-1" /><div><p className="text-sm text-muted-foreground">Pincode</p><p className="font-medium">{booking.customer.address?.pincode || 'N/A'}</p></div></div>
                                 </CardContent>
                             </Card>
@@ -584,5 +585,7 @@ export default function BookingDetailPage() {
     </div>
   );
 }
+
+    
 
     
