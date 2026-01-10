@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import Link from 'next/link';
@@ -15,6 +16,7 @@ import {
   Book,
   Users,
   UserCog,
+  Bell,
 } from 'lucide-react';
 import {
   Sidebar,
@@ -63,6 +65,12 @@ const navItems: NavItem[] = [
     title: 'Operators',
     href: '/dashboard/operators',
     icon: UserCog,
+    subItems: [],
+  },
+    {
+    title: 'Notifications',
+    href: '/dashboard/notifications',
+    icon: Bell,
     subItems: [],
   },
   {

@@ -1283,3 +1283,65 @@ export async function updateOperatorStatus(id: string, newStatus: 'active' | 'bl
     status: data.is_active ? 'active' : 'blocked',
   } as Operator;
 }
+
+
+// --- Notification / Booking Status Functions ---
+
+export async function getPendingBookings(): Promise<Booking[]> {
+  const supabase = createAdminClient();
+  const { data, error } = await supabase
+    .from('tour_bookings')
+    .select(`
+      *,
+      tour_package:package_id (name),
+      customer:user_id (full_name, email, avatar_url)
+    `)
+    .eq('booking_status', 'pending')
+    .order('created_at', { ascending: false });
+
+  if (error) {
+    console.error('Error fetching pending bookings:', error);
+    return [];
+  }
+
+  return (data || []).map((item: any) => ({
+    ...item,
+    customer_name: item.customer?.full_name || 'N/A',
+    customer_email: item.customer?.email || 'N/A',
+    avatar_url: item.customer?.avatar_url,
+    status: item.booking_status
+  })) as Booking[];
+}
+
+export async function acceptBooking(bookingId: string) {
+  const supabase = createAdminClient();
+  const { data, error } = await supabase
+    .from('tour_bookings')
+    .update({ booking_status: 'confirmed' })
+    .eq('id', bookingId)
+    .select()
+    .single();
+
+  if (error) {
+    console.error(`Error accepting booking ${bookingId}:`, error);
+    throw new Error(error.message);
+  }
+  return data;
+}
+
+
+export async function cancelBooking(bookingId: string) {
+  const supabase = createAdminClient();
+  const { data, error } = await supabase
+    .from('tour_bookings')
+    .update({ booking_status: 'cancelled' })
+    .eq('id', bookingId)
+    .select()
+    .single();
+
+  if (error) {
+    console.error(`Error cancelling booking ${bookingId}:`, error);
+    throw new Error(error.message);
+  }
+  return data;
+}
