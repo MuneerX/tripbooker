@@ -5,7 +5,7 @@ import * as React from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Bell, Check, X, ArrowRight, User, Package } from "lucide-react";
+import { Bell, Check, X, ArrowRight, User, Package, Calendar, Info } from "lucide-react";
 import type { Booking } from "@/lib/types";
 import { getPendingBookings, acceptBooking, cancelBooking } from "@/lib/supabase/queries";
 import { useToast } from "@/hooks/use-toast";
@@ -13,18 +13,25 @@ import { format, formatDistanceToNow } from "date-fns";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import Link from "next/link";
 import { Skeleton } from "@/components/ui/skeleton";
+import { cn } from "@/lib/utils";
 
 export default function NotificationsPage() {
   const router = useRouter();
   const { toast } = useToast();
   const [notifications, setNotifications] = React.useState<Booking[]>([]);
   const [loading, setLoading] = React.useState(true);
+  const [selectedNotification, setSelectedNotification] = React.useState<Booking | null>(null);
 
   const fetchNotifications = React.useCallback(async () => {
     setLoading(true);
     try {
       const pendingBookings = await getPendingBookings();
       setNotifications(pendingBookings);
+      if (pendingBookings.length > 0) {
+        setSelectedNotification(pendingBookings[0]);
+      } else {
+        setSelectedNotification(null);
+      }
     } catch (error) {
       toast({
         variant: "destructive",
@@ -40,120 +47,171 @@ export default function NotificationsPage() {
     fetchNotifications();
   }, [fetchNotifications]);
 
-  const handleAccept = async (bookingId: string) => {
+  const handleAction = async (action: 'accept' | 'cancel', bookingId: string) => {
     try {
-      await acceptBooking(bookingId);
-      toast({
-        title: "Success",
-        description: "Booking has been confirmed.",
-      });
-      // Refresh the list of notifications
-      fetchNotifications();
-      router.refresh();
+      if (action === 'accept') {
+        await acceptBooking(bookingId);
+        toast({ title: "Success", description: "Booking has been confirmed." });
+      } else {
+        await cancelBooking(bookingId);
+        toast({ title: "Success", description: "Booking has been cancelled." });
+      }
+      fetchNotifications(); // Refresh list
+      router.refresh(); // Refresh server components if any
     } catch (error: any) {
       toast({
         variant: "destructive",
         title: "Error",
-        description: error.message || "Failed to confirm booking.",
-      });
-    }
-  };
-  
-  const handleCancel = async (bookingId: string) => {
-    try {
-      await cancelBooking(bookingId);
-      toast({
-        title: "Success",
-        description: "Booking has been cancelled.",
-      });
-      // Refresh the list of notifications
-      fetchNotifications();
-      router.refresh();
-    } catch (error: any) {
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: error.message || "Failed to cancel booking.",
+        description: error.message || `Failed to ${action} booking.`,
       });
     }
   };
 
   const renderSkeleton = () => (
-    <div className="space-y-4">
-        {[...Array(3)].map((_, i) => (
-            <Card key={i}>
-                <CardContent className="p-6 flex items-center gap-6">
-                    <Skeleton className="h-12 w-12 rounded-full" />
-                    <div className="flex-1 space-y-2">
-                        <Skeleton className="h-4 w-3/4" />
-                        <Skeleton className="h-4 w-1/2" />
-                    </div>
-                    <div className="flex items-center gap-2">
-                        <Skeleton className="h-9 w-24" />
-                        <Skeleton className="h-9 w-24" />
-                    </div>
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div className="md:col-span-1 space-y-4">
+             <Card>
+                <CardHeader>
+                    <Skeleton className="h-5 w-3/4" />
+                    <Skeleton className="h-4 w-1/2" />
+                </CardHeader>
+                <CardContent className="space-y-3">
+                    {[...Array(3)].map((_, i) => <Skeleton key={i} className="h-16 w-full" />)}
                 </CardContent>
             </Card>
-        ))}
+        </div>
+        <div className="md:col-span-2">
+            <Card>
+                <CardHeader>
+                    <Skeleton className="h-6 w-1/2" />
+                    <Skeleton className="h-4 w-3/4 mt-2" />
+                </CardHeader>
+                <CardContent className="space-y-4">
+                    <Skeleton className="h-24 w-full" />
+                    <Skeleton className="h-10 w-full" />
+                </CardContent>
+            </Card>
+        </div>
     </div>
   );
 
   return (
     <div className="space-y-6">
-      <Card>
-        <CardHeader>
-          <CardTitle>Notifications</CardTitle>
-          <CardDescription>
-            Review and respond to pending bookings that require your attention.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          {loading ? (
+       {loading ? (
              renderSkeleton()
-          ) : notifications.length > 0 ? (
-            <div className="space-y-4">
-              {notifications.map((booking) => (
-                <Card key={booking.id}>
-                  <CardContent className="p-4 flex flex-col sm:flex-row items-start sm:items-center gap-4">
-                    <div className="flex items-start gap-4 flex-1">
-                      <Avatar className="h-12 w-12 border">
-                         <AvatarImage src={booking.avatar_url || ''} alt={booking.customer_name} />
-                        <AvatarFallback>{booking.customer_name?.charAt(0) || 'U'}</AvatarFallback>
-                      </Avatar>
-                      <div className="grid gap-1">
-                        <p className="font-semibold">
-                          New booking for <Link href={`/dashboard/tour-packages/${booking.package_id}`} className="text-primary hover:underline">{booking.tour_package?.name}</Link>
-                        </p>
-                        <p className="text-sm text-muted-foreground">
-                          From <Link href={`/dashboard/customers/${booking.user_id}`} className="font-medium text-foreground hover:underline">{booking.customer_name}</Link> - {format(new Date(booking.booking_date), "PPP")}
-                        </p>
-                         <p className="text-xs text-muted-foreground">
-                          {formatDistanceToNow(new Date(booking.created_at), { addSuffix: true })}
-                        </p>
-                      </div>
-                    </div>
-                    <div className="flex w-full sm:w-auto items-center gap-2 shrink-0">
-                      <Button variant="outline" size="sm" onClick={() => handleCancel(booking.id)}><X className="mr-2 h-4 w-4" /> Cancel</Button>
-                      <Button size="sm" onClick={() => handleAccept(booking.id)}><Check className="mr-2 h-4 w-4" /> Accept</Button>
-                      <Button variant="ghost" size="sm" asChild>
-                          <Link href={`/dashboard/bookings/${booking.id}`}>
-                              View <ArrowRight className="ml-2 h-4 w-4" />
-                          </Link>
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
+        ) : notifications.length > 0 ? (
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
+                {/* Left Column: Notification List */}
+                <div className="lg:col-span-1 space-y-4">
+                     <Card className="h-full">
+                        <CardHeader>
+                            <CardTitle>Pending Bookings</CardTitle>
+                            <CardDescription>{notifications.length} bookings require attention.</CardDescription>
+                        </CardHeader>
+                        <CardContent className="space-y-3 max-h-[70vh] overflow-y-auto">
+                            {notifications.map((booking) => (
+                                <button
+                                    key={booking.id}
+                                    className={cn(
+                                        "w-full text-left p-3 rounded-lg border transition-colors",
+                                        selectedNotification?.id === booking.id
+                                        ? "bg-muted border-primary"
+                                        : "hover:bg-muted/50"
+                                    )}
+                                    onClick={() => setSelectedNotification(booking)}
+                                >
+                                    <div className="flex items-start gap-3">
+                                        <Avatar className="h-10 w-10 border">
+                                            <AvatarImage src={booking.avatar_url || ''} alt={booking.customer_name} />
+                                            <AvatarFallback>{booking.customer_name?.charAt(0) || 'U'}</AvatarFallback>
+                                        </Avatar>
+                                        <div className="grid gap-0.5">
+                                            <p className="font-semibold text-sm line-clamp-1">{booking.tour_package?.name}</p>
+                                            <p className="text-xs text-muted-foreground">From {booking.customer_name}</p>
+                                            <p className="text-xs text-muted-foreground">
+                                                {formatDistanceToNow(new Date(booking.created_at), { addSuffix: true })}
+                                            </p>
+                                        </div>
+                                    </div>
+                                </button>
+                            ))}
+                        </CardContent>
+                    </Card>
+                </div>
+                {/* Right Column: Detailed View */}
+                <div className="lg:col-span-2">
+                    {selectedNotification ? (
+                        <Card>
+                            <CardHeader>
+                                <div className="flex items-center justify-between">
+                                    <div>
+                                        <CardTitle>Booking: {selectedNotification.booking_reference}</CardTitle>
+                                        <CardDescription>
+                                            For tour: <Link href={`/dashboard/tour-packages/${selectedNotification.package_id}`} className="text-primary hover:underline">{selectedNotification.tour_package?.name}</Link>
+                                        </CardDescription>
+                                    </div>
+                                    <Button variant="ghost" size="sm" asChild>
+                                        <Link href={`/dashboard/bookings/${selectedNotification.id}`}>
+                                            View Full Booking <ArrowRight className="ml-2 h-4 w-4" />
+                                        </Link>
+                                    </Button>
+                                </div>
+                            </CardHeader>
+                            <CardContent className="space-y-6">
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                                    <div className="flex items-start gap-3">
+                                        <User className="h-5 w-5 text-muted-foreground mt-1" />
+                                        <div>
+                                            <p className="text-sm text-muted-foreground">Customer</p>
+                                            <Link href={`/dashboard/customers/${selectedNotification.user_id}`} className="font-medium hover:underline">
+                                                {selectedNotification.customer_name}
+                                            </Link>
+                                        </div>
+                                    </div>
+                                     <div className="flex items-start gap-3">
+                                        <Calendar className="h-5 w-5 text-muted-foreground mt-1" />
+                                        <div>
+                                            <p className="text-sm text-muted-foreground">Reservation Date</p>
+                                            <p className="font-medium">{format(new Date(selectedNotification.booking_date), "PPP")}</p>
+                                        </div>
+                                    </div>
+                                     <div className="flex items-start gap-3">
+                                        <Info className="h-5 w-5 text-muted-foreground mt-1" />
+                                        <div>
+                                            <p className="text-sm text-muted-foreground">Booking ID</p>
+                                            <p className="font-medium font-mono text-xs">{selectedNotification.booking_reference}</p>
+                                        </div>
+                                    </div>
+                                     <div className="flex items-start gap-3">
+                                        <Calendar className="h-5 w-5 text-muted-foreground mt-1" />
+                                        <div>
+                                            <p className="text-sm text-muted-foreground">Created At</p>
+                                            <p className="font-medium">{formatDistanceToNow(new Date(selectedNotification.created_at), { addSuffix: true })}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div className="flex w-full items-center gap-2 pt-4 border-t">
+                                  <Button variant="outline" size="lg" className="flex-1" onClick={() => handleAction('cancel', selectedNotification.id)}><X className="mr-2 h-4 w-4" /> Cancel</Button>
+                                  <Button size="lg" className="flex-1" onClick={() => handleAction('accept', selectedNotification.id)}><Check className="mr-2 h-4 w-4" /> Approve</Button>
+                                </div>
+                            </CardContent>
+                        </Card>
+                    ) : (
+                         <div className="text-center py-24 text-muted-foreground h-full flex flex-col items-center justify-center rounded-lg border-2 border-dashed">
+                            <Bell className="mx-auto h-12 w-12" />
+                            <h3 className="mt-4 text-lg font-semibold">Select a notification</h3>
+                            <p className="mt-2 text-sm">Choose a booking from the left to see its details.</p>
+                        </div>
+                    )}
+                </div>
             </div>
-          ) : (
-            <div className="text-center py-16 text-muted-foreground">
+        ) : (
+            <div className="text-center py-24 text-muted-foreground">
               <Bell className="mx-auto h-12 w-12" />
               <h3 className="mt-4 text-lg font-semibold">All caught up!</h3>
               <p className="mt-2 text-sm">There are no new notifications.</p>
             </div>
-          )}
-        </CardContent>
-      </Card>
+        )}
     </div>
   );
 }
