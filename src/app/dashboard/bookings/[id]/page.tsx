@@ -173,11 +173,10 @@ export default function BookingDetailPage() {
 
     const progressSegments = paymentTimeline.map(part => {
         const width = (part.total_amount / basePrice) * 100;
-        let color = 'bg-gray-300 dark:bg-gray-700'; // Locked
+        let color = 'bg-gray-300 dark:bg-gray-700'; // Locked or next-pay
         if (part.status === 'paid') color = 'bg-green-500';
         if (part.status === 'overdue-paid') color = 'bg-yellow-500';
         if (part.status === 'overdue') color = 'bg-red-500';
-        if (part.status === 'next-pay') color = 'bg-blue-500';
 
         return { color, width: `${width}%` };
     });
@@ -315,7 +314,7 @@ export default function BookingDetailPage() {
                                           {/* Paid Progress Overlay */}
                                           <div className="absolute top-0 left-0 h-full rounded-full bg-green-500/50" style={{ width: `${paymentProgress.progressValue}%` }} />
                                       </div>
-                                      <div className="absolute top-0 left-0 w-full h-full">
+                                      <div className="absolute top-0 left-0 w-full h-2">
                                           {paymentTimeline.map((part, index) => {
                                               const position = tourPackage.base_price > 0 ? (part.cumulativeAmount / tourPackage.base_price) * 100 : 0;
                                               const statusInfo = getTimelineStatusInfo(part.status);
@@ -323,7 +322,7 @@ export default function BookingDetailPage() {
                                               return (
                                                   <div
                                                       key={part.id || index}
-                                                      className={cn("absolute top-1/2 h-6 w-6 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-background flex items-center justify-center text-white z-10", statusInfo.className)}
+                                                      className={cn("absolute top-1/2 -translate-y-1/2 h-6 w-6 -translate-x-1/2 rounded-full border-2 border-background flex items-center justify-center text-white z-10", statusInfo.className)}
                                                       style={{ left: `${position}%` }}
                                                   >
                                                       {React.cloneElement(statusInfo.icon, { className: 'h-3.5 w-3.5' })}
