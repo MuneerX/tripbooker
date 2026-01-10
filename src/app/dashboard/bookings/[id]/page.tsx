@@ -282,9 +282,9 @@ export default function BookingDetailPage() {
                                 <CardContent className="grid grid-cols-2 gap-x-6 gap-y-4">
                                     <div className="flex items-start gap-3"><Calendar className="h-5 w-5 text-muted-foreground mt-1" /><div><p className="text-sm text-muted-foreground">Created On</p><p className="font-medium">{format(new Date(booking.created_at), "PPP")}</p></div></div>
                                     <div className="flex items-start gap-3"><Calendar className="h-5 w-5 text-muted-foreground mt-1" /><div><p className="text-sm text-muted-foreground">Reservation Date</p><p className="font-medium">{format(new Date(booking.booking_date), "PPP")}</p></div></div>
-                                    <div className="flex items-start gap-3 col-span-2"><Hash className="h-5 w-5 text-muted-foreground mt-1" /><div><p className="text-sm text-muted-foreground">Referral Code</p><p className="font-medium">{booking.referral_code || 'N/A'}</p></div></div>
+                                    <div className="flex items-start gap-3"><Hash className="h-5 w-5 text-muted-foreground mt-1" /><div><p className="text-sm text-muted-foreground">Referral Code</p><p className="font-medium">{booking.referral_code || 'N/A'}</p></div></div>
                                     <div className="flex items-start gap-3"><Calendar className="h-5 w-5 text-muted-foreground mt-1" /><div><p className="text-sm text-muted-foreground">Travel Date</p><p className="font-medium">{booking.travel_date ? format(new Date(booking.travel_date), "PPP") : 'N/A'}</p></div></div>
-                                    <div className="flex items-start gap-3 col-span-2"><Users className="h-5 w-5 text-muted-foreground mt-1" /><div><p className="text-sm text-muted-foreground">No. of Guests</p><p className="font-medium">{booking.total_adults} Adult(s), {booking.total_children} Child(ren)</p></div></div>
+                                    <div className="flex items-start gap-3"><Users className="h-5 w-5 text-muted-foreground mt-1" /><div><p className="text-sm text-muted-foreground">No. of Guests</p><p className="font-medium">{booking.total_adults} Adult(s), {booking.total_children} Child(ren)</p></div></div>
                                 </CardContent>
                             </Card>
                             {/* Customer Details */}
@@ -293,7 +293,7 @@ export default function BookingDetailPage() {
                                 <CardContent className="grid grid-cols-2 gap-x-6 gap-y-4">
                                     <div className="flex items-start gap-3"><User className="h-5 w-5 text-muted-foreground mt-1" /><div><p className="text-sm text-muted-foreground">Customer Name</p><p className="font-medium">{booking.customer.full_name}</p></div></div>
                                     <div className="flex items-start gap-3"><MapPinIcon className="h-5 w-5 text-muted-foreground mt-1" /><div><p className="text-sm text-muted-foreground">City</p><p className="font-medium">{booking.customer.address?.city || 'N/A'}</p></div></div>
-                                    <div className="flex items-start gap_3"><Phone className="h_5 w_5 text_muted_foreground mt_1" /><div><p className="text_sm text_muted_foreground">Contact Number</p><p className="font_medium">{booking.customer.address?.phone_number || 'N/A'}</p></div></div>
+                                    <div className="flex items-start gap-3"><Phone className="h-5 w-5 text-muted-foreground mt-1" /><div><p className="text-sm text-muted-foreground">Contact Number</p><p className="font-medium">{booking.customer.address?.phone_number || 'N/A'}</p></div></div>
                                     <div className="flex items-start gap-3"><Hash className="h-5 w-5 text-muted-foreground mt-1" /><div><p className="text-sm text-muted-foreground">Pincode</p><p className="font-medium">{booking.customer.address?.pincode || 'N/A'}</p></div></div>
                                 </CardContent>
                             </Card>
@@ -599,3 +599,5 @@ export default function BookingDetailPage() {
     </div>
   );
 }
+
+    
