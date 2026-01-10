@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import * as React from "react";
@@ -176,7 +177,7 @@ export default function OperatorsPage() {
                 </TableRow>
               ) : paginatedOperators.length > 0 ? (
                 paginatedOperators.map((operator: Operator) => (
-                  <TableRow key={operator.id}>
+                  <TableRow key={operator.id} className="cursor-pointer" onClick={() => router.push(`/dashboard/operators/${operator.id}`)}>
                     <TableCell>
                       <div className="flex items-center gap-3">
                         <Avatar className="h-9 w-9">

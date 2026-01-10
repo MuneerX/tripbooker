@@ -1092,6 +1092,27 @@ export async function getOperators(): Promise<Operator[]> {
   })) as Operator[];
 }
 
+export async function getOperatorById(id: string): Promise<Operator | null> {
+    const supabase = createAdminClient();
+    const { data, error } = await supabase
+        .from('operators')
+        .select('*')
+        .eq('id', id)
+        .single();
+        
+    if (error) {
+        console.error(`Error fetching operator ${id}:`, error);
+        return null;
+    }
+    
+    if (!data) return null;
+
+    return {
+      ...data,
+      status: data.is_active ? 'active' : 'blocked'
+    } as Operator;
+}
+
 export async function deleteOperator(id: string) {
   const supabase = createAdminClient();
   const { error } = await supabase.from('operators').delete().eq('id', id);
