@@ -7,19 +7,17 @@ import { cn } from '@/lib/utils';
 export function StatCard({ card }: { card: StatCardType }) {
   return (
     <Card>
-      <CardHeader className="pb-2">
+      <CardHeader className="flex flex-row items-center justify-between pb-2">
         <CardTitle className="text-sm font-medium">{card.label}</CardTitle>
-      </CardHeader>
-      <CardContent className="flex items-end justify-between">
-        <div>
-            <div className="text-2xl font-bold">{card.value}</div>
-            {card.change && (
-            <p className="text-xs text-muted-foreground">{card.change} from last month</p>
-            )}
-        </div>
         <div className="text-primary bg-primary/10 p-2 rounded-lg">
-            {React.cloneElement(card.icon as React.ReactElement, { className: 'h-5 w-5' })}
+            {React.cloneElement(card.icon as React.ReactElement, { className: 'h-4 w-4' })}
         </div>
+      </CardHeader>
+      <CardContent>
+        <div className="text-2xl font-bold">{card.value}</div>
+        {card.change && (
+          <p className="text-xs text-muted-foreground">{card.change} from last month</p>
+        )}
       </CardContent>
     </Card>
   );
