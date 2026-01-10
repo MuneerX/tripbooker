@@ -50,7 +50,7 @@ const StatItem = ({
             </div>
             <div>
                 <div className="text-xl font-bold">{value}</div>
-                <p className="text-xs text-muted-foreground">{label}</p>
+                <p className="text-sm text-muted-foreground">{label}</p>
             </div>
         </div>
     );
