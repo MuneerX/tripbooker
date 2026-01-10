@@ -175,7 +175,7 @@ export default function OperatorDetailPage() {
                            <UserX className="h-5 w-5 text-muted-foreground mt-1" />
                            <div>
                                <p className="text-sm text-muted-foreground">Status</p>
-                               <Badge variant={operator.is_active ? "default" : "destructive"} className="capitalize mt-1">{operator.status}</Badge>
+                               <Badge variant="outline" className={cn("capitalize mt-1", operator.status === 'active' ? 'text-green-600 border-green-600/20 bg-green-500/10' : 'text-red-600 border-red-600/20 bg-red-500/10')}>{operator.status}</Badge>
                            </div>
                        </div>
                     </CardContent>

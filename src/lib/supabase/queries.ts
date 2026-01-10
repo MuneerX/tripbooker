@@ -1113,8 +1113,146 @@ export async function getOperatorById(id: string): Promise<Operator | null> {
     } as Operator;
 }
 
+export async function createOperator(formData: FormData) {
+  const supabase = createAdminClient();
+  const logoFile = formData.get('logo_file') as File | null;
+  let logoUrl: string | null = null;
+
+  if (logoFile && logoFile.size > 0) {
+    const filePath = `images/logos/${Date.now()}-${logoFile.name}`;
+    const { error: uploadError } = await supabase.storage.from('images').upload(filePath, logoFile);
+    if (uploadError) {
+      console.error('Error uploading logo:', uploadError);
+      throw new Error(`Failed to upload logo: ${uploadError.message}`);
+    }
+    const { data: { publicUrl } } = supabase.storage.from('images').getPublicUrl(filePath);
+    logoUrl = publicUrl;
+  }
+
+  const operatorData: Omit<Operator, 'id' | 'created_at' | 'updated_at' | 'status'> = {
+    name: formData.get('name') as string,
+    code: formData.get('code') as string || null,
+    contact_person: formData.get('contact_person') as string || null,
+    email: formData.get('email') as string || null,
+    phone: formData.get('phone') as string || null,
+    address: formData.get('address') as string || null,
+    license_number: formData.get('license_number') as string || null,
+    license_expiry: formData.get('license_expiry') as string || null,
+    rating: 0,
+    total_reviews: 0,
+    description: formData.get('description') as string || null,
+    logo_url: logoUrl,
+    is_verified: formData.get('is_verified') === 'true',
+    is_active: formData.get('is_active') === 'true',
+    referral_code: formData.get('referral_code') as string || null,
+  };
+
+  const { data, error } = await supabase.from('operators').insert([operatorData]).select().single();
+
+  if (error) {
+    console.error('Error creating operator:', error);
+    throw new Error(error.message);
+  }
+  return data;
+}
+
+export async function updateOperator(id: string, formData: FormData): Promise<Operator> {
+    const supabase = createAdminClient();
+
+    const getPathFromUrl = (url: string): string | null => {
+      if (!url) return null;
+      try {
+        const urlObject = new URL(url);
+        const pathSegments = urlObject.pathname.split('/');
+        const bucketNameIndex = pathSegments.findIndex(segment => segment === 'images');
+        if (bucketNameIndex === -1 || bucketNameIndex + 1 >= pathSegments.length) return null;
+        return decodeURIComponent(pathSegments.slice(bucketNameIndex + 1).join('/'));
+      } catch (e) {
+        return null;
+      }
+    };
+
+    const newLogoFile = formData.get('logo_file') as File | null;
+    const originalLogoUrl = formData.get('original_logo_url') as string | null;
+    let logoUrl = originalLogoUrl;
+
+    // If there's a new logo file, upload it
+    if (newLogoFile && newLogoFile.size > 0) {
+        const filePath = `images/logos/${Date.now()}-${newLogoFile.name}`;
+        const { error: uploadError } = await supabase.storage.from('images').upload(filePath, newLogoFile);
+        if (uploadError) throw new Error(`Failed to upload new logo: ${uploadError.message}`);
+        
+        const { data: { publicUrl } } = supabase.storage.from('images').getPublicUrl(filePath);
+        logoUrl = publicUrl;
+
+        // If there was an old logo, delete it
+        if (originalLogoUrl) {
+            const pathToDelete = getPathFromUrl(originalLogoUrl);
+            if (pathToDelete) {
+                await supabase.storage.from('images').remove([pathToDelete]);
+            }
+        }
+    }
+    
+    const updateData: Partial<Operator> = {
+        name: formData.get('name') as string,
+        code: formData.get('code') as string,
+        contact_person: formData.get('contact_person') as string,
+        email: formData.get('email') as string,
+        phone: formData.get('phone') as string,
+        address: formData.get('address') as string,
+        license_number: formData.get('license_number') as string,
+        license_expiry: formData.get('license_expiry') as string || null,
+        description: formData.get('description') as string,
+        referral_code: formData.get('referral_code') as string,
+        is_verified: formData.get('is_verified') === 'true',
+        is_active: formData.get('is_active') === 'true',
+        logo_url: logoUrl,
+        updated_at: new Date().toISOString()
+    };
+    
+    const { data, error } = await supabase.from('operators').update(updateData).eq('id', id).select().single();
+
+    if (error) {
+        console.error(`Error updating operator ${id}:`, error);
+        throw new Error(error.message);
+    }
+    return data as Operator;
+}
+
+
 export async function deleteOperator(id: string) {
   const supabase = createAdminClient();
+  
+  // First, get the operator to find the logo URL
+  const { data: operator, error: fetchError } = await supabase.from('operators').select('logo_url').eq('id', id).single();
+  if (fetchError) {
+     console.error('Error fetching operator for deletion:', fetchError);
+     // Continue to attempt deletion even if fetch fails
+  }
+
+  // If there's a logo, delete it from storage
+  if (operator?.logo_url) {
+      const getPathFromUrl = (url: string): string | null => {
+        if (!url) return null;
+        try {
+            const urlObject = new URL(url);
+            const pathSegments = urlObject.pathname.split('/');
+            const bucketNameIndex = pathSegments.findIndex(segment => segment === 'images');
+            if (bucketNameIndex === -1) return null;
+            return decodeURIComponent(pathSegments.slice(bucketNameIndex + 1).join('/'));
+        } catch (e) {
+            return null;
+        }
+      };
+      const pathToDelete = getPathFromUrl(operator.logo_url);
+      if (pathToDelete) {
+          const { error: storageError } = await supabase.storage.from('images').remove([pathToDelete]);
+          if(storageError) console.error('Error deleting operator logo:', storageError);
+      }
+  }
+  
+  // Finally, delete the operator record
   const { error } = await supabase.from('operators').delete().eq('id', id);
   if (error) {
     console.error('Error deleting operator:', error);
