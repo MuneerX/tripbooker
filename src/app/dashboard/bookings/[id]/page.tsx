@@ -64,11 +64,12 @@ export default function BookingDetailPage() {
     const tourPackage = booking.tour_package;
     const bookingDate = new Date(booking.booking_date);
     const totalPaid = booking.payments?.reduce((sum, p) => sum + p.amount, 0) ?? 0;
-    let cumulativeAmountDue = 0;
-    let lastPaidIndex = -1;
-
+    
     const sortedParts = tourPackage.pay_in_parts.sort((a, b) => a.months - b.months);
     const paymentsByDate = (booking.payments || []).sort((a, b) => new Date(a.payment_date || 0).getTime() - new Date(b.payment_date || 0).getTime());
+
+    let cumulativeAmountDue = 0;
+    let lastPaidIndex = -1;
 
     const schedule = sortedParts.map((part, index) => {
         const dueDate = addMonths(bookingDate, part.months);
@@ -79,7 +80,6 @@ export default function BookingDetailPage() {
         
         if (isPartPaid) {
             lastPaidIndex = index;
-            // Find the first payment that meets the cumulative amount
             let paidAmountSoFar = 0;
             for (const p of paymentsByDate) {
                 paidAmountSoFar += p.amount;
@@ -107,11 +107,11 @@ export default function BookingDetailPage() {
             ...part,
             dueDate,
             paidOn,
-            status
+            status,
+            cumulativeAmount: cumulativeAmountDue
         };
     });
     
-    // Ensure there is always a 'next-pay' if not fully paid and no overdues
     const isAllPaid = schedule.every(s => s.status === 'paid' || s.status === 'overdue-paid');
     const hasOverdue = schedule.some(s => s.status === 'overdue');
     if (!isAllPaid && !hasOverdue) {
@@ -315,23 +315,18 @@ export default function BookingDetailPage() {
                                           {/* Paid Progress Overlay */}
                                           <div className="absolute top-0 left-0 h-full rounded-full bg-green-500/50" style={{ width: `${paymentProgress.progressValue}%` }} />
                                       </div>
-                                      <div className="absolute top-0 w-full h-full">
+                                      <div className="absolute top-1/2 left-0 w-full h-full -translate-y-1/2">
                                           {paymentTimeline.map((part, index) => {
-                                              let cumulativeAmount = 0;
-                                              for (let i = 0; i < index; i++) {
-                                                  cumulativeAmount += paymentTimeline[i].total_amount;
-                                              }
-                                              cumulativeAmount += part.total_amount;
-                                              const position = tourPackage.base_price > 0 ? (cumulativeAmount / tourPackage.base_price) * 100 : 0;
+                                              const position = tourPackage.base_price > 0 ? (part.cumulativeAmount / tourPackage.base_price) * 100 : 0;
                                               const statusInfo = getTimelineStatusInfo(part.status);
                                               
                                               return (
                                                   <div
                                                       key={part.id || index}
-                                                      className={cn("absolute top-1/2 h-5 w-5 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-background flex items-center justify-center text-white", statusInfo.className)}
+                                                      className={cn("absolute top-1/2 h-6 w-6 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-background flex items-center justify-center text-white", statusInfo.className)}
                                                       style={{ left: `${position}%` }}
                                                   >
-                                                      {React.cloneElement(statusInfo.icon, { className: 'h-3 w-3' })}
+                                                      {React.cloneElement(statusInfo.icon, { className: 'h-3.5 w-3.5' })}
                                                   </div>
                                               )
                                           })}
