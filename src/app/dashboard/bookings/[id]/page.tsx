@@ -144,7 +144,7 @@ export default function BookingDetailPage() {
     const paidAmount = booking.payments?.reduce((sum, p) => sum + p.amount, 0) ?? 0;
     const basePrice = tourPackage.base_price ?? 0;
     const pendingAmount = Math.max(0, basePrice - paidAmount);
-    const progressValue = basePrice > 0 ? (paidAmount / basePrice) * 100 : 0;
+    const progressValue = basePrice > 0 ? Math.min((paidAmount / basePrice) * 100, 100) : 0;
     
     if (paymentTimeline.length === 0) {
       const isPaid = paidAmount >= basePrice;
@@ -583,5 +583,7 @@ export default function BookingDetailPage() {
     </div>
   );
 }
+
+    
 
     
