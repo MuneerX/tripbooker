@@ -135,7 +135,7 @@ export default function BookingsPage() {
                 </TableRow>
               ) : paginatedBookings.length > 0 ? (
                 paginatedBookings.map((booking: Booking) => (
-                  <TableRow key={booking.id} className="cursor-pointer" onClick={() => router.push(`/dashboard/bookings/${booking.id}`)}>
+                  <TableRow key={booking.id}>
                     <TableCell className="font-mono text-xs">{booking.booking_reference}</TableCell>
                     <TableCell className="font-medium">{booking.tour_package?.name || 'N/A'}</TableCell>
                     <TableCell>{format(new Date(booking.booking_date), "dd MMM, yyyy")}</TableCell>
@@ -156,7 +156,7 @@ export default function BookingsPage() {
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
                           <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                          <DropdownMenuItem onSelect={(e) => {e.stopPropagation(); router.push(`/dashboard/bookings/${booking.id}`)}}>
+                          <DropdownMenuItem onSelect={() => router.push(`/dashboard/bookings/${booking.id}`)}>
                             <View className="mr-2 h-4 w-4" /> View
                           </DropdownMenuItem>
                           <DropdownMenuItem
@@ -226,5 +226,7 @@ export default function BookingsPage() {
     </div>
   );
 }
+
+    
 
     
