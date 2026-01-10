@@ -65,7 +65,10 @@ const navItems: NavItem[] = [
     title: 'Operators',
     href: '/dashboard/operators',
     icon: UserCog,
-    subItems: [],
+    subItems: [
+      { title: 'All Operators', href: '/dashboard/operators', icon: UserCog },
+      { title: 'Create New', href: '/dashboard/operators/create', icon: PlusCircle },
+    ],
   },
     {
     title: 'Notifications',
