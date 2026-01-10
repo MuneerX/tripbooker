@@ -5,7 +5,7 @@
 import { Bell, Menu, Search, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger, DropdownMenuFooter } from '@/components/ui/dropdown-menu';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { useSidebar } from '@/components/ui/sidebar';
 import Link from 'next/link';
 import { Badge } from '@/components/ui/badge';
@@ -100,13 +100,13 @@ export function AppHeader() {
             <div className="px-2 py-4 text-center text-sm text-muted-foreground">No new notifications</div>
           )}
           <DropdownMenuSeparator />
-          <DropdownMenuFooter>
+          <div className="p-1">
             <Button asChild variant="outline" className="w-full">
               <Link href="/dashboard/notifications">
                 View All Notifications
               </Link>
             </Button>
-          </DropdownMenuFooter>
+          </div>
         </DropdownMenuContent>
       </DropdownMenu>
       
