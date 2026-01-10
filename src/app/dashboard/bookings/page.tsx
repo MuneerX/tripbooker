@@ -144,7 +144,7 @@ export default function BookingsPage() {
                     <TableCell className="hidden md:table-cell">{formatCurrency(booking.total_amount)}</TableCell>
                     <TableCell className="hidden lg:table-cell">{booking.referral_code || 'N/A'}</TableCell>
                     <TableCell>
-                      <Badge variant="outline" className={cn("capitalize", getStatusBadgeColor(booking.booking_status))}>{booking.booking_status}</Badge>
+                      <Badge className={cn("capitalize", getStatusBadgeColor(booking.booking_status))}>{booking.booking_status}</Badge>
                     </TableCell>
                      <TableCell>
                       <DropdownMenu>
@@ -226,5 +226,3 @@ export default function BookingsPage() {
     </div>
   );
 }
-
-    

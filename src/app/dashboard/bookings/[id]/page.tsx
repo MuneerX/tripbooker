@@ -307,7 +307,7 @@ export default function BookingDetailPage() {
                 </h1>
                 <div className="flex items-center gap-2">
                   <p className="text-sm text-muted-foreground">Ref: {booking.booking_reference}</p>
-                  <Badge variant="outline" className={cn("capitalize", getStatusBadgeColor(booking.booking_status))}>
+                  <Badge className={cn("capitalize", getStatusBadgeColor(booking.booking_status))}>
                     {booking.booking_status}
                   </Badge>
                 </div>
@@ -708,5 +708,3 @@ export default function BookingDetailPage() {
     </div>
   );
 }
-
-    
