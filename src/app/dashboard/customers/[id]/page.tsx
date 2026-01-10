@@ -3,7 +3,6 @@
 
 import * as React from "react";
 import { useParams, useRouter } from "next/navigation";
-import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -44,7 +43,11 @@ export default function CustomerDetailPage() {
         setLoading(true);
         const data = await getProfileById(id as string);
         if (data) {
-          setProfile(data);
+          // Initialize a mock status if it doesn't exist
+          setProfile({
+            ...data,
+            status: data.status || 'active'
+          });
           setBreadcrumbName(data.full_name || 'Customer');
         } else {
           toast({ variant: "destructive", title: "Error", description: "Customer not found." });
@@ -62,9 +65,10 @@ export default function CustomerDetailPage() {
   const handleStatusToggle = async () => {
     if (!profile) return;
     
-    // NOTE: This is a mock implementation for the UI.
-    // In a real app, you would call an update function here.
     const newStatus = profile.status === 'active' ? 'blocked' : 'active';
+    
+    // NOTE: This is a mock implementation for the UI that updates local state.
+    // In a real app, you would call an update function here to persist the change.
     setProfile({ ...profile, status: newStatus });
     
     toast({
@@ -140,7 +144,7 @@ export default function CustomerDetailPage() {
                                     <p className="capitalize">{profile.gender || 'N/A'}</p>
                                 </div>
                             </div>
-                            <div className="flex items-center gap-2">
+                            <div className="flex items-center gap-2 col-span-2">
                                 <User className="h-5 w-5 text-muted-foreground" />
                                 <div>
                                     <p className="font-medium text-muted-foreground">KV Customer</p>

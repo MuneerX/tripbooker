@@ -43,7 +43,12 @@ export default function CustomersPage() {
       setLoading(true);
       try {
         const profiles = await getProfiles();
-        setAllProfiles(profiles);
+        // Initialize a mock status if it doesn't exist
+        const profilesWithStatus = profiles.map((p, index) => ({
+          ...p,
+          status: p.status || (index % 3 === 0 ? 'blocked' : 'active'),
+        }));
+        setAllProfiles(profilesWithStatus);
       } catch (error: any) {
         toast({
           variant: "destructive",
@@ -59,16 +64,16 @@ export default function CustomersPage() {
   const handleStatusToggle = async () => {
     if (!itemToToggle) return;
     
-    // NOTE: This is a mock implementation.
-    // In a real app, you would call an update function to change the user's status in the DB.
-    
     const newStatus = itemToToggle.status === 'active' ? 'blocked' : 'active';
+    
+    // NOTE: This is a mock implementation that updates the local state.
+    // In a real app, you would call an update function to change the user's status in the DB.
+    setAllProfiles(prev => prev.map(p => p.id === itemToToggle.id ? { ...p, status: newStatus } : p));
     
     toast({
       title: "Success",
       description: `Customer "${itemToToggle.full_name}" has been ${newStatus}.`,
     });
-    setAllProfiles(prev => prev.map(p => p.id === itemToToggle.id ? { ...p, status: newStatus } : p));
     setItemToToggle(null);
   };
 

@@ -1000,16 +1000,8 @@ export async function getProfiles(): Promise<Profile[]> {
         console.error('Error fetching profiles:', error);
         throw new Error(error.message);
     }
-
-    // The 'status' field is not in the database schema you provided.
-    // I'll add a mock 'status' to each profile for display purposes.
-    // In a real application, you would add this column to your 'profiles' table.
-    const profilesWithStatus = (data || []).map((profile, index) => ({
-        ...profile,
-        status: index % 3 === 0 ? 'blocked' : 'active', // Mock data for status
-    }));
-
-    return profilesWithStatus as Profile[];
+    
+    return data as Profile[];
 }
 
 
@@ -1028,11 +1020,5 @@ export async function getProfileById(id: string): Promise<Profile | null> {
     
     if (!data) return null;
 
-    // Add mock status to the single profile
-    const profileWithStatus = {
-        ...data,
-        status: data.id.charCodeAt(data.id.length - 1) % 3 === 0 ? 'blocked' : 'active', // Consistent mock status
-    };
-
-    return profileWithStatus as Profile;
+    return data as Profile;
 }
