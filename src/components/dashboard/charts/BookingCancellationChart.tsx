@@ -5,6 +5,13 @@ import { Bar, BarChart, CartesianGrid, XAxis, YAxis, Tooltip, Legend, Responsive
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Calendar } from "lucide-react"
+import {
+  ChartContainer,
+  ChartTooltip,
+  ChartTooltipContent,
+  ChartLegend,
+  ChartLegendContent,
+} from "@/components/ui/chart"
 
 export function BookingCancellationChart({ data }: { data: any[] }) {
   return (
@@ -20,27 +27,36 @@ export function BookingCancellationChart({ data }: { data: any[] }) {
         </Button>
       </CardHeader>
       <CardContent>
-        <ResponsiveContainer width="100%" height={300}>
+        <ChartContainer config={{}} className="h-[300px] w-full">
           <BarChart data={data} barGap={10} barCategoryGap="20%">
             <CartesianGrid strokeDasharray="3 3" vertical={false} />
-            <XAxis dataKey="month" axisLine={false} tickLine={false} />
-            <YAxis axisLine={false} tickLine={false} />
-            <Tooltip
-                contentStyle={{
-                    background: 'hsl(var(--background))',
-                    border: '1px solid hsl(var(--border))',
-                    borderRadius: '0.5rem',
-                }}
-                cursor={{ fill: 'hsl(var(--accent))', radius: '0.25rem' }}
+            <XAxis dataKey="month" tickLine={false} axisLine={false} tickMargin={8} interval={0} />
+            <YAxis tickLine={false} axisLine={false} tickMargin={8} />
+            <ChartTooltip
+              content={
+                <ChartTooltipContent
+                  formatter={(value, name) => {
+                    const currency = new Intl.NumberFormat("en-IN", {
+                      style: "currency",
+                      currency: "INR",
+                      maximumFractionDigits: 0,
+                    }).format(Number(value))
+                    return (
+                      <div className="flex flex-col">
+                        <span className="capitalize">{name}</span>
+                        <span className="font-bold">{currency}</span>
+                      </div>
+                    )
+                  }}
+                />
+              }
             />
-            <Legend iconType="circle" iconSize={10} />
+            <Legend content={<ChartLegendContent />} />
             <Bar dataKey="cancellations" fill="#FF8042" name="Cancellation" radius={[4, 4, 0, 0]} />
             <Bar dataKey="bookings" fill="#22C55E" name="Bookings" radius={[4, 4, 0, 0]} />
           </BarChart>
-        </ResponsiveContainer>
+        </ChartContainer>
       </CardContent>
     </Card>
   )
 }
-
-    
