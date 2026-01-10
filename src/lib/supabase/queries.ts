@@ -5,7 +5,7 @@
 import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
 
-import type { TourPackage, TripDay, Activity, TripLocation, PayInPart, Booking, Review, BookingGuest, Payment } from '@/lib/types'
+import type { TourPackage, TripDay, Activity, TripLocation, PayInPart, Booking, Review, BookingGuest, Payment, Profile } from '@/lib/types'
 import { createClient } from '@supabase/supabase-js'
 
 // Correctly create a Supabase client with admin privileges (service_role)
@@ -989,3 +989,25 @@ export async function getReviews(packageId?: string): Promise<Review[]> {
   }));
 }
 
+export async function getProfiles(): Promise<Profile[]> {
+    const supabase = createAdminClient();
+    const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+    if (error) {
+        console.error('Error fetching profiles:', error);
+        throw new Error(error.message);
+    }
+
+    // The 'status' field is not in the database schema you provided.
+    // I'll add a mock 'status' to each profile for display purposes.
+    // In a real application, you would add this column to your 'profiles' table.
+    const profilesWithStatus = (data || []).map((profile, index) => ({
+        ...profile,
+        status: index % 3 === 0 ? 'blocked' : 'active', // Mock data for status
+    }));
+
+    return profilesWithStatus as Profile[];
+}

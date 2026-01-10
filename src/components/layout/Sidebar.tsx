@@ -13,6 +13,7 @@ import {
   ChevronDown,
   LayoutGrid,
   Book,
+  Users,
 } from 'lucide-react';
 import {
   Sidebar,
@@ -49,6 +50,12 @@ const navItems: NavItem[] = [
     title: 'Bookings',
     href: '/dashboard/bookings',
     icon: Book,
+    subItems: [],
+  },
+   {
+    title: 'Customers',
+    href: '/dashboard/customers',
+    icon: Users,
     subItems: [],
   },
   {

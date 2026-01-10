@@ -179,6 +179,17 @@ export type Review = {
   avatar_url?: string | null;
 };
 
+export type Profile = {
+    id: string;
+    updated_at: string | null;
+    full_name: string | null;
+    email: string | null;
+    phone_number: string | null;
+    avatar_url: string | null;
+    is_kv_customer: boolean | null;
+    status: 'active' | 'blocked';
+};
+
 // For stats cards
 export type StatCard = {
   label: string;
@@ -195,4 +206,3 @@ export type NavItem = {
   icon: React.ComponentType<{ className?: string }>;
   subItems?: NavItem[];
 };
-
