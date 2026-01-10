@@ -16,9 +16,8 @@ export function getStatusBadgeColor(status: 'active' | 'inactive' | 'pending' | 
   switch (status) {
     case 'active':
     case 'completed':
-      return 'text-green-600 border-green-600/20 bg-green-500/10 hover:bg-green-500/20';
     case 'confirmed':
-      return 'text-secondary-foreground bg-secondary hover:bg-secondary/80';
+      return 'text-green-600 border-green-600/20 bg-green-500/10 hover:bg-green-500/20';
     case 'inactive':
     case 'cancelled':
       return 'text-red-600 border-red-600/20 bg-red-500/10 hover:bg-red-500/20';

@@ -149,7 +149,7 @@ export default function BookingsPage() {
                      <TableCell>
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                          <Button aria-haspopup="true" size="icon" variant="ghost" onClick={(e) => e.stopPropagation()}>
+                          <Button aria-haspopup="true" size="icon" variant="ghost">
                             <MoreHorizontal className="h-4 w-4" />
                             <span className="sr-only">Toggle menu</span>
                           </Button>
@@ -161,7 +161,7 @@ export default function BookingsPage() {
                           </DropdownMenuItem>
                           <DropdownMenuItem
                             className="text-red-600 focus:text-red-600 focus:bg-red-50"
-                            onSelect={(e) => {e.stopPropagation(); setItemToDelete(booking)}}
+                            onSelect={() => setItemToDelete(booking)}
                           >
                             <Trash2 className="mr-2 h-4 w-4" /> Delete
                           </DropdownMenuItem>
