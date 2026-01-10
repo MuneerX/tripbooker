@@ -173,9 +173,11 @@ export default function BookingDetailPage() {
 
     const progressSegments = paymentTimeline.map(part => {
         const width = (part.total_amount / basePrice) * 100;
-        let color = 'bg-gray-300';
+        let color = 'bg-gray-300 dark:bg-gray-700'; // Locked
         if (part.status === 'paid') color = 'bg-green-500';
         if (part.status === 'overdue-paid') color = 'bg-yellow-500';
+        if (part.status === 'overdue') color = 'bg-red-500';
+        if (part.status === 'next-pay') color = 'bg-blue-500';
 
         return { color, width: `${width}%` };
     });
@@ -302,31 +304,38 @@ export default function BookingDetailPage() {
                                         <p>Next due: <span className="font-medium">{format(paymentProgress.nextDueDate, "PPP")}</span></p>
                                       )}
                                   </div>
-                                  <div className="relative pt-4">
-                                    <div className="relative h-2 w-full rounded-full bg-muted">
-                                        <div className="h-full rounded-full bg-green-500" style={{ width: `${paymentProgress.progressValue}%` }} />
-                                    </div>
-                                    <div className="absolute top-0 w-full h-full">
-                                        {paymentTimeline.map((part, index) => {
-                                            let cumulativeAmount = 0;
-                                            for (let i = 0; i < index; i++) {
-                                                cumulativeAmount += paymentTimeline[i].total_amount;
-                                            }
-                                            cumulativeAmount += part.total_amount;
-                                            const position = tourPackage.base_price > 0 ? (cumulativeAmount / tourPackage.base_price) * 100 : 0;
-                                            const statusInfo = getTimelineStatusInfo(part.status);
-                                            
-                                            return (
-                                                <div
-                                                    key={part.id || index}
-                                                    className={cn("absolute top-1/2 h-5 w-5 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-background flex items-center justify-center text-white", statusInfo.className)}
-                                                    style={{ left: `${position}%` }}
-                                                >
-                                                    {React.cloneElement(statusInfo.icon, { className: 'h-3 w-3' })}
-                                                </div>
-                                            )
-                                        })}
-                                    </div>
+                                   <div className="relative pt-4">
+                                      <div className="relative h-2 w-full rounded-full bg-muted overflow-hidden">
+                                          {/* Segmented bar */}
+                                          <div className="flex h-full w-full">
+                                            {paymentProgress.progressSegments.map((seg, index) => (
+                                              <div key={index} className={cn("h-full", seg.color)} style={{ width: seg.width }} />
+                                            ))}
+                                          </div>
+                                          {/* Paid Progress Overlay */}
+                                          <div className="absolute top-0 left-0 h-full rounded-full bg-green-500/50" style={{ width: `${paymentProgress.progressValue}%` }} />
+                                      </div>
+                                      <div className="absolute top-0 w-full h-full">
+                                          {paymentTimeline.map((part, index) => {
+                                              let cumulativeAmount = 0;
+                                              for (let i = 0; i < index; i++) {
+                                                  cumulativeAmount += paymentTimeline[i].total_amount;
+                                              }
+                                              cumulativeAmount += part.total_amount;
+                                              const position = tourPackage.base_price > 0 ? (cumulativeAmount / tourPackage.base_price) * 100 : 0;
+                                              const statusInfo = getTimelineStatusInfo(part.status);
+                                              
+                                              return (
+                                                  <div
+                                                      key={part.id || index}
+                                                      className={cn("absolute top-1/2 h-5 w-5 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-background flex items-center justify-center text-white", statusInfo.className)}
+                                                      style={{ left: `${position}%` }}
+                                                  >
+                                                      {React.cloneElement(statusInfo.icon, { className: 'h-3 w-3' })}
+                                                  </div>
+                                              )
+                                          })}
+                                      </div>
                                   </div>
 
                                   <p className="text-sm text-muted-foreground text-center pt-2">
@@ -585,7 +594,3 @@ export default function BookingDetailPage() {
     </div>
   );
 }
-
-    
-
-    
