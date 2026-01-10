@@ -8,7 +8,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Check, X, Calendar, Users, Clock, Info, Star, CheckCircle, XCircle, ArrowUpRight, Sun, Moon, CreditCard, User, Phone, MapPinIcon, Hash, FileDown, Plus } from "lucide-react";
+import { ArrowLeft, Check, X, Calendar, Users, Clock, Info, Star, CheckCircle, XCircle, ArrowUpRight, Sun, Moon, CreditCard, User, Phone, MapPinIcon, Hash, FileDown, Plus, ChevronDown } from "lucide-react";
 import { formatCurrency, getStatusBadgeColor, cn } from "@/lib/utils";
 import { Separator } from "@/components/ui/separator";
 import { addMonths, format, isBefore, isAfter } from "date-fns";
@@ -17,6 +17,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { getBookingById } from "@/lib/supabase/queries";
 import type { Booking, BookingGuest, TripDay, Payment, PayInPart } from "@/lib/types";
 import { useBreadcrumb } from "../../layout";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 
 type TimelineStatus = 'paid' | 'overdue-paid' | 'overdue' | 'next-pay' | 'locked';
 
@@ -39,6 +40,8 @@ export default function BookingDetailPage() {
   const { setBreadcrumbName } = useBreadcrumb();
 
   const [booking, setBooking] = React.useState<Booking | null>(null);
+  const [showAllDays, setShowAllDays] = React.useState(false);
+
 
   React.useEffect(() => {
     if (id) {
@@ -390,24 +393,38 @@ export default function BookingDetailPage() {
                                 
                                 {tourPackage.trip_days && tourPackage.trip_days.length > 0 && (
                                   <div>
-                                    <h3 className="text-xl font-semibold mb-4">Itinerary</h3>
+                                    <div className="flex justify-between items-center mb-4">
+                                        <h3 className="text-xl font-semibold">Itinerary</h3>
+                                        <Button variant="outline" size="sm" onClick={() => setShowAllDays(!showAllDays)}>
+                                            {showAllDays ? "Show Less" : "Show All Days"}
+                                        </Button>
+                                    </div>
                                     <div className="space-y-6">
                                         {tourPackage.trip_days.sort((a,b) => a.day_number - b.day_number).map((day: TripDay) => (
-                                            <Card key={day.id}>
-                                              <CardHeader><CardTitle>Day {day.day_number}: {day.day_name}</CardTitle></CardHeader>
-                                              <CardContent>
-                                                <p className="text-muted-foreground mb-4">{day.description}</p>
-                                                {day.activities.map((activity, actIndex) => (
-                                                  <div key={actIndex} className="flex items-start gap-4 p-3 border-b last:border-b-0">
-                                                    <Clock className="h-5 w-5 text-muted-foreground mt-1" />
-                                                    <div>
-                                                      <p className="font-semibold">{activity.title}</p>
-                                                      <p className="text-sm text-muted-foreground">{activity.description}</p>
-                                                    </div>
-                                                  </div>
-                                                ))}
-                                              </CardContent>
-                                            </Card>
+                                            <Collapsible asChild key={day.id} open={showAllDays}>
+                                                <Card>
+                                                    <CollapsibleTrigger asChild>
+                                                        <div className="flex items-center justify-between cursor-pointer p-6">
+                                                            <CardTitle className="text-lg">Day {day.day_number}: {day.day_name}</CardTitle>
+                                                            <ChevronDown className="h-5 w-5 transition-transform ui-open:rotate-180" />
+                                                        </div>
+                                                    </CollapsibleTrigger>
+                                                    <CollapsibleContent>
+                                                        <CardContent>
+                                                            <p className="text-muted-foreground mb-4">{day.description}</p>
+                                                            {day.activities.map((activity, actIndex) => (
+                                                              <div key={actIndex} className="flex items-start gap-4 p-3 border-b last:border-b-0">
+                                                                <Clock className="h-5 w-5 text-muted-foreground shrink-0" />
+                                                                <div>
+                                                                  <p className="font-semibold">{activity.title}</p>
+                                                                  <p className="text-sm text-muted-foreground">{activity.description}</p>
+                                                                </div>
+                                                              </div>
+                                                            ))}
+                                                        </CardContent>
+                                                    </CollapsibleContent>
+                                                </Card>
+                                            </Collapsible>
                                         ))}
                                     </div>
                                   </div>
@@ -599,5 +616,7 @@ export default function BookingDetailPage() {
     </div>
   );
 }
+
+    
 
     
