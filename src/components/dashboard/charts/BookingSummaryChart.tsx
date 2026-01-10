@@ -9,6 +9,7 @@ export function BookingSummaryChart({ data }: { data: any[] }) {
     <Card>
       <CardHeader>
         <CardTitle>Bookings Summary</CardTitle>
+        <CardDescription>A monthly summary of your total bookings.</CardDescription>
       </CardHeader>
       <CardContent>
         <ResponsiveContainer width="100%" height={300}>
@@ -38,5 +39,3 @@ export function BookingSummaryChart({ data }: { data: any[] }) {
     </Card>
   )
 }
-
-    

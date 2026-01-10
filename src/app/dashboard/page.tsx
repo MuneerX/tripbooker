@@ -194,7 +194,6 @@ export default function DashboardPage() {
   if (loading || !stats) {
     return (
         <div className="flex w-full flex-col gap-8 p-4 md:p-8">
-            <Skeleton className="h-8 w-64" />
             <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-2">
                 {[...Array(4)].map((_, i) => <Skeleton key={i} className="h-40 rounded-lg" />)}
             </div>
@@ -212,18 +211,22 @@ export default function DashboardPage() {
 
   return (
     <div className="flex w-full flex-col gap-8">
-        <h1 className="text-3xl font-semibold">Dashboard Overview</h1>
-        
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           <Card>
-            <CardHeader><CardTitle>Bookings Overview</CardTitle></CardHeader>
+            <CardHeader>
+                <CardTitle>Bookings Overview</CardTitle>
+                <CardDescription>An overview of your sales and revenue.</CardDescription>
+            </CardHeader>
             <CardContent className="grid grid-cols-1 sm:grid-cols-3 gap-6">
               {stats.bookingOverview.map((stat:any) => <StatItem key={stat.label} {...stat} layout="horizontal" />)}
             </CardContent>
           </Card>
           
           <Card>
-            <CardHeader><CardTitle>Customer Summary</CardTitle></CardHeader>
+            <CardHeader>
+                <CardTitle>Customer Summary</CardTitle>
+                <CardDescription>A summary of your customer base.</CardDescription>
+            </CardHeader>
             <CardContent className="grid grid-cols-1 sm:grid-cols-2 gap-6">
               {stats.customerSummary.map((stat:any) => <StatItem key={stat.label} {...stat} layout="horizontal" />)}
             </CardContent>
@@ -232,14 +235,20 @@ export default function DashboardPage() {
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             <Card>
-              <CardHeader><CardTitle>Packages Overview</CardTitle></CardHeader>
-              <CardContent className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-6">
+              <CardHeader>
+                <CardTitle>Packages Overview</CardTitle>
+                <CardDescription>A high-level view of your tour assets.</CardDescription>
+              </CardHeader>
+              <CardContent className="grid grid-cols-2 sm:grid-cols-3 gap-y-8 gap-x-4">
                   {stats.packageOverview.map((stat:any) => <StatItem key={stat.label} {...stat} />)}
               </CardContent>
             </Card>
 
             <Card>
-              <CardHeader><CardTitle>Operator Summary</CardTitle></CardHeader>
+              <CardHeader>
+                <CardTitle>Operator Summary</CardTitle>
+                <CardDescription>A summary of your tour operators.</CardDescription>
+              </CardHeader>
               <CardContent className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                   {stats.operatorSummary.map((stat:any) => <StatItem key={stat.label} {...stat} layout="horizontal" />)}
               </CardContent>
@@ -260,7 +269,3 @@ export default function DashboardPage() {
     </div>
   );
 }
-
-    
-
-    

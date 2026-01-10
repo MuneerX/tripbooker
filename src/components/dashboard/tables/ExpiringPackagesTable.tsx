@@ -3,7 +3,7 @@
 
 import Image from "next/image"
 import { Table, TableBody, TableCell, TableHeader, TableRow } from "@/components/ui/table"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { format, differenceInDays } from 'date-fns';
 import Link from "next/link";
@@ -31,7 +31,10 @@ export function ExpiringPackagesTable({ data }: { data: ExpiringPackage[] }) {
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between">
-        <CardTitle>Package Going Expiry</CardTitle>
+        <div>
+          <CardTitle>Package Going Expiry</CardTitle>
+          <CardDescription>Packages nearing their withdrawal date.</CardDescription>
+        </div>
         <Button variant="link" asChild><Link href="#">See All</Link></Button>
       </CardHeader>
       <CardContent>
@@ -73,5 +76,3 @@ export function ExpiringPackagesTable({ data }: { data: ExpiringPackage[] }) {
     </Card>
   )
 }
-
-    

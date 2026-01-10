@@ -17,7 +17,10 @@ export function PopularPackagesTable({ data }: { data: PopularPackage[] }) {
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between">
-        <CardTitle>Top Bookings Packages</CardTitle>
+        <div>
+          <CardTitle>Top Bookings Packages</CardTitle>
+          <CardDescription>Your most frequently booked packages.</CardDescription>
+        </div>
         <Button variant="link" asChild><Link href="#">See All</Link></Button>
       </CardHeader>
       <CardContent>
@@ -49,5 +52,3 @@ export function PopularPackagesTable({ data }: { data: PopularPackage[] }) {
     </Card>
   )
 }
-
-    
