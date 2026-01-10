@@ -182,19 +182,19 @@ export type Review = {
 export type Profile = {
     id: string;
     updated_at: string | null;
-    full_name: string | null;
-    email: string | null;
-    phone_number: string | null;
-    whatsapp_number: string | null;
+    full_name: string;
+    email: string;
+    phone_number: string;
+    whatsapp_number: string;
     dob: string | null;
     gender: string | null;
-    address: string | null;
-    state: string | null;
-    district: string | null;
-    city: string | null;
-    pincode: string | null;
+    address: string;
+    state: string;
+    district: string;
+    city: string;
+    pincode: string;
     avatar_url: string | null;
-    is_kv_customer: boolean | null;
+    is_kv_customer: boolean;
     status: 'active' | 'blocked';
 };
 

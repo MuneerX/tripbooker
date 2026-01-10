@@ -26,6 +26,7 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { useBreadcrumb } from "../../layout";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import Link from "next/link";
 
 export default function CustomerDetailPage() {
   const router = useRouter();
@@ -108,9 +109,11 @@ export default function CustomerDetailPage() {
                        {profile.status === 'active' ? 'Block' : 'Unblock'}
                     </Button>
                 </AlertDialogTrigger>
-                <Button size="sm">
-                    <Edit className="mr-2 h-4 w-4" />
-                    Edit
+                <Button size="sm" asChild>
+                    <Link href={`/dashboard/customers/edit/${profile.id}`}>
+                        <Edit className="mr-2 h-4 w-4" />
+                        Edit
+                    </Link>
                 </Button>
             </div>
         </div>

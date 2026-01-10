@@ -1050,3 +1050,26 @@ export async function updateProfileStatus(id: string, newStatus: 'active' | 'blo
       status: data.is_kv_customer ? 'active' : 'blocked'
     } as Profile;
 }
+
+
+export async function updateProfile(id: string, profileData: Partial<Profile>) {
+    const supabase = createAdminClient();
+    const { status, ...updateData } = profileData;
+    
+    const { data, error } = await supabase
+        .from('profiles')
+        .update({ ...updateData, updated_at: new Date().toISOString() })
+        .eq('id', id)
+        .select()
+        .single();
+
+    if (error) {
+        console.error(`Error updating profile ${id}:`, error);
+        throw new Error(error.message);
+    }
+    
+    return {
+      ...data,
+      status: data.is_kv_customer ? 'active' : 'blocked'
+    } as Profile;
+}
