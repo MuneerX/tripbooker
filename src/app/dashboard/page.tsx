@@ -36,7 +36,7 @@ const StatItem = ({
                     {React.cloneElement(icon as React.ReactElement, { className: cn('h-6 w-6', iconColor) })}
                 </div>
                 <div>
-                    <div className="text-2xl font-bold">{value}</div>
+                    <div className="text-xl font-bold">{value}</div>
                     <div className="text-sm text-muted-foreground">{label}</div>
                 </div>
             </div>
