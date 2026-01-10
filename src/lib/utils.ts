@@ -6,9 +6,17 @@ export function cn(...inputs: ClassValue[]) {
 }
 
 export function formatCurrency(amount: number) {
+  if (amount >= 100000) {
+    const lakhs = amount / 100000;
+    // Format to 1 decimal place if it's not a whole number, otherwise show as integer
+    const formatted = lakhs % 1 === 0 ? lakhs.toFixed(0) : lakhs.toFixed(1);
+    return `₹${formatted}L`;
+  }
+  
   return new Intl.NumberFormat('en-IN', {
     style: 'currency',
     currency: 'INR',
+    maximumFractionDigits: 0,
   }).format(amount);
 }
 
