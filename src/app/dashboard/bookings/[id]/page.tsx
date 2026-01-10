@@ -65,39 +65,37 @@ export default function BookingDetailPage() {
     const bookingDate = new Date(booking.booking_date);
     let lastPaidIndex = -1;
     
-    // Sort payments by date to process them chronologically
     const availablePayments = [...(booking.payments || [])].sort((a,b) => new Date(a.payment_date || 0).getTime() - new Date(b.payment_date || 0).getTime());
-    const matchedPaymentIds = new Set<string>();
+    let paymentIndex = 0;
 
     const schedule = tourPackage.pay_in_parts
         .sort((a, b) => a.months - b.months)
         .map((part, index) => {
             const dueDate = addMonths(bookingDate, part.months);
             
-            // Find the first available payment that could match this part.
-            // This assumes payments are made in order of installments.
-            const paymentIndex = availablePayments.findIndex(p => !matchedPaymentIds.has(p.id));
-            const payment = paymentIndex !== -1 ? availablePayments[paymentIndex] : null;
+            const payment = paymentIndex < availablePayments.length ? availablePayments[paymentIndex] : null;
 
-            if(payment) {
-                matchedPaymentIds.add(payment.id);
+            let isPartPaid = false;
+            let paidOn: Date | null = null;
+            if (payment) {
+                // A simple logic: assume one payment corresponds to one installment
+                isPartPaid = true;
+                paidOn = new Date(payment.payment_date!);
+                paymentIndex++;
             }
 
-            const paidOn = payment?.payment_date ? new Date(payment.payment_date) : null;
-            
             let status: TimelineStatus = 'locked';
             const today = new Date();
 
-            if (paidOn) {
+            if (isPartPaid) {
                 lastPaidIndex = index;
-                status = isAfter(paidOn, dueDate) ? 'overdue-paid' : 'paid';
+                status = paidOn && isAfter(paidOn, dueDate) ? 'overdue-paid' : 'paid';
             } else {
-                // Logic for unpaid installments
-                if (index === lastPaidIndex + 1) { // This is the next one to be paid
+                if (index === lastPaidIndex + 1) { 
                      status = isAfter(today, dueDate) ? 'overdue' : 'next-pay';
-                } else if(index > lastPaidIndex + 1) { // Future installment
+                } else if(index > lastPaidIndex + 1) {
                     status = 'locked';
-                } else if (isAfter(today, dueDate)) { // A previously unlocked but unpaid installment
+                } else if (isAfter(today, dueDate)) {
                     status = 'overdue';
                 }
             }
@@ -110,14 +108,16 @@ export default function BookingDetailPage() {
             };
         });
 
-    // Ensure there is one 'next-pay' if not all are paid and none are 'overdue'
     const isAllPaid = schedule.every(s => s.status === 'paid' || s.status === 'overdue-paid');
     const hasOverdue = schedule.some(s => s.status === 'overdue');
 
     if (!isAllPaid && !hasOverdue) {
         const firstUnpaidIndex = schedule.findIndex(s => s.status !== 'paid' && s.status !== 'overdue-paid');
         if(firstUnpaidIndex !== -1) {
-            schedule[firstUnpaidIndex].status = 'next-pay';
+             const anyNextPay = schedule.some(s => s.status === 'next-pay');
+             if (!anyNextPay) {
+                schedule[firstUnpaidIndex].status = 'next-pay';
+             }
         }
     }
 
@@ -140,7 +140,6 @@ export default function BookingDetailPage() {
     }
     
     const tourPackage = booking.tour_package;
-    // Correctly calculate total paid amount directly from payments
     const paidAmount = booking.payments?.reduce((sum, p) => sum + p.amount, 0) ?? 0;
     const basePrice = tourPackage.base_price ?? 0;
     const pendingAmount = Math.max(0, basePrice - paidAmount);
@@ -173,7 +172,7 @@ export default function BookingDetailPage() {
 
     const progressSegments = paymentTimeline.map(part => {
         const width = (part.total_amount / basePrice) * 100;
-        let color = 'bg-gray-300'; // Default for locked
+        let color = 'bg-gray-300';
         if (part.status === 'paid') color = 'bg-green-500';
         if (part.status === 'overdue-paid') color = 'bg-yellow-500';
 
@@ -306,21 +305,23 @@ export default function BookingDetailPage() {
                                     <div className="relative h-2 w-full rounded-full bg-muted">
                                         <div className="h-full rounded-full bg-green-500" style={{ width: `${paymentProgress.progressValue}%` }} />
                                     </div>
-                                    <div className="absolute top-1/2 -translate-y-1/2 w-full h-2">
+                                    <div className="absolute top-0 w-full h-full">
                                         {paymentTimeline.map((part, index) => {
                                             let cumulativeAmount = 0;
-                                            for (let i = 0; i <= index; i++) {
+                                            for (let i = 0; i < index; i++) {
                                                 cumulativeAmount += paymentTimeline[i].total_amount;
                                             }
-                                            const position = (cumulativeAmount / tourPackage.base_price) * 100;
+                                            cumulativeAmount += part.total_amount;
+                                            const position = tourPackage.base_price > 0 ? (cumulativeAmount / tourPackage.base_price) * 100 : 0;
                                             const statusInfo = getTimelineStatusInfo(part.status);
+                                            
                                             return (
                                                 <div
-                                                key={part.id || index}
-                                                className={cn("absolute top-1/2 h-5 w-5 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-background flex items-center justify-center text-white", statusInfo.className)}
-                                                style={{ left: `${position}%` }}
+                                                    key={part.id || index}
+                                                    className={cn("absolute top-1/2 h-5 w-5 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-background flex items-center justify-center text-white", statusInfo.className)}
+                                                    style={{ left: `${position}%` }}
                                                 >
-                                                {React.cloneElement(statusInfo.icon, { className: 'h-3 w-3' })}
+                                                    {React.cloneElement(statusInfo.icon, { className: 'h-3 w-3' })}
                                                 </div>
                                             )
                                         })}
@@ -583,7 +584,5 @@ export default function BookingDetailPage() {
     </div>
   );
 }
-
-    
 
     
