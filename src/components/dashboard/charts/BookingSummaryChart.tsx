@@ -8,32 +8,35 @@ export function BookingSummaryChart({ data }: { data: any[] }) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Booking Summary</CardTitle>
-        <CardDescription>Monthly booking revenue visualization.</CardDescription>
+        <CardTitle>Bookings Summary</CardTitle>
       </CardHeader>
       <CardContent>
         <ResponsiveContainer width="100%" height={300}>
           <AreaChart data={data}>
             <defs>
                 <linearGradient id="colorBookings" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.8}/>
-                    <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0}/>
+                    <stop offset="5%" stopColor="#3B82F6" stopOpacity={0.4}/>
+                    <stop offset="95%" stopColor="#3B82F6" stopOpacity={0}/>
                 </linearGradient>
             </defs>
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="month" />
-            <YAxis />
+            <CartesianGrid strokeDasharray="3 3" vertical={false} />
+            <XAxis dataKey="month" axisLine={false} tickLine={false} />
+            <YAxis axisLine={false} tickLine={false} />
             <Tooltip
                 contentStyle={{
                     background: 'hsl(var(--background))',
                     border: '1px solid hsl(var(--border))',
+                    borderRadius: '0.5rem'
                 }}
+                 cursor={{ stroke: '#3B82F6', strokeWidth: 1, strokeDasharray: '3 3' }}
             />
-            <Legend />
-            <Area type="monotone" dataKey="bookings" stroke="hsl(var(--primary))" fillOpacity={1} fill="url(#colorBookings)" name="Bookings"/>
+            <Legend iconType="circle" iconSize={10} />
+            <Area type="monotone" dataKey="bookings" stroke="#3B82F6" strokeWidth={2} fillOpacity={1} fill="url(#colorBookings)" name="Bookings"/>
           </AreaChart>
         </ResponsiveContainer>
       </CardContent>
     </Card>
   )
 }
+
+    

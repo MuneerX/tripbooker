@@ -5,26 +5,55 @@ import * as React from 'react';
 import { getTourPackages, getBookings, getReviews, getProfiles, getTripDays, getOperators, getTripLocations } from '@/lib/supabase/queries';
 import type { TourPackage, Booking, Review, Profile, TripDay, Operator, TripLocation } from '@/lib/types';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { DollarSign, BookCopy, Users, UserPlus, Package, Calendar, UserCog, MapPin, UserCheck, UserX, User, Sailboat } from 'lucide-react';
+import { DollarSign, BookCopy, Users, UserPlus, Package, Calendar, UserCog, MapPin, UserCheck, UserX, User, Sailboat, TrendingUp, CalendarX } from 'lucide-react';
 import { BookingCancellationChart } from '@/components/dashboard/charts/BookingCancellationChart';
 import { BookingSummaryChart } from '@/components/dashboard/charts/BookingSummaryChart';
 import { PopularPackagesTable } from '@/components/dashboard/tables/PopularPackagesTable';
 import { ExpiringPackagesTable } from '@/components/dashboard/tables/ExpiringPackagesTable';
 import { formatCurrency } from '@/lib/utils';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Separator } from '@/components/ui/separator';
 
-const StatItem = ({ icon, label, value }: { icon: React.ReactNode, label: string, value: string | number }) => (
-    <div className="flex items-center gap-4">
-        <div className="bg-primary/10 text-primary p-3 rounded-full">
-            {icon}
+const StatItem = ({
+    icon,
+    label,
+    value,
+    iconBg,
+    layout = 'vertical'
+}: {
+    icon: React.ReactNode,
+    label: string,
+    value: string | number,
+    iconBg?: string,
+    layout?: 'vertical' | 'horizontal'
+}) => {
+
+    if (layout === 'horizontal') {
+        return (
+             <div className="flex items-center gap-4">
+                <div className="bg-primary/10 text-primary p-3 rounded-lg">
+                    {icon}
+                </div>
+                <div>
+                    <div className="text-2xl font-bold">{value}</div>
+                    <div className="text-sm text-muted-foreground">{label}</div>
+                </div>
+            </div>
+        )
+    }
+
+    return (
+        <div className="flex items-center gap-3">
+            <div className={`p-3 rounded-lg ${iconBg}`}>
+                {React.cloneElement(icon as React.ReactElement, { className: 'h-6 w-6 text-white' })}
+            </div>
+            <div>
+                <div className="text-2xl font-bold">{value}</div>
+                <p className="text-sm text-muted-foreground">{label}</p>
+            </div>
         </div>
-        <div>
-            <div className="text-sm text-muted-foreground">{label}</div>
-            <div className="text-xl font-bold">{value}</div>
-        </div>
-    </div>
-);
+    );
+};
+
 
 export default function DashboardPage() {
   const [loading, setLoading] = React.useState(true);
@@ -73,24 +102,24 @@ export default function DashboardPage() {
         
         setStats({
           bookingOverview: [
-            { label: 'Total Sales', value: formatCurrency(totalSales), icon: <DollarSign className="h-5 w-5"/> },
-            { label: 'Amount Received', value: formatCurrency(totalReceived), icon: <BookCopy className="h-5 w-5"/> },
-            { label: 'Amount Pending', value: formatCurrency(Math.max(0, totalPending)), icon: <BookCopy className="h-5 w-5"/> }
+            { label: 'Sales', value: formatCurrency(totalSales), icon: <DollarSign className="h-6 w-6"/>, iconBg: 'bg-green-500' },
+            { label: 'Received', value: formatCurrency(totalReceived), icon: <TrendingUp className="h-6 w-6"/>, iconBg: 'bg-blue-500' },
+            { label: 'Pending', value: formatCurrency(Math.max(0, totalPending)), icon: <CalendarX className="h-6 w-6"/>, iconBg: 'bg-yellow-500' }
           ],
           customerSummary: [
-            { label: 'Booked Customers', value: bookedCustomers, icon: <UserCheck className="h-5 w-5"/> },
-            { label: 'Unbooked Customers', value: unbookedCustomers, icon: <UserX className="h-5 w-5"/> }
+            { label: 'Booked Customers', value: bookedCustomers, icon: <UserCheck className="h-6 w-6"/>, iconBg: 'bg-green-500' },
+            { label: 'Unbooked Customers', value: unbookedCustomers, icon: <UserX className="h-6 w-6"/>, iconBg: 'bg-red-500' }
           ],
           packageOverview: [
-            { label: 'Total Tours', value: packages.length, icon: <Package className="h-5 w-5"/> },
-            { label: 'Total Trip Days', value: tripDays.length, icon: <Calendar className="h-5 w-5"/> },
-            { label: 'Total Operators', value: operators.length, icon: <UserCog className="h-5 w-5"/> },
-            { label: 'Total Customers', value: profiles.length, icon: <Users className="h-5 w-5"/> },
-            { label: 'Total Locations', value: locations.length, icon: <MapPin className="h-5 w-5"/> }
+            { label: 'Tours', value: packages.length, icon: <Package className="h-6 w-6"/>, iconBg: 'bg-sky-500' },
+            { label: 'Tripdays', value: tripDays.length, icon: <Calendar className="h-6 w-6"/>, iconBg: 'bg-purple-500' },
+            { label: 'Operators', value: operators.length, icon: <UserCog className="h-6 w-6"/>, iconBg: 'bg-red-500' },
+            { label: 'Customers', value: profiles.length, icon: <Users className="h-6 w-6"/>, iconBg: 'bg-green-500' },
+            { label: 'Locations', value: locations.length, icon: <MapPin className="h-6 w-6"/>, iconBg: 'bg-yellow-500' }
           ],
           operatorSummary: [
-            { label: 'Referred Operators', value: referredOperators, icon: <UserPlus className="h-5 w-5"/> },
-            { label: 'Un-referred Operators', value: unReferredOperators, icon: <User className="h-5 w-5"/> }
+            { label: 'Referred Operator', value: referredOperators, icon: <UserPlus className="h-6 w-6"/>, iconBg: 'bg-green-500' },
+            { label: 'Unreferred Operator', value: unReferredOperators, icon: <User className="h-6 w-6"/>, iconBg: 'bg-red-500' }
           ],
         });
         
@@ -166,14 +195,14 @@ export default function DashboardPage() {
     return (
         <div className="flex w-full flex-col gap-8 p-4 md:p-8">
             <Skeleton className="h-8 w-64" />
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-2">
+            <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-2">
                 {[...Array(4)].map((_, i) => <Skeleton key={i} className="h-40 rounded-lg" />)}
             </div>
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                 <Skeleton className="h-80 rounded-lg" />
                 <Skeleton className="h-80 rounded-lg" />
             </div>
-             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                 <Skeleton className="h-80 rounded-lg" />
                 <Skeleton className="h-80 rounded-lg" />
             </div>
@@ -182,54 +211,56 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="flex w-full flex-col gap-6">
-        <h1 className="text-2xl font-bold tracking-tight">Dashboard Overview</h1>
+    <div className="flex w-full flex-col gap-8">
+        <h1 className="text-3xl font-semibold">Dashboard Overview</h1>
         
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           <Card>
-            <CardHeader><CardTitle>Booking Overview</CardTitle></CardHeader>
-            <CardContent className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {stats.bookingOverview.map((stat:any) => <StatItem key={stat.label} {...stat} />)}
+            <CardHeader><CardTitle>Bookings Overview</CardTitle></CardHeader>
+            <CardContent className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+              {stats.bookingOverview.map((stat:any) => <StatItem key={stat.label} {...stat} layout="horizontal" />)}
             </CardContent>
           </Card>
           
           <Card>
             <CardHeader><CardTitle>Customer Summary</CardTitle></CardHeader>
-            <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {stats.customerSummary.map((stat:any) => <StatItem key={stat.label} {...stat} />)}
+            <CardContent className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+              {stats.customerSummary.map((stat:any) => <StatItem key={stat.label} {...stat} layout="horizontal" />)}
             </CardContent>
           </Card>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             <Card>
-              <CardHeader><CardTitle>Package Overview</CardTitle></CardHeader>
-              <CardContent className="grid grid-cols-2 md:grid-cols-3 gap-6">
+              <CardHeader><CardTitle>Packages Overview</CardTitle></CardHeader>
+              <CardContent className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-6">
                   {stats.packageOverview.map((stat:any) => <StatItem key={stat.label} {...stat} />)}
               </CardContent>
             </Card>
 
             <Card>
               <CardHeader><CardTitle>Operator Summary</CardTitle></CardHeader>
-              <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  {stats.operatorSummary.map((stat:any) => <StatItem key={stat.label} {...stat} />)}
+              <CardContent className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                  {stats.operatorSummary.map((stat:any) => <StatItem key={stat.label} {...stat} layout="horizontal" />)}
               </CardContent>
             </Card>
         </div>
 
         {/* Charts */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
              <BookingCancellationChart data={chartData.lineChartData} />
              <BookingSummaryChart data={chartData.curveChartData} />
         </div>
 
         {/* Tables */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             <PopularPackagesTable data={tableData.popularPackages} />
             <ExpiringPackagesTable data={tableData.expiringPackages} />
         </div>
     </div>
   );
 }
+
+    
 
     
