@@ -3,7 +3,7 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { PlusCircle, Package, MoreHorizontal, FilePenLine, Trash2, View } from "lucide-react";
+import { PlusCircle, Package, MoreHorizontal, FilePenLine, Trash2, View, CheckCircle, XCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -99,8 +99,8 @@ export default function TourPackagesPage() {
 
   const stats = [
     { label: "Total Packages", value: totalPackages, icon: <Package className="h-4 w-4" /> },
-    { label: "Active", value: activePackages, icon: <div className="h-2.5 w-2.5 rounded-full bg-green-500" /> },
-    { label: "Inactive", value: inactivePackages, icon: <div className="h-2.5 w-2.5 rounded-full bg-red-500" /> },
+    { label: "Active", value: activePackages, icon: <CheckCircle className="h-4 w-4 text-green-500" /> },
+    { label: "Inactive", value: inactivePackages, icon: <XCircle className="h-4 w-4 text-red-500" /> },
   ];
 
   return (
