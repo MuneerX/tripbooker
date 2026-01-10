@@ -1,10 +1,8 @@
 
 "use client"
 
-import { Bar, BarChart, CartesianGrid, XAxis, YAxis, Tooltip, Legend, ResponsiveContainer } from "recharts"
+import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from "recharts"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Calendar } from "lucide-react"
 import {
   ChartContainer,
   ChartTooltip,
@@ -21,10 +19,6 @@ export function BookingCancellationChart({ data }: { data: any[] }) {
           <CardTitle>Booking & Cancellation</CardTitle>
           <CardDescription>Monthly comparison of bookings vs. cancellations.</CardDescription>
         </div>
-        <Button variant="outline" size="sm" className="flex items-center gap-2">
-          <Calendar className="h-4 w-4" />
-          <span>Weekly</span>
-        </Button>
       </CardHeader>
       <CardContent>
         <ChartContainer config={{}} className="h-[300px] w-full">
@@ -52,8 +46,8 @@ export function BookingCancellationChart({ data }: { data: any[] }) {
               }
             />
             <Legend content={<ChartLegendContent />} />
-            <Bar dataKey="cancellations" fill="#FF8042" name="Cancellation" radius={[4, 4, 0, 0]} />
-            <Bar dataKey="bookings" fill="#22C55E" name="Bookings" radius={[4, 4, 0, 0]} />
+            <Bar dataKey="cancellations" fill="var(--color-cancellations)" name="Cancellation" radius={[4, 4, 0, 0]} />
+            <Bar dataKey="bookings" fill="var(--color-bookings)" name="Bookings" radius={[4, 4, 0, 0]} />
           </BarChart>
         </ChartContainer>
       </CardContent>

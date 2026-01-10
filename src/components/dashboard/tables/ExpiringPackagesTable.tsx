@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge"
 import { format, differenceInDays } from 'date-fns';
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import { ArrowUpRight } from "lucide-react";
 
 type ExpiringPackage = {
     id: string;
@@ -35,7 +36,9 @@ export function ExpiringPackagesTable({ data }: { data: ExpiringPackage[] }) {
           <CardTitle>Package Going Expiry</CardTitle>
           <CardDescription>Packages nearing their withdrawal date.</CardDescription>
         </div>
-        <Button variant="link" asChild><Link href="#">See All</Link></Button>
+        <Button asChild size="sm">
+          <Link href="/dashboard/tour-packages">See All <ArrowUpRight className="ml-2 h-4 w-4" /></Link>
+        </Button>
       </CardHeader>
       <CardContent>
         <Table>

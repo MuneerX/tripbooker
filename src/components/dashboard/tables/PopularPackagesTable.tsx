@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { formatCurrency } from "@/lib/utils"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
+import { ArrowUpRight } from "lucide-react"
 
 type PopularPackage = {
     name: string;
@@ -21,7 +22,9 @@ export function PopularPackagesTable({ data }: { data: PopularPackage[] }) {
           <CardTitle>Top Bookings Packages</CardTitle>
           <CardDescription>Your most frequently booked packages.</CardDescription>
         </div>
-        <Button variant="link" asChild><Link href="#">See All</Link></Button>
+        <Button asChild size="sm">
+            <Link href="/dashboard/tour-packages">See All <ArrowUpRight className="ml-2 h-4 w-4" /></Link>
+        </Button>
       </CardHeader>
       <CardContent>
         <Table>
