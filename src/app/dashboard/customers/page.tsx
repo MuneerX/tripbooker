@@ -173,7 +173,7 @@ export default function CustomersPage() {
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
                           <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                          <DropdownMenuItem onSelect={(e) => { e.stopPropagation(); router.push(`/dashboard/customers/${profile.id}`) }}>
+                          <DropdownMenuItem onSelect={() => router.push(`/dashboard/customers/${profile.id}`)}>
                             <View className="mr-2 h-4 w-4" /> View
                           </DropdownMenuItem>
                           <DropdownMenuItem onSelect={(e) => { e.stopPropagation(); setItemToToggle(profile); }}>
