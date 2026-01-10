@@ -315,7 +315,7 @@ export default function BookingDetailPage() {
                                           {/* Paid Progress Overlay */}
                                           <div className="absolute top-0 left-0 h-full rounded-full bg-green-500/50" style={{ width: `${paymentProgress.progressValue}%` }} />
                                       </div>
-                                      <div className="absolute top-1/2 left-0 w-full h-full -translate-y-1/2">
+                                      <div className="absolute top-0 left-0 w-full h-full">
                                           {paymentTimeline.map((part, index) => {
                                               const position = tourPackage.base_price > 0 ? (part.cumulativeAmount / tourPackage.base_price) * 100 : 0;
                                               const statusInfo = getTimelineStatusInfo(part.status);
@@ -323,7 +323,7 @@ export default function BookingDetailPage() {
                                               return (
                                                   <div
                                                       key={part.id || index}
-                                                      className={cn("absolute top-1/2 h-6 w-6 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-background flex items-center justify-center text-white", statusInfo.className)}
+                                                      className={cn("absolute top-1/2 h-6 w-6 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-background flex items-center justify-center text-white z-10", statusInfo.className)}
                                                       style={{ left: `${position}%` }}
                                                   >
                                                       {React.cloneElement(statusInfo.icon, { className: 'h-3.5 w-3.5' })}
@@ -544,7 +544,7 @@ export default function BookingDetailPage() {
                                                         <Calendar className="h-5 w-5 text-muted-foreground mt-1" />
                                                         <div>
                                                             <p className="text-sm text-muted-foreground">Paid On</p>
-                                                            <p className="font-medium">{payment.payment_date ? format(new Date(payment.payment_date), "PPP") : 'N/A'}</p>
+                                                            <p className="font-medium">{payment.payment_date ? format(new Date(payment.payment_date), "PPP") : 'NA'}</p>
                                                         </div>
                                                     </div>
                                                      <div className="flex items-start gap-3">
