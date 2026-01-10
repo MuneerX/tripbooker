@@ -105,8 +105,8 @@ export default function NotificationsPage() {
                 <div className="lg:col-span-1 space-y-4">
                      <Card className="h-full">
                         <CardHeader>
-                            <CardTitle>Pending Bookings</CardTitle>
-                            <CardDescription>{notifications.length} bookings require attention.</CardDescription>
+                            <CardTitle>Notifications</CardTitle>
+                            <CardDescription>A new reservation is awaiting approval.</CardDescription>
                         </CardHeader>
                         <CardContent className="space-y-3 max-h-[70vh] overflow-y-auto">
                             {notifications.map((booking) => (
@@ -126,8 +126,8 @@ export default function NotificationsPage() {
                                             <AvatarFallback>{booking.customer_name?.charAt(0) || 'U'}</AvatarFallback>
                                         </Avatar>
                                         <div className="grid gap-0.5">
-                                            <p className="font-semibold text-sm line-clamp-1">{booking.tour_package?.name}</p>
-                                            <p className="text-xs text-muted-foreground">From {booking.customer_name}</p>
+                                            <p className="font-semibold text-sm line-clamp-1">New booking created</p>
+                                            <p className="text-xs text-muted-foreground">For {booking.tour_package?.name}</p>
                                             <p className="text-xs text-muted-foreground">
                                                 {formatDistanceToNow(new Date(booking.created_at), { addSuffix: true })}
                                             </p>
@@ -145,7 +145,7 @@ export default function NotificationsPage() {
                             <CardHeader>
                                 <div className="flex items-center justify-between">
                                     <div>
-                                        <CardTitle>Booking: {selectedNotification.booking_reference}</CardTitle>
+                                        <CardTitle>Notification Details</CardTitle>
                                         <CardDescription>
                                             For tour: <Link href={`/dashboard/tour-packages/${selectedNotification.package_id}`} className="text-primary hover:underline">{selectedNotification.tour_package?.name}</Link>
                                         </CardDescription>
@@ -200,7 +200,7 @@ export default function NotificationsPage() {
                          <div className="text-center py-24 text-muted-foreground h-full flex flex-col items-center justify-center rounded-lg border-2 border-dashed">
                             <Bell className="mx-auto h-12 w-12" />
                             <h3 className="mt-4 text-lg font-semibold">Select a notification</h3>
-                            <p className="mt-2 text-sm">Choose a booking from the left to see its details.</p>
+                            <p className="mt-2 text-sm">Choose a notification from the left to see its details.</p>
                         </div>
                     )}
                 </div>
