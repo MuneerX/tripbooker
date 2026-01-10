@@ -66,14 +66,23 @@ export default function BookingDetailPage() {
     const totalPaid = booking.payments?.reduce((sum, p) => sum + p.amount, 0) ?? 0;
     
     const sortedParts = tourPackage.pay_in_parts.sort((a, b) => a.months - b.months);
+    let cumulativeAmount = 0;
+    const partsWithDates = sortedParts.map(part => {
+        cumulativeAmount += part.total_amount;
+        return {
+            ...part,
+            dueDate: addMonths(bookingDate, part.months),
+            cumulativeAmount: cumulativeAmount,
+        };
+    });
+
     const paymentsByDate = (booking.payments || []).sort((a, b) => new Date(a.payment_date || 0).getTime() - new Date(b.payment_date || 0).getTime());
 
     let cumulativeAmountDue = 0;
     let lastPaidIndex = -1;
 
-    const schedule = sortedParts.map((part, index) => {
-        const dueDate = addMonths(bookingDate, part.months);
-        cumulativeAmountDue += part.total_amount;
+    const schedule = partsWithDates.map((part, index) => {
+        cumulativeAmountDue = part.cumulativeAmount;
         
         const isPartPaid = totalPaid >= cumulativeAmountDue;
         let paidOn: Date | null = null;
@@ -94,21 +103,19 @@ export default function BookingDetailPage() {
         const today = new Date();
 
         if (isPartPaid) {
-            status = paidOn && isAfter(paidOn, dueDate) ? 'overdue-paid' : 'paid';
+            status = paidOn && isAfter(paidOn, part.dueDate) ? 'overdue-paid' : 'paid';
         } else if (index === lastPaidIndex + 1) {
-            status = isAfter(today, dueDate) ? 'overdue' : 'next-pay';
+            status = isAfter(today, part.dueDate) ? 'overdue' : 'next-pay';
         } else if (index > lastPaidIndex + 1) {
             status = 'locked';
-        } else if (isAfter(today, dueDate)) {
+        } else if (isAfter(today, part.dueDate)) {
             status = 'overdue';
         }
 
         return {
             ...part,
-            dueDate,
             paidOn,
             status,
-            cumulativeAmount: cumulativeAmountDue
         };
     });
     
@@ -120,7 +127,6 @@ export default function BookingDetailPage() {
             schedule[firstUnpaidIndex].status = 'next-pay';
         }
     }
-
 
     return schedule;
 }, [booking]);
@@ -173,11 +179,11 @@ export default function BookingDetailPage() {
 
     const progressSegments = paymentTimeline.map(part => {
         const width = (part.total_amount / basePrice) * 100;
-        let color = 'bg-gray-300 dark:bg-gray-700'; // Locked or next-pay
+        let color = 'bg-gray-300 dark:bg-gray-700';
         if (part.status === 'paid') color = 'bg-green-500';
         if (part.status === 'overdue-paid') color = 'bg-yellow-500';
         if (part.status === 'overdue') color = 'bg-red-500';
-
+        if (part.status === 'next-pay') color = 'bg-gray-300 dark:bg-gray-700'; // Make next-pay gray on bar
         return { color, width: `${width}%` };
     });
 
@@ -303,7 +309,7 @@ export default function BookingDetailPage() {
                                         <p>Next due: <span className="font-medium">{format(paymentProgress.nextDueDate, "PPP")}</span></p>
                                       )}
                                   </div>
-                                   <div className="relative pt-4">
+                                  <div className="relative pt-4">
                                       <div className="relative h-2 w-full rounded-full bg-muted overflow-hidden">
                                           {/* Segmented bar */}
                                           <div className="flex h-full w-full">
@@ -313,22 +319,27 @@ export default function BookingDetailPage() {
                                           </div>
                                           {/* Paid Progress Overlay */}
                                           <div className="absolute top-0 left-0 h-full rounded-full bg-green-500/50" style={{ width: `${paymentProgress.progressValue}%` }} />
-                                      </div>
-                                      <div className="absolute top-0 left-0 w-full h-2">
-                                          {paymentTimeline.map((part, index) => {
-                                              const position = tourPackage.base_price > 0 ? (part.cumulativeAmount / tourPackage.base_price) * 100 : 0;
-                                              const statusInfo = getTimelineStatusInfo(part.status);
-                                              
-                                              return (
-                                                  <div
-                                                      key={part.id || index}
-                                                      className={cn("absolute top-1/2 -translate-y-1/2 h-6 w-6 -translate-x-1/2 rounded-full border-2 border-background flex items-center justify-center text-white z-10", statusInfo.className)}
-                                                      style={{ left: `${position}%` }}
-                                                  >
-                                                      {React.cloneElement(statusInfo.icon, { className: 'h-3.5 w-3.5' })}
-                                                  </div>
-                                              )
-                                          })}
+                                           {/* Timeline Stops */}
+                                          <div className="absolute top-0 left-0 w-full h-full">
+                                            {paymentTimeline.map((part, index) => {
+                                                const position = tourPackage.base_price > 0 ? (part.cumulativeAmount / tourPackage.base_price) * 100 : 0;
+                                                const statusInfo = getTimelineStatusInfo(part.status);
+                                                
+                                                return (
+                                                    <div
+                                                        key={part.id || index}
+                                                        className="absolute top-1/2 -translate-y-1/2"
+                                                        style={{ left: `${position}%` }}
+                                                    >
+                                                        <div
+                                                          className={cn("h-6 w-6 -translate-x-1/2 rounded-full border-2 border-background flex items-center justify-center text-white z-10", statusInfo.className)}
+                                                        >
+                                                            {React.cloneElement(statusInfo.icon, { className: 'h-3.5 w-3.5' })}
+                                                        </div>
+                                                    </div>
+                                                )
+                                            })}
+                                          </div>
                                       </div>
                                   </div>
 
