@@ -89,7 +89,7 @@ export function AppHeader() {
               <DropdownMenuItem key={booking.id} asChild className="cursor-pointer">
                  <Link href={`/dashboard/bookings/${booking.id}`}>
                     <div className="flex flex-col">
-                      <p className="text-sm font-medium">New Booking: {booking.booking_reference}</p>
+                      <p className="text-sm font-medium">New Booking: {booking.order_id}</p>
                       <p className="text-xs text-muted-foreground">{booking.customer_name} booked {booking.tour_package?.name}</p>
                       <p className="text-xs text-muted-foreground mt-1">{formatDistanceToNow(new Date(booking.created_at), { addSuffix: true })}</p>
                     </div>

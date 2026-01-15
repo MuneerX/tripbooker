@@ -57,7 +57,7 @@ export default function BookingsPage() {
     
     toast({
       title: "Success",
-      description: `Booking "${itemToDelete.booking_reference}" has been notionally deleted.`,
+      description: `Booking "${itemToDelete.order_id}" has been notionally deleted.`,
     });
     setAllBookings(prev => prev.filter(b => b.id !== itemToDelete.id));
     setItemToDelete(null);
@@ -65,7 +65,7 @@ export default function BookingsPage() {
 
 
   const filteredBookings = allBookings.filter((booking) =>
-    booking.booking_reference?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    booking.order_id?.toLowerCase().includes(searchTerm.toLowerCase()) ||
     booking.tour_package?.name?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
@@ -113,10 +113,9 @@ export default function BookingsPage() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Booking ID</TableHead>
+                <TableHead>Order ID</TableHead>
                 <TableHead>Tour Name</TableHead>
                 <TableHead>Reservation Date</TableHead>
-                <TableHead className="hidden lg:table-cell">Transaction ID</TableHead>
                 <TableHead className="hidden md:table-cell">Payment</TableHead>
                 <TableHead className="hidden md:table-cell">Amount</TableHead>
                 <TableHead className="hidden lg:table-cell">Referral</TableHead>
@@ -136,10 +135,9 @@ export default function BookingsPage() {
               ) : paginatedBookings.length > 0 ? (
                 paginatedBookings.map((booking: Booking) => (
                   <TableRow key={booking.id}>
-                    <TableCell className="font-mono text-xs">{booking.booking_reference}</TableCell>
+                    <TableCell className="font-mono text-xs">{booking.order_id}</TableCell>
                     <TableCell className="font-medium">{booking.tour_package?.name || 'N/A'}</TableCell>
                     <TableCell>{format(new Date(booking.booking_date), "dd MMM, yyyy")}</TableCell>
-                    <TableCell className="hidden lg:table-cell font-mono text-xs">{booking.payment_reference || 'N/A'}</TableCell>
                     <TableCell className="hidden md:table-cell capitalize">{booking.payment_method || 'N/A'}</TableCell>
                     <TableCell className="hidden md:table-cell">{formatCurrency(booking.total_amount)}</TableCell>
                     <TableCell className="hidden lg:table-cell">{booking.referral_code || 'N/A'}</TableCell>
@@ -211,7 +209,7 @@ export default function BookingsPage() {
             <AlertDialogHeader>
               <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
               <AlertDialogDescription>
-                This action cannot be undone. This will permanently delete the booking "{itemToDelete.booking_reference}".
+                This action cannot be undone. This will permanently delete the booking "{itemToDelete.order_id}".
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>

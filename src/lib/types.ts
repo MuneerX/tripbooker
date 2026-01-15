@@ -142,7 +142,7 @@ export type Payment = {
 
 export type Booking = {
   id: string;
-  booking_reference: string;
+  order_id: string;
   user_id: string | null;
   package_id: string;
   booking_date: string;

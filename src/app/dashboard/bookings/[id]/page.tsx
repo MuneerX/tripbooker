@@ -61,7 +61,7 @@ export default function BookingDetailPage() {
       const data = await getBookingById(id);
       setBooking(data);
       if (data) {
-        setBreadcrumbName(`Booking #${data.booking_reference}`);
+        setBreadcrumbName(`Booking #${data.order_id}`);
       } else {
         setBreadcrumbName('Booking Not Found');
       }
@@ -306,7 +306,7 @@ export default function BookingDetailPage() {
                     {tourPackage.name}
                 </h1>
                 <div className="flex items-center gap-2">
-                  <p className="text-sm text-muted-foreground">Ref: {booking.booking_reference}</p>
+                  <p className="text-sm text-muted-foreground">Ref: {booking.order_id}</p>
                   <Badge className={cn("capitalize", getStatusBadgeColor(booking.booking_status))}>
                     {booking.booking_status}
                   </Badge>
@@ -694,7 +694,7 @@ export default function BookingDetailPage() {
             <AlertDialogHeader>
               <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
               <AlertDialogDescription>
-                This action will {actionToConfirm === 'accept' ? 'confirm' : 'cancel'} the booking with reference "{booking.booking_reference}".
+                This action will {actionToConfirm === 'accept' ? 'confirm' : 'cancel'} the booking with reference "{booking.order_id}".
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>

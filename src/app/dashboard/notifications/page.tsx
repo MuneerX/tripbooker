@@ -180,7 +180,7 @@ export default function NotificationsPage() {
                                         <Info className="h-5 w-5 text-muted-foreground mt-1" />
                                         <div>
                                             <p className="text-sm text-muted-foreground">Booking ID</p>
-                                            <p className="font-medium font-mono text-xs">{selectedNotification.booking_reference}</p>
+                                            <p className="font-medium font-mono text-xs">{selectedNotification.order_id}</p>
                                         </div>
                                     </div>
                                      <div className="flex items-start gap-3">
