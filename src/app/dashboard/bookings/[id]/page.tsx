@@ -161,7 +161,7 @@ export default function BookingDetailPage() {
       };
     }
     
-    const totalAmount = booking.total_amount ?? 0;
+    const totalAmount = booking.tour_package.base_price ?? 0;
     const paidAmount = booking.payments?.reduce((sum, p) => sum + p.amount, 0) ?? 0;
     const pendingAmount = Math.max(0, totalAmount - paidAmount);
     const progressValue = totalAmount > 0 ? Math.min((paidAmount / totalAmount) * 100, 100) : 0;
