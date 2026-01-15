@@ -1,6 +1,7 @@
 "use client"
 
-import { Bar, BarChart, CartesianGrid, XAxis, YAxis, Legend } from "recharts"
+import * as React from "react";
+import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from "recharts"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import {
   ChartContainer,
@@ -9,8 +10,12 @@ import {
   ChartLegend,
   ChartLegendContent,
 } from "@/components/ui/chart"
+import { useIsMobile } from "@/hooks/use-mobile";
 
 export function BookingCancellationChart({ data }: { data: any[] }) {
+  const isMobile = useIsMobile();
+  const barCategoryGap = isMobile ? '10%' : '30%';
+
   return (
     <Card>
       <CardHeader>
@@ -31,7 +36,7 @@ export function BookingCancellationChart({ data }: { data: any[] }) {
           }}
           className="h-[300px] w-full"
         >
-          <BarChart data={data} barGap={10} barCategoryGap="30%">
+          <BarChart data={data} barGap={10} barCategoryGap={barCategoryGap}>
             <CartesianGrid strokeDasharray="3 3" vertical={false} />
             <XAxis dataKey="month" tickLine={false} axisLine={false} tickMargin={8} interval={0} />
             <YAxis tickLine={false} axisLine={false} tickMargin={8} />
