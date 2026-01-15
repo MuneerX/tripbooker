@@ -1,4 +1,3 @@
-
 "use client"
 
 import { Bar, BarChart, CartesianGrid, XAxis, YAxis, Legend } from "recharts"
@@ -32,7 +31,7 @@ export function BookingCancellationChart({ data }: { data: any[] }) {
           }}
           className="h-[300px] w-full"
         >
-          <BarChart data={data} barGap={10} barCategoryGap="20%">
+          <BarChart data={data} barGap={10} barCategoryGap="30%">
             <CartesianGrid strokeDasharray="3 3" vertical={false} />
             <XAxis dataKey="month" tickLine={false} axisLine={false} tickMargin={8} interval={0} />
             <YAxis tickLine={false} axisLine={false} tickMargin={8} />
