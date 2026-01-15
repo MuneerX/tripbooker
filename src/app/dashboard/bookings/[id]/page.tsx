@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import * as React from "react";
@@ -499,7 +500,7 @@ export default function BookingDetailPage() {
                                 </div>
 
                                 {tourPackage.pay_in_parts && tourPackage.pay_in_parts.length > 0 && (
-                                    <div>
+                                    <div className="rounded-lg border bg-card text-card-foreground p-6 space-y-4">
                                         <h3 className="font-semibold mb-2">Pay in Parts Plans</h3>
                                         <Table>
                                             <TableHeader><TableRow><TableHead>Plan</TableHead><TableHead>Months</TableHead><TableHead className="text-right">Total</TableHead></TableRow></TableHeader>
@@ -678,5 +679,7 @@ export default function BookingDetailPage() {
     </div>
   );
 }
+
+    
 
     
