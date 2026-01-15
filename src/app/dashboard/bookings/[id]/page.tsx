@@ -553,7 +553,7 @@ export default function BookingDetailPage() {
                                 <CardContent>
                                     {paymentTimeline.length > 0 ? (
                                         <div className="relative space-y-8">
-                                            <div className="absolute left-4 top-0 h-full w-px bg-border" />
+                                            <div className="absolute left-2.5 top-0 h-full w-px bg-border" />
                                             {paymentTimeline.map((item, index) => {
                                                 const statusInfo = getTimelineStatusInfo(item.status);
                                                 return (
@@ -678,3 +678,5 @@ export default function BookingDetailPage() {
     </div>
   );
 }
+
+    
