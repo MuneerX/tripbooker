@@ -1,3 +1,4 @@
+
 "use client"
 
 import * as React from "react";
@@ -60,7 +61,7 @@ export function BookingCancellationChart({ data }: { data: any[] }) {
               }
             />
             <ChartLegend content={<ChartLegendContent />} />
-            <Bar dataKey="cancellations" fill="var(--color-cancellations)" name="Cancellation" radius={[4, 4, 0, 0]} />
+            <Bar dataKey="cancellations" fill="var(--color-cancellations)" name="Cancellations" radius={[4, 4, 0, 0]} />
             <Bar dataKey="bookings" fill="var(--color-bookings)" name="Bookings" radius={[4, 4, 0, 0]} />
           </BarChart>
         </ChartContainer>
