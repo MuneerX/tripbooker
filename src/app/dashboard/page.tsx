@@ -2,16 +2,20 @@
 'use client';
 
 import * as React from 'react';
+import Link from 'next/link';
 import { getTourPackages, getBookings, getReviews, getProfiles, getTripDays, getOperators, getTripLocations } from '@/lib/supabase/queries';
 import type { TourPackage, Booking, Review, Profile, TripDay, Operator, TripLocation } from '@/lib/types';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { DollarSign, BookCopy, Users, UserPlus, Package, Calendar, UserCog, MapPin, UserCheck, UserX, User, Sailboat, TrendingUp, CalendarX } from 'lucide-react';
+import { DollarSign, BookCopy, Users, UserPlus, Package, Calendar, UserCog, MapPin, UserCheck, UserX, User, Sailboat, TrendingUp, CalendarX, PlusCircle } from 'lucide-react';
 import { BookingCancellationChart } from '@/components/dashboard/charts/BookingCancellationChart';
 import { BookingSummaryChart } from '@/components/dashboard/charts/BookingSummaryChart';
 import { PopularPackagesTable } from '@/components/dashboard/tables/PopularPackagesTable';
 import { ExpiringPackagesTable } from '@/components/dashboard/tables/ExpiringPackagesTable';
 import { formatCurrency, cn } from '@/lib/utils';
 import { Skeleton } from '@/components/ui/skeleton';
+import { createClient } from '@/lib/supabase/client';
+import { Button } from '@/components/ui/button';
+import { format } from 'date-fns';
 
 const StatItem = ({
     icon,
@@ -62,6 +66,8 @@ export default function DashboardPage() {
   const [stats, setStats] = React.useState<any>(null);
   const [chartData, setChartData] = React.useState<any>(null);
   const [tableData, setTableData] = React.useState<any>(null);
+  const [profile, setProfile] = React.useState<any>(null);
+  const supabase = createClient();
 
   React.useEffect(() => {
     const fetchDashboardData = async () => {
@@ -73,16 +79,23 @@ export default function DashboardPage() {
           profiles,
           tripDays,
           operators,
-          locations
+          locations,
+          { data: { user } },
         ] = await Promise.all([
           getTourPackages(),
           getBookings(),
           getProfiles(),
           getTripDays(),
           getOperators(),
-          getTripLocations()
+          getTripLocations(),
+          supabase.auth.getUser(),
         ]);
         
+        if (user) {
+          const { data: profileData } = await supabase.from('profiles').select('*').eq('id', user.id).single();
+          setProfile(profileData);
+        }
+
         // --- Process Stats ---
         const totalSales = bookings
           .filter(b => b.booking_status === 'confirmed' || b.booking_status === 'completed')
@@ -191,11 +204,21 @@ export default function DashboardPage() {
     };
     
     fetchDashboardData();
-  }, []);
+  }, [supabase]);
 
   if (loading || !stats) {
     return (
         <div className="flex w-full flex-col gap-8 p-4 md:p-8">
+             <div className="flex items-center justify-between">
+                <div>
+                    <Skeleton className="h-8 w-64 mb-2" />
+                    <Skeleton className="h-4 w-48" />
+                </div>
+                <div className="flex gap-2">
+                    <Skeleton className="h-10 w-32" />
+                    <Skeleton className="h-10 w-32" />
+                </div>
+            </div>
             <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-2">
                 {[...Array(4)].map((_, i) => <Skeleton key={i} className="h-40 rounded-lg" />)}
             </div>
@@ -211,8 +234,28 @@ export default function DashboardPage() {
     )
   }
 
+  const displayName = profile?.full_name || 'Admin';
+
   return (
     <div className="flex w-full flex-col gap-8">
+        <div className="flex items-center justify-between">
+            <div>
+                <h1 className="text-2xl font-bold tracking-tight">Welcome back, {displayName}!</h1>
+                <p className="text-muted-foreground">Here&apos;s a summary of your operations for {format(new Date(), "PPP")}.</p>
+            </div>
+            <div className="flex items-center gap-2">
+                <Button asChild>
+                    <Link href="/dashboard/tour-packages/create">
+                        <PlusCircle className="mr-2 h-4 w-4" /> Create Tour
+                    </Link>
+                </Button>
+                <Button variant="outline" asChild>
+                    <Link href="/dashboard/operators/create">
+                        <PlusCircle className="mr-2 h-4 w-4" /> Create Operator
+                    </Link>
+                </Button>
+            </div>
+        </div>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           <Card>
             <CardHeader>
