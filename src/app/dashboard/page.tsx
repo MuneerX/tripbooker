@@ -238,20 +238,22 @@ export default function DashboardPage() {
 
   return (
     <div className="flex w-full flex-col gap-8">
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
                 <h1 className="text-2xl font-bold tracking-tight">Welcome back, {displayName}!</h1>
                 <p className="text-muted-foreground">Here&apos;s a summary of your operations for {format(new Date(), "PPP")}.</p>
             </div>
             <div className="flex items-center gap-2">
-                <Button asChild>
+                <Button asChild className="w-full sm:w-auto">
                     <Link href="/dashboard/tour-packages/create">
-                        <PlusCircle className="mr-2 h-4 w-4" /> Create Tour
+                        <PlusCircle className="mr-2 h-4 w-4" />
+                        <span className="sm:inline">Create Tour</span>
                     </Link>
                 </Button>
-                <Button variant="outline" asChild>
+                <Button variant="outline" asChild className="w-full sm:w-auto">
                     <Link href="/dashboard/operators/create">
-                        <PlusCircle className="mr-2 h-4 w-4" /> Create Operator
+                        <PlusCircle className="mr-2 h-4 w-4" />
+                        <span className="sm:inline">Create Operator</span>
                     </Link>
                 </Button>
             </div>
@@ -314,5 +316,7 @@ export default function DashboardPage() {
     </div>
   );
 }
+
+    
 
     
