@@ -58,6 +58,18 @@ export default function OperatorsPage() {
     fetchOperators();
   }, [toast]);
 
+  React.useEffect(() => {
+    const isModalOpen = !!itemToToggle || !!itemToDelete;
+    if (isModalOpen) {
+      document.body.style.pointerEvents = 'none';
+    } else {
+      document.body.style.pointerEvents = '';
+    }
+    return () => {
+      document.body.style.pointerEvents = '';
+    };
+  }, [itemToToggle, itemToDelete]);
+
   const handleStatusToggle = async () => {
     if (!itemToToggle) return;
     
@@ -78,16 +90,6 @@ export default function OperatorsPage() {
         });
     } finally {
         setItemToToggle(null);
-        document.body.style.pointerEvents = '';
-    }
-  };
-  
-  const handleOpenChange = (open: boolean) => {
-    if (open) {
-      document.body.style.pointerEvents = 'none';
-    } else {
-      document.body.style.pointerEvents = '';
-      setItemToToggle(null);
     }
   };
 
@@ -273,7 +275,7 @@ export default function OperatorsPage() {
       </Card>
 
       {itemToToggle && (
-        <AlertDialog open={!!itemToToggle} onOpenChange={handleOpenChange}>
+        <AlertDialog open={!!itemToToggle} onOpenChange={(open) => !open && setItemToToggle(null)}>
           <AlertDialogContent>
             <AlertDialogHeader>
               <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
@@ -282,10 +284,7 @@ export default function OperatorsPage() {
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
-              <AlertDialogCancel onClick={() => {
-                setItemToToggle(null);
-                document.body.style.pointerEvents = '';
-              }}>Cancel</AlertDialogCancel>
+              <AlertDialogCancel onClick={() => setItemToToggle(null)}>Cancel</AlertDialogCancel>
               <AlertDialogAction onClick={handleStatusToggle} className={cn(itemToToggle.status === 'active' && "bg-destructive hover:bg-destructive/90")}>
                 {itemToToggle.status === 'active' ? 'Block' : 'Unblock'}
               </AlertDialogAction>

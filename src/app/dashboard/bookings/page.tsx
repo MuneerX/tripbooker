@@ -49,6 +49,17 @@ export default function BookingsPage() {
     fetchBookings();
   }, []);
 
+  React.useEffect(() => {
+    if (itemToDelete) {
+      document.body.style.pointerEvents = 'none';
+    } else {
+      document.body.style.pointerEvents = '';
+    }
+    return () => {
+      document.body.style.pointerEvents = '';
+    };
+  }, [itemToDelete]);
+
   const handleDelete = async () => {
     if (!itemToDelete) return;
     
