@@ -397,7 +397,7 @@ export default function BookingDetailPage() {
                                   </div>
                                   <div className="text-center">
                                     <p className="text-sm text-muted-foreground">Total Pending</p>
-                                    <p className="text-lg font-bold text-destructive">{formatCurrency(paymentProgress.pendingAmount)}</p>
+                                    <p className="text-lg font-bold text-red-500">{formatCurrency(paymentProgress.pendingAmount)}</p>
                                   </div>
                                 </div>
                              </CardContent>
