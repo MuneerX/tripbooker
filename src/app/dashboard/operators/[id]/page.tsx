@@ -6,8 +6,8 @@ import { useParams, useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Edit, UserCheck, UserX, Mail, Phone, Hash, UserCog, Building, Contact, Check, ShieldCheck } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { ArrowLeft, Edit, UserCheck, UserX, Mail, Phone, Hash, UserCog, Building, Contact, Check, ShieldCheck, Percent, DollarSign } from "lucide-react";
+import { cn, formatCurrency } from "@/lib/utils";
 import { Separator } from "@/components/ui/separator";
 import { getOperatorById, updateOperatorStatus } from "@/lib/supabase/queries";
 import type { Operator } from "@/lib/types";
@@ -160,7 +160,7 @@ export default function OperatorDetailPage() {
             </div>
 
             {/* Right Column */}
-            <div className="lg:col-span-2">
+            <div className="lg:col-span-2 space-y-6">
                 <Card>
                     <CardHeader>
                         <CardTitle>Contact & Address Details</CardTitle>
@@ -178,6 +178,37 @@ export default function OperatorDetailPage() {
                                <Badge variant="outline" className={cn("capitalize mt-1", operator.status === 'active' ? 'text-green-600 border-green-600/20 bg-green-500/10' : 'text-red-600 border-red-600/20 bg-red-500/10')}>{operator.status}</Badge>
                            </div>
                        </div>
+                    </CardContent>
+                </Card>
+                 <Card>
+                    <CardHeader>
+                        <CardTitle>Agent Commission</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                         {operator.commission_status ? (
+                            <div className="grid grid-cols-2 gap-4">
+                                <div className="flex items-start gap-3">
+                                    <div className="mt-1">{operator.commission_type === 'percentage' ? <Percent className="h-5 w-5 text-muted-foreground" /> : <DollarSign className="h-5 w-5 text-muted-foreground" />}</div>
+                                    <div>
+                                        <p className="text-sm text-muted-foreground">Commission Type</p>
+                                        <p className="font-medium capitalize">{operator.commission_type}</p>
+                                    </div>
+                                </div>
+                                <div className="flex items-start gap-3">
+                                    <div className="mt-1">{operator.commission_type === 'percentage' ? <Percent className="h-5 w-5 text-muted-foreground" /> : <DollarSign className="h-5 w-5 text-muted-foreground" />}</div>
+                                    <div>
+                                        <p className="text-sm text-muted-foreground">Commission Value</p>
+                                        <p className="font-medium">
+                                            {operator.commission_type === 'percentage'
+                                                ? `${operator.commission_value}%`
+                                                : formatCurrency(operator.commission_value)}
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        ) : (
+                            <p className="text-sm text-muted-foreground">Agent commission is not enabled for this operator.</p>
+                        )}
                     </CardContent>
                 </Card>
             </div>

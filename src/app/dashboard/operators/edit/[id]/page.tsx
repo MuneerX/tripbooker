@@ -46,7 +46,18 @@ const operatorSchema = z.object({
   commission_status: z.boolean().default(false),
   commission_type: z.enum(["percentage", "amount"]).default("percentage"),
   commission_value: z.coerce.number().min(0).default(0),
-});
+}).refine(
+  (data) => {
+    if (data.commission_status && data.commission_type === "percentage" && data.commission_value > 100) {
+      return false;
+    }
+    return true;
+  },
+  {
+    message: "Percentage value cannot be more than 100.",
+    path: ["commission_value"],
+  }
+);
 
 type OperatorFormValues = z.infer<typeof operatorSchema>;
 
@@ -347,5 +358,3 @@ export default function EditOperatorPage() {
     </div>
   )
 }
-
-    
