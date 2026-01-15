@@ -348,7 +348,7 @@ export default function BookingDetailPage() {
                                   </div>
                                    {paymentTimeline.length > 0 ? (
                                     <div className="relative pt-4">
-                                        <div className="relative h-2 w-full rounded-full bg-muted overflow-hidden">
+                                        <div className="relative h-2 w-full rounded-full bg-muted">
                                             {/* Segmented bar */}
                                             <div className="flex h-full w-full">
                                               {paymentProgress.progressSegments.map((seg, index) => (
