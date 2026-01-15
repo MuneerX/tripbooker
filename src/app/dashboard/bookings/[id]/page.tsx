@@ -149,36 +149,43 @@ export default function BookingDetailPage() {
 
   const paymentProgress = React.useMemo(() => {
     if (!booking || !booking.tour_package) {
-      return {
-        paidAmount: 0,
-        pendingAmount: 0,
-        progressValue: 0,
-        paidCount: 0,
-        totalCount: 0,
-        nextDueDate: null,
-        paymentStatusText: 'Loading...',
-        progressSegments: []
-      };
+        return {
+            paidAmount: 0,
+            pendingAmount: 0,
+            totalScheduledAmount: 0,
+            progressValue: 0,
+            paidCount: 0,
+            totalCount: 0,
+            nextDueDate: null,
+            paymentStatusText: 'Loading...',
+            progressSegments: []
+        };
     }
     
-    const totalAmount = booking.tour_package.base_price ?? 0;
     const paidAmount = booking.payments?.reduce((sum, p) => sum + p.amount, 0) ?? 0;
-    const pendingAmount = Math.max(0, totalAmount - paidAmount);
-    const progressValue = totalAmount > 0 ? Math.min((paidAmount / totalAmount) * 100, 100) : 0;
-    
+
     if (paymentTimeline.length === 0) {
-      const isPaid = paidAmount >= totalAmount && totalAmount > 0;
-      return {
-        paidAmount,
-        pendingAmount,
-        progressValue,
-        paidCount: isPaid ? 1 : 0,
-        totalCount: 1,
-        nextDueDate: null,
-        paymentStatusText: isPaid ? 'Fully Paid' : 'Full Payment Due',
-        progressSegments: [{ color: isPaid ? 'bg-green-500' : 'bg-blue-500', width: `${progressValue}%` }]
-      };
+        const totalAmount = booking.total_amount;
+        const isPaid = paidAmount >= totalAmount && totalAmount > 0;
+        const pendingAmount = Math.max(0, totalAmount - paidAmount);
+        const progressValue = totalAmount > 0 ? Math.min((paidAmount / totalAmount) * 100, 100) : 0;
+        
+        return {
+            paidAmount,
+            pendingAmount,
+            totalScheduledAmount: totalAmount,
+            progressValue,
+            paidCount: isPaid ? 1 : 0,
+            totalCount: 1,
+            nextDueDate: null,
+            paymentStatusText: isPaid ? 'Fully Paid' : 'Full Payment Due',
+            progressSegments: [{ color: isPaid ? 'bg-green-500' : 'bg-blue-500', width: `${progressValue}%` }]
+        };
     }
+
+    const totalScheduledAmount = paymentTimeline.reduce((sum, p) => sum + p.amount, 0);
+    const pendingAmount = Math.max(0, totalScheduledAmount - paidAmount);
+    const progressValue = totalScheduledAmount > 0 ? Math.min((paidAmount / totalScheduledAmount) * 100, 100) : 0;
     
     const paidCount = paymentTimeline.filter(p => p.is_paid).length;
     const totalCount = paymentTimeline.length;
@@ -192,19 +199,19 @@ export default function BookingDetailPage() {
     }
 
     const progressSegments = paymentTimeline.map(part => {
-        const width = (part.amount / totalAmount) * 100;
-        let color = 'bg-gray-300 dark:bg-gray-700';
+        const width = (part.amount / totalScheduledAmount) * 100;
+        let color = 'bg-gray-300 dark:bg-gray-700'; // Locked
         if (part.status === 'paid') color = 'bg-green-500';
         if (part.status === 'overdue-paid') color = 'bg-yellow-500';
         if (part.status === 'overdue') color = 'bg-red-500';
-        // 'next-pay' will be covered by the gray background
+        if (part.status === 'next-pay') color = 'bg-blue-500'; 
         return { color, width: `${width}%` };
     });
-
 
     return {
         paidAmount,
         pendingAmount,
+        totalScheduledAmount,
         progressValue,
         paidCount,
         totalCount,
@@ -348,13 +355,12 @@ export default function BookingDetailPage() {
                                                 <div key={index} className={cn("h-full", seg.color)} style={{ width: seg.width }} />
                                               ))}
                                             </div>
-                                            {/* Paid Progress Overlay */}
-                                            <div className="absolute top-0 left-0 h-full bg-green-500/50" style={{ width: `${paymentProgress.progressValue}%` }} />
                                             
                                             {/* Timeline Stops */}
                                             <div className="absolute top-0 left-0 w-full h-full flex items-center">
                                               {paymentTimeline.map((part, index) => {
-                                                  const position = (paymentTimeline.slice(0, index + 1).reduce((acc, p) => acc + p.amount, 0) / booking.total_amount) * 100;
+                                                  const cumulativeAmount = paymentTimeline.slice(0, index + 1).reduce((acc, p) => acc + p.amount, 0);
+                                                  const position = (cumulativeAmount / paymentProgress.totalScheduledAmount) * 100;
                                                   const statusInfo = getTimelineStatusInfo(part.status);
                                                   return (
                                                       <div
