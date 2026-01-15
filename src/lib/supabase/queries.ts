@@ -5,7 +5,7 @@
 import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
 
-import type { TourPackage, TripDay, Activity, TripLocation, PayInPart, Booking, Review, BookingGuest, Payment, Profile, Operator } from '@/lib/types'
+import type { TourPackage, TripDay, Activity, TripLocation, PayInPart, Booking, Review, BookingGuest, Payment, Profile, Operator, UserPipSchedule } from '@/lib/types'
 import { createClient } from '@supabase/supabase-js'
 
 // Correctly create a Supabase client with admin privileges (service_role)
@@ -864,8 +864,7 @@ export async function getBookings(packageId?: string): Promise<Booking[]> {
     .from('tour_bookings')
     .select(`
       *,
-      tour_package:package_id (name),
-      customer:user_id (full_name, email, avatar_url)
+      tour_package:package_id (name)
     `)
     .order('created_at', { ascending: false });
 
@@ -873,14 +872,14 @@ export async function getBookings(packageId?: string): Promise<Booking[]> {
     query = query.eq('package_id', packageId);
   }
 
-  const { data, error } = await query;
+  const { data: bookingsData, error } = await query;
   
   if (error) {
     console.error('Error fetching bookings:', error);
     throw new Error(error.message);
   }
   
-  const bookings = (data || []).map((item: any) => ({
+  const bookings = (bookingsData || []).map((item: any) => ({
     ...item,
     customer_name: item.customer?.full_name || 'N/A',
     customer_email: item.customer?.email || 'N/A',
@@ -898,7 +897,6 @@ export async function getBookings(packageId?: string): Promise<Booking[]> {
 export async function getBookingById(id: string): Promise<Booking | null> {
     const supabase = createAdminClient();
 
-    // Fetch the main booking data and the customer profile in one go
     const { data: bookingData, error } = await supabase
         .from('tour_bookings')
         .select(`*, customer:user_id(*)`)
@@ -912,34 +910,37 @@ export async function getBookingById(id: string): Promise<Booking | null> {
 
     if (!bookingData) return null;
 
-    // Fetch related data in separate queries
-    const { data: tourPackage, error: pkgError } = await supabase
-        .from('tour_packages')
-        .select(`*, pay_in_parts(*), trip_days:trip_days(*, activities:trip_day_activities(*, place:place_id(*)))`)
-        .eq('id', bookingData.package_id)
-        .single();
+    // Fetch related data in parallel
+    const [
+        { data: tourPackage, error: pkgError },
+        { data: guests, error: guestsError },
+        { data: payments, error: paymentsError },
+        { data: user_pip_schedules, error: pipsError }
+    ] = await Promise.all([
+        supabase
+            .from('tour_packages')
+            .select(`*, pay_in_parts(*), trip_days:trip_days(*, activities:trip_day_activities(*, place:place_id(*)))`)
+            .eq('id', bookingData.package_id)
+            .single(),
+        supabase
+            .from('booking_guests')
+            .select('*')
+            .eq('booking_id', id),
+        supabase
+            .from('payments')
+            .select('*')
+            .eq('order_id', bookingData.order_id),
+        supabase
+            .from('user_pip_schedules')
+            .select('*')
+            .eq('booking_id', id)
+            .order('installment_number', { ascending: true })
+    ]);
 
-    if (pkgError) {
-        console.error(`Error fetching tour package for booking ${id}:`, pkgError);
-    }
-
-    const { data: guests, error: guestsError } = await supabase
-        .from('booking_guests')
-        .select('*')
-        .eq('booking_id', id);
-
-    if (guestsError) {
-        console.error(`Error fetching guests for booking ${id}:`, guestsError);
-    }
-    
-    const { data: payments, error: paymentsError } = await supabase
-      .from('payments')
-      .select('*')
-      .eq('id', bookingData.payments_id);
-
-    if (paymentsError) {
-      console.error(`Error fetching payments for booking ${id}:`, paymentsError);
-    }
+    if (pkgError) console.error(`Error fetching tour package for booking ${id}:`, pkgError);
+    if (guestsError) console.error(`Error fetching guests for booking ${id}:`, guestsError);
+    if (paymentsError) console.error(`Error fetching payments for booking ${id}:`, paymentsError);
+    if (pipsError) console.error(`Error fetching PIP schedules for booking ${id}:`, pipsError);
 
 
     const result: Booking = {
@@ -948,6 +949,7 @@ export async function getBookingById(id: string): Promise<Booking | null> {
       tour_package: tourPackage || null,
       guests: guests || [],
       payments: payments || [],
+      user_pip_schedules: user_pip_schedules || []
     } as Booking;
 
     return result;

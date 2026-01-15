@@ -132,12 +132,22 @@ export type Payment = {
   id: string;
   amount: number;
   payment_method: string | null;
-  payment_reference: string | null;
   transaction_id: string | null;
-  payment_date: string | null;
-  created_at: string;
+  order_id: string | null;
+  created_at: string; // This is the payment date
   user_id: string | null;
   payment_status: string | null;
+};
+
+export type UserPipSchedule = {
+  id: string;
+  booking_id: string;
+  installment_number: number;
+  amount: number;
+  due_date: string;
+  is_paid: boolean;
+  paid_date: string | null;
+  order_id: string;
 };
 
 export type Booking = {
@@ -153,7 +163,6 @@ export type Booking = {
   booking_status: 'pending' | 'confirmed' | 'cancelled' | 'completed';
   payment_status: 'pending' | 'completed' | 'failed' | 'refunded';
   payment_method: string | null;
-  payment_reference: string | null;
   special_requests: string | null;
   created_at: string;
   customer: CustomerProfile;
@@ -165,6 +174,7 @@ export type Booking = {
   referral_code?: string | null;
   guests?: BookingGuest[];
   payments?: Payment[];
+  user_pip_schedules?: UserPipSchedule[];
 };
 
 

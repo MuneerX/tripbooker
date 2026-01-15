@@ -11,11 +11,11 @@ import { Badge } from "@/components/ui/badge";
 import { ArrowLeft, Check, X, Calendar, Users, Clock, Info, Star, CheckCircle, XCircle, ArrowUpRight, Sun, Moon, CreditCard, User, Phone, MapPinIcon, Hash, FileDown, Plus, ChevronDown } from "lucide-react";
 import { formatCurrency, getStatusBadgeColor, cn } from "@/lib/utils";
 import { Separator } from "@/components/ui/separator";
-import { addMonths, format, isBefore, isAfter } from "date-fns";
+import { addMonths, format, isBefore, isAfter, parseISO } from "date-fns";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { getBookingById, acceptBooking, cancelBooking } from "@/lib/supabase/queries";
-import type { Booking, BookingGuest, TripDay, Payment, PayInPart } from "@/lib/types";
+import type { Booking, BookingGuest, TripDay, Payment, UserPipSchedule } from "@/lib/types";
 import { useBreadcrumb } from "../../layout";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import {
@@ -112,79 +112,39 @@ export default function BookingDetailPage() {
 
     
   const paymentTimeline = React.useMemo(() => {
-    if (!booking || !booking.tour_package?.pay_in_parts || booking.tour_package.pay_in_parts.length === 0) {
+    if (!booking || !booking.user_pip_schedules || booking.user_pip_schedules.length === 0) {
         return [];
     }
-
-    const tourPackage = booking.tour_package;
-    const bookingDate = new Date(booking.booking_date);
-    const totalPaid = booking.payments?.reduce((sum, p) => sum + p.amount, 0) ?? 0;
     
-    const sortedParts = tourPackage.pay_in_parts.sort((a, b) => a.months - b.months);
-    let cumulativeAmount = 0;
-    const partsWithDates = sortedParts.map(part => {
-        cumulativeAmount += part.total_amount;
-        return {
-            ...part,
-            dueDate: addMonths(bookingDate, part.months),
-            cumulativeAmount: cumulativeAmount,
-        };
-    });
-
-    const paymentsByDate = (booking.payments || []).sort((a, b) => new Date(a.payment_date || 0).getTime() - new Date(b.payment_date || 0).getTime());
-
-    let cumulativeAmountDue = 0;
-    let lastPaidIndex = -1;
-
-    const schedule = partsWithDates.map((part, index) => {
-        cumulativeAmountDue = part.cumulativeAmount;
-        
-        const isPartPaid = totalPaid >= cumulativeAmountDue;
-        let paidOn: Date | null = null;
-        
-        if (isPartPaid) {
-            lastPaidIndex = index;
-            let paidAmountSoFar = 0;
-            for (const p of paymentsByDate) {
-                paidAmountSoFar += p.amount;
-                if (paidAmountSoFar >= cumulativeAmountDue) {
-                    paidOn = p.payment_date ? new Date(p.payment_date) : null;
-                    break;
-                }
-            }
-        }
-        
+    const schedule = booking.user_pip_schedules.map((part) => {
+        const dueDate = parseISO(part.due_date);
+        const paidDate = part.paid_date ? parseISO(part.paid_date) : null;
         let status: TimelineStatus = 'locked';
         const today = new Date();
 
-        if (isPartPaid) {
-            status = paidOn && isAfter(paidOn, part.dueDate) ? 'overdue-paid' : 'paid';
-        } else if (index === lastPaidIndex + 1) {
-            status = isAfter(today, part.dueDate) ? 'overdue' : 'next-pay';
-        } else if (index > lastPaidIndex + 1) {
-            status = 'locked';
-        } else if (isAfter(today, part.dueDate)) {
+        if (part.is_paid) {
+            status = paidDate && isAfter(paidDate, dueDate) ? 'overdue-paid' : 'paid';
+        } else if (isAfter(today, dueDate)) {
             status = 'overdue';
         }
-
+        
         return {
             ...part,
-            paidOn,
-            status,
+            dueDate: dueDate,
+            paidOn: paidDate,
+            status: status, // initial status
         };
     });
-    
-    const isAllPaid = schedule.every(s => s.status === 'paid' || s.status === 'overdue-paid');
-    const hasOverdue = schedule.some(s => s.status === 'overdue');
-    if (!isAllPaid && !hasOverdue) {
-        const firstUnpaidIndex = schedule.findIndex(s => s.status !== 'paid' && s.status !== 'overdue-paid');
-        if (firstUnpaidIndex !== -1 && !schedule.some(s => s.status === 'next-pay')) {
-            schedule[firstUnpaidIndex].status = 'next-pay';
-        }
+
+    // Determine the 'next-pay' status
+    const firstUnpaidIndex = schedule.findIndex(s => !s.is_paid);
+    if(firstUnpaidIndex !== -1 && schedule[firstUnpaidIndex].status !== 'overdue') {
+        schedule[firstUnpaidIndex].status = 'next-pay';
     }
 
+
     return schedule;
-}, [booking]);
+  }, [booking]);
 
 
   const paymentProgress = React.useMemo(() => {
@@ -201,14 +161,13 @@ export default function BookingDetailPage() {
       };
     }
     
-    const tourPackage = booking.tour_package;
+    const totalAmount = booking.total_amount ?? 0;
     const paidAmount = booking.payments?.reduce((sum, p) => sum + p.amount, 0) ?? 0;
-    const basePrice = tourPackage.base_price ?? 0;
-    const pendingAmount = Math.max(0, basePrice - paidAmount);
-    const progressValue = basePrice > 0 ? Math.min((paidAmount / basePrice) * 100, 100) : 0;
+    const pendingAmount = Math.max(0, totalAmount - paidAmount);
+    const progressValue = totalAmount > 0 ? Math.min((paidAmount / totalAmount) * 100, 100) : 0;
     
     if (paymentTimeline.length === 0) {
-      const isPaid = paidAmount >= basePrice;
+      const isPaid = paidAmount >= totalAmount && totalAmount > 0;
       return {
         paidAmount,
         pendingAmount,
@@ -216,12 +175,12 @@ export default function BookingDetailPage() {
         paidCount: isPaid ? 1 : 0,
         totalCount: 1,
         nextDueDate: null,
-        paymentStatusText: isPaid ? 'Fully Paid' : 'Payment due',
+        paymentStatusText: isPaid ? 'Fully Paid' : 'Full Payment Due',
         progressSegments: [{ color: isPaid ? 'bg-green-500' : 'bg-blue-500', width: `${progressValue}%` }]
       };
     }
     
-    const paidCount = paymentTimeline.filter(p => p.status === 'paid' || p.status === 'overdue-paid').length;
+    const paidCount = paymentTimeline.filter(p => p.is_paid).length;
     const totalCount = paymentTimeline.length;
     const nextPayment = paymentTimeline.find(p => p.status === 'next-pay' || p.status === 'overdue');
     
@@ -233,12 +192,12 @@ export default function BookingDetailPage() {
     }
 
     const progressSegments = paymentTimeline.map(part => {
-        const width = (part.total_amount / basePrice) * 100;
+        const width = (part.amount / totalAmount) * 100;
         let color = 'bg-gray-300 dark:bg-gray-700';
         if (part.status === 'paid') color = 'bg-green-500';
         if (part.status === 'overdue-paid') color = 'bg-yellow-500';
         if (part.status === 'overdue') color = 'bg-red-500';
-        if (part.status === 'next-pay') color = 'bg-gray-300 dark:bg-gray-700'; // Make next-pay gray on bar
+        // 'next-pay' will be covered by the gray background
         return { color, width: `${width}%` };
     });
 
@@ -380,43 +339,48 @@ export default function BookingDetailPage() {
                                         <p>Next due: <span className="font-medium">{format(paymentProgress.nextDueDate, "PPP")}</span></p>
                                       )}
                                   </div>
-                                  <div className="relative pt-4">
-                                      <div className="relative h-2 w-full rounded-full bg-muted overflow">
-                                          {/* Segmented bar */}
-                                          <div className="flex h-full w-full">
-                                            {paymentProgress.progressSegments.map((seg, index) => (
-                                              <div key={index} className={cn("h-full", seg.color)} style={{ width: seg.width }} />
-                                            ))}
-                                          </div>
-                                          {/* Paid Progress Overlay */}
-                                          <div className="absolute top-0 left-0 h-full rounded-full bg-green-500/50" style={{ width: `${paymentProgress.progressValue}%` }} />
-                                           {/* Timeline Stops */}
-                                          <div className="absolute top-0 left-0 w-full h-full">
-                                            {paymentTimeline.map((part, index) => {
-                                                const position = tourPackage.base_price > 0 ? (part.cumulativeAmount / tourPackage.base_price) * 100 : 0;
-                                                const statusInfo = getTimelineStatusInfo(part.status);
-                                                
-                                                return (
-                                                    <div
-                                                        key={part.id || index}
-                                                        className="absolute top-1/2 -translate-y-1/2"
-                                                        style={{ left: `${position}%` }}
-                                                    >
-                                                        <div
-                                                          className={cn("h-6 w-6 -translate-x-1/2 rounded-full border-2 border-background flex items-center justify-center text-white z-10", statusInfo.className)}
-                                                        >
-                                                            {React.cloneElement(statusInfo.icon, { className: 'h-3.5 w-3.5' })}
-                                                        </div>
-                                                    </div>
-                                                )
-                                            })}
-                                          </div>
-                                      </div>
-                                  </div>
-
-                                  <p className="text-sm text-muted-foreground text-center pt-2">
-                                    {paymentProgress.paidCount} out of {paymentProgress.totalCount} installments paid
-                                  </p>
+                                   {paymentTimeline.length > 0 ? (
+                                    <div className="relative pt-4">
+                                        <div className="relative h-2 w-full rounded-full bg-muted overflow-hidden">
+                                            {/* Segmented bar */}
+                                            <div className="flex h-full w-full">
+                                              {paymentProgress.progressSegments.map((seg, index) => (
+                                                <div key={index} className={cn("h-full", seg.color)} style={{ width: seg.width }} />
+                                              ))}
+                                            </div>
+                                            {/* Paid Progress Overlay */}
+                                            <div className="absolute top-0 left-0 h-full bg-green-500/50" style={{ width: `${paymentProgress.progressValue}%` }} />
+                                            
+                                            {/* Timeline Stops */}
+                                            <div className="absolute top-0 left-0 w-full h-full flex items-center">
+                                              {paymentTimeline.map((part, index) => {
+                                                  const position = (paymentTimeline.slice(0, index + 1).reduce((acc, p) => acc + p.amount, 0) / booking.total_amount) * 100;
+                                                  const statusInfo = getTimelineStatusInfo(part.status);
+                                                  return (
+                                                      <div
+                                                          key={part.id || index}
+                                                          className="absolute top-1/2 -translate-y-1/2"
+                                                          style={{ left: `${position}%` }}
+                                                      >
+                                                          <div
+                                                            className={cn("h-6 w-6 -translate-x-1/2 rounded-full border-2 border-background flex items-center justify-center text-white z-10", statusInfo.className)}
+                                                          >
+                                                              {React.cloneElement(statusInfo.icon, { className: 'h-3.5 w-3.5' })}
+                                                          </div>
+                                                      </div>
+                                                  )
+                                              })}
+                                            </div>
+                                        </div>
+                                         <p className="text-sm text-muted-foreground text-center pt-4">
+                                            {paymentProgress.paidCount} out of {paymentProgress.totalCount} installments paid
+                                          </p>
+                                    </div>
+                                   ) : (
+                                    <div className="relative h-2 w-full rounded-full bg-muted overflow-hidden">
+                                        <div className="h-full bg-green-500" style={{ width: `${paymentProgress.progressValue}%` }}/>
+                                    </div>
+                                   )}
                                 </div>
                                 <Separator />
                                 <div className="grid grid-cols-2 gap-4">
@@ -596,10 +560,10 @@ export default function BookingDetailPage() {
                                                         <div className="flex-1 pb-8 pl-6">
                                                             <div className="flex justify-between items-start">
                                                                 <div>
-                                                                    <p className="font-semibold">{item.plan_name}</p>
+                                                                    <p className="font-semibold">Installment {item.installment_number}</p>
                                                                     <Badge variant="secondary" className="mt-1">{statusInfo.text}</Badge>
                                                                 </div>
-                                                                <p className="font-semibold text-lg">{formatCurrency(item.total_amount)}</p>
+                                                                <p className="font-semibold text-lg">{formatCurrency(item.amount)}</p>
                                                             </div>
                                                             <div className="mt-2 grid grid-cols-2 gap-2 text-sm text-muted-foreground">
                                                                 <div>
@@ -618,7 +582,7 @@ export default function BookingDetailPage() {
                                         </div>
                                     ) : (
                                         <div className="text-center py-10 text-muted-foreground">
-                                            <p>No payment plan is set for this package.</p>
+                                            <p>No installment plan is set for this booking.</p>
                                         </div>
                                     )}
                                 </CardContent>
@@ -648,7 +612,7 @@ export default function BookingDetailPage() {
                                                         <Calendar className="h-5 w-5 text-muted-foreground mt-1" />
                                                         <div>
                                                             <p className="text-sm text-muted-foreground">Paid On</p>
-                                                            <p className="font-medium">{payment.payment_date ? format(new Date(payment.payment_date), "PPP") : 'NA'}</p>
+                                                            <p className="font-medium">{payment.created_at ? format(new Date(payment.created_at), "PPP") : 'NA'}</p>
                                                         </div>
                                                     </div>
                                                      <div className="flex items-start gap-3">
