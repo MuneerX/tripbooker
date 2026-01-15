@@ -14,7 +14,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 
 export function BookingCancellationChart({ data }: { data: any[] }) {
   const isMobile = useIsMobile();
-  const barCategoryGap = isMobile ? '10%' : '30%';
+  const barCategoryGap = isMobile ? '20%' : '30%';
 
   return (
     <Card>
