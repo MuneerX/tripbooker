@@ -348,6 +348,7 @@ export async function updateTourPackage(id: string, formData: FormData) {
     return data;
 }
 
+
 /**
  * Deletes a tour package and all associated images from storage.
  */
@@ -1145,7 +1146,7 @@ export async function createOperator(formData: FormData) {
     is_verified: formData.get('is_verified') === 'true',
     is_active: formData.get('is_active') === 'true',
     referral_code: formData.get('referral_code') as string || null,
-    agent_commission_enabled: formData.get('agent_commission_enabled') === 'true',
+    commission_status: formData.get('commission_status') === 'true',
     commission_type: formData.get('commission_type') as 'percentage' | 'amount' || 'percentage',
     commission_value: Number(formData.get('commission_value')) || 0,
   };
@@ -1210,7 +1211,7 @@ export async function updateOperator(id: string, formData: FormData): Promise<Op
         is_active: formData.get('is_active') === 'true',
         logo_url: logoUrl,
         updated_at: new Date().toISOString(),
-        agent_commission_enabled: formData.get('agent_commission_enabled') === 'true',
+        commission_status: formData.get('commission_status') === 'true',
         commission_type: formData.get('commission_type') as 'percentage' | 'amount' || 'percentage',
         commission_value: Number(formData.get('commission_value')) || 0,
     };

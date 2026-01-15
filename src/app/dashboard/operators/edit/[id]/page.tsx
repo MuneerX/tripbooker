@@ -1,4 +1,5 @@
 
+
 "use client"
 
 import * as React from "react"
@@ -42,7 +43,7 @@ const operatorSchema = z.object({
       (files) => !files || !files[0] || ACCEPTED_IMAGE_TYPES.includes(files[0].type),
       ".jpg, .jpeg, .png and .webp files are accepted."
     ),
-  agent_commission_enabled: z.boolean().default(false),
+  commission_status: z.boolean().default(false),
   commission_type: z.enum(["percentage", "amount"]).default("percentage"),
   commission_value: z.coerce.number().min(0).default(0),
 });
@@ -84,7 +85,7 @@ export default function EditOperatorPage() {
   }, [id, router, toast, form, setBreadcrumbName]);
 
   const logoFile = form.watch("logo_file");
-  const agentCommissionEnabled = form.watch("agent_commission_enabled");
+  const commissionStatus = form.watch("commission_status");
   const operatorName = form.watch("name");
 
   const generateReferralCode = () => {
@@ -279,7 +280,7 @@ export default function EditOperatorPage() {
                         <CardHeader>
                              <FormField
                                 control={form.control}
-                                name="agent_commission_enabled"
+                                name="commission_status"
                                 render={({ field }) => (
                                 <FormItem className="flex flex-row items-center justify-between">
                                     <div className="space-y-0.5">
@@ -291,7 +292,7 @@ export default function EditOperatorPage() {
                                 )}
                             />
                         </CardHeader>
-                        {agentCommissionEnabled && (
+                        {commissionStatus && (
                             <CardContent className="space-y-4">
                                 <FormField
                                     control={form.control}
