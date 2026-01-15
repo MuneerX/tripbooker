@@ -28,11 +28,11 @@ export function BookingCancellationChart({ data }: { data: any[] }) {
           config={{
             bookings: {
               label: "Bookings",
-              color: "hsl(var(--chart-2))",
+              color: "hsl(142.1 76.2% 36.3%)", // Bright Light Green
             },
             cancellations: {
               label: "Cancellations",
-              color: "hsl(var(--chart-1))",
+              color: "hsl(24.6 95.0% 53.1%)", // Orange
             },
           }}
           className="h-[300px] w-full"
