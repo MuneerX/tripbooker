@@ -913,7 +913,8 @@ export async function getBookings(packageId?: string): Promise<Booking[]> {
     .from('tour_bookings')
     .select(`
       *,
-      tour_package:package_id (name)
+      tour_package:package_id (name),
+      customer:user_id (full_name, email, avatar_url)
     `)
     .order('created_at', { ascending: false });
 
@@ -927,9 +928,31 @@ export async function getBookings(packageId?: string): Promise<Booking[]> {
     console.error('Error fetching bookings:', error);
     throw new Error(error.message);
   }
+
+  const orderIds = (bookingsData || []).map(b => b.order_id).filter(Boolean);
+  const paymentsMap = new Map<string, string>();
+
+  if (orderIds.length > 0) {
+      const { data: paymentsData, error: paymentsError } = await supabase
+        .from('payments')
+        .select('order_id, transaction_id')
+        .in('order_id', orderIds)
+        .not('transaction_id', 'is', null);
+
+      if (paymentsError) {
+          console.error('Error fetching payments for bookings:', paymentsError);
+      } else if (paymentsData) {
+          for (const payment of paymentsData) {
+              if (payment.order_id && !paymentsMap.has(payment.order_id) && payment.transaction_id) {
+                  paymentsMap.set(payment.order_id, payment.transaction_id);
+              }
+          }
+      }
+  }
   
   const bookings = (bookingsData || []).map((item: any) => ({
     ...item,
+    transaction_id: item.transaction_id || paymentsMap.get(item.order_id) || null,
     customer_name: item.customer?.full_name || 'N/A',
     customer_email: item.customer?.email || 'N/A',
     avatar_url: item.customer?.avatar_url,
