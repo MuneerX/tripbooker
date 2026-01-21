@@ -321,29 +321,77 @@ export async function updateTourPackage(id: string, formData: FormData) {
       console.error('Error updating tour package:', error);
       throw new Error(error.message);
     }
-
-    // Delete existing parts
-    const { error: deletePartsError } = await supabase.from('pay_in_parts').delete().eq('package_id', id);
-    if (deletePartsError) {
-      console.error('Error deleting pay_in_parts:', deletePartsError);
-      throw new Error(deletePartsError.message);
-    }
     
+    // Smartly update Pay In Parts
     const payInPartsRaw = formData.get('pay_in_parts');
     const payInParts = payInPartsRaw ? JSON.parse(payInPartsRaw as string) : [];
-    // Insert new parts
-    if (payInParts.length > 0) {
-      const partsToInsert = payInParts.map((part: PayInPart) => {
-        const { id: partId, ...rest } = part;
-        return { ...rest, package_id: id };
-      });
-      const { error: partsError } = await supabase.from('pay_in_parts').insert(partsToInsert);
-      if (partsError) {
-        console.error('Error updating pay_in_parts:', partsError);
-        throw new Error(partsError.message);
+
+    const { data: existingParts, error: fetchError } = await supabase
+      .from('pay_in_parts')
+      .select('id, plan_name')
+      .eq('package_id', id);
+
+    if (fetchError) {
+      console.error('Error fetching existing pay_in_parts:', fetchError);
+      throw new Error('Could not retrieve existing payment plans.');
+    }
+
+    const existingPartIds = new Set(existingParts.map(p => p.id));
+    const updatedPartIds = new Set(payInParts.map((p: PayInPart) => p.id).filter(Boolean));
+
+    const partsToDeleteIds = existingParts.map(p => p.id).filter(pid => !updatedPartIds.has(pid));
+    const partsToUpdate = payInParts.filter((p: PayInPart) => p.id && existingPartIds.has(p.id));
+    const partsToCreate = payInParts.filter((p: PayInPart) => !p.id || !existingPartIds.has(p.id));
+
+    if (partsToDeleteIds.length > 0) {
+      const { data: conflictingBookings, error: bookingCheckError } = await supabase
+        .from('tour_bookings')
+        .select('opted_pay_in_parts')
+        .in('opted_pay_in_parts', partsToDeleteIds)
+        .limit(1);
+
+      if (bookingCheckError) {
+        console.error('Error checking for conflicting bookings:', bookingCheckError);
+        throw new Error('Could not verify if payment plans are in use.');
+      }
+
+      if (conflictingBookings && conflictingBookings.length > 0) {
+        const conflictingPlanId = conflictingBookings[0].opted_pay_in_parts;
+        const conflictingPlan = existingParts.find(p => p.id === conflictingPlanId);
+        throw new Error(
+          `Cannot delete payment plan "${conflictingPlan?.plan_name || 'a plan'}" as it is used by existing bookings.`
+        );
+      }
+
+      const { error: deleteError } = await supabase.from('pay_in_parts').delete().in('id', partsToDeleteIds);
+      if (deleteError) {
+        console.error('Error deleting payment plans:', deleteError);
+        throw new Error('Failed to remove old payment plans.');
       }
     }
 
+    if (partsToCreate.length > 0) {
+      const newPartsPayload = partsToCreate.map(({ id: tempId, ...rest }: PayInPart) => ({ ...rest, package_id: id }));
+      const { error: createError } = await supabase.from('pay_in_parts').insert(newPartsPayload);
+      if (createError) {
+        console.error('Error creating new payment plans:', createError);
+        throw new Error('Failed to add new payment plans.');
+      }
+    }
+
+    if (partsToUpdate.length > 0) {
+      for (const part of partsToUpdate) {
+        const { id: partId, package_id, ...rest } = part;
+        const { error: updateError } = await supabase
+          .from('pay_in_parts')
+          .update(rest)
+          .eq('id', partId!);
+        if (updateError) {
+          console.error(`Error updating payment plan ${part.plan_name}:`, updateError);
+          throw new Error(`Failed to update payment plan "${part.plan_name}".`);
+        }
+      }
+    }
 
     return data;
 }
