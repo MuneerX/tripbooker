@@ -127,6 +127,7 @@ export default function BookingsPage() {
                 <TableHead>Order ID</TableHead>
                 <TableHead>Tour Name</TableHead>
                 <TableHead>Reservation Date</TableHead>
+                <TableHead className="hidden md:table-cell">Transaction ID</TableHead>
                 <TableHead className="hidden md:table-cell">Payment</TableHead>
                 <TableHead className="hidden md:table-cell">Amount</TableHead>
                 <TableHead className="hidden lg:table-cell">Referral</TableHead>
@@ -139,7 +140,7 @@ export default function BookingsPage() {
             <TableBody>
               {loading ? (
                 <TableRow>
-                  <TableCell colSpan={8} className="h-24 text-center">
+                  <TableCell colSpan={9} className="h-24 text-center">
                     Loading bookings...
                   </TableCell>
                 </TableRow>
@@ -149,6 +150,7 @@ export default function BookingsPage() {
                     <TableCell className="font-mono text-xs">{booking.order_id}</TableCell>
                     <TableCell className="font-medium">{booking.tour_package?.name || 'N/A'}</TableCell>
                     <TableCell>{format(new Date(booking.booking_date), "dd MMM, yyyy")}</TableCell>
+                    <TableCell className="hidden md:table-cell font-mono text-xs">{booking.transaction_id || 'N/A'}</TableCell>
                     <TableCell className="hidden md:table-cell capitalize">{booking.payment_method || 'N/A'}</TableCell>
                     <TableCell className="hidden md:table-cell">{formatCurrency(booking.total_amount)}</TableCell>
                     <TableCell className="hidden lg:table-cell">{booking.referral_code || 'N/A'}</TableCell>
@@ -181,7 +183,7 @@ export default function BookingsPage() {
                 ))
               ) : (
                 <TableRow>
-                  <TableCell colSpan={8} className="h-24 text-center">
+                  <TableCell colSpan={9} className="h-24 text-center">
                     No bookings found.
                   </TableCell>
                 </TableRow>

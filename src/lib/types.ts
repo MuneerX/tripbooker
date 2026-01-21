@@ -165,6 +165,7 @@ export type Booking = {
   payment_method: string | null;
   special_requests: string | null;
   created_at: string;
+  transaction_id?: string | null;
   customer: CustomerProfile;
   customer_name: string;
   customer_email: string;
