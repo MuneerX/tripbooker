@@ -82,3 +82,12 @@
     @apply bg-background text-foreground;
   }
 }
+
+@layer components {
+  /* Ensure the markdown editor's fullscreen/side-by-side mode appears above other UI elements */
+  .editor-toolbar.fullscreen,
+  .editor-preview-side,
+  .CodeMirror-fullscreen {
+    z-index: 1500 !important;
+  }
+}
