@@ -58,16 +58,18 @@ export function AppHeader() {
         <Menu className="h-5 w-5" />
         <span className="sr-only">Toggle navigation menu</span>
       </Button>
-      <div className="w-full flex-1">
+      <div className="hidden flex-1 md:flex">
         <Breadcrumbs />
       </div>
-      <div className="relative ml-auto flex-1 shrink-0 grow-0">
-        <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-        <Input
-          type="search"
-          placeholder="Search..."
-          className="h-9 w-full rounded-lg bg-background pl-8 md:w-[200px] lg:w-[336px]"
-        />
+      <div className="flex flex-1 items-center gap-4 md:ml-auto md:flex-initial">
+        <form className="relative w-full">
+            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+            <Input
+            type="search"
+            placeholder="Search..."
+            className="h-9 w-full rounded-lg bg-background pl-8"
+            />
+        </form>
       </div>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>

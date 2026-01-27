@@ -133,7 +133,65 @@ export default function TourPackagesPage() {
           </div>
         </CardHeader>
         <CardContent>
-          <Table>
+          {/* Mobile view */}
+          <div className="grid gap-4 md:hidden">
+            {loading ? (
+              <div className="text-center py-10 text-muted-foreground">Loading tour packages...</div>
+            ) : paginatedPackages.length > 0 ? (
+              paginatedPackages.map((pkg: TourPackage) => (
+                <Card key={pkg.id}>
+                  <CardHeader className="p-4">
+                    <div className="flex items-center justify-between">
+                      <CardTitle className="text-sm line-clamp-1">{pkg.name}</CardTitle>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button aria-haspopup="true" size="icon" variant="ghost">
+                            <MoreHorizontal className="h-4 w-4" />
+                            <span className="sr-only">Toggle menu</span>
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                          <DropdownMenuItem onSelect={() => router.push(`/dashboard/tour-packages/${pkg.id}`)}>
+                            <View className="mr-2 h-4 w-4" /> View
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onSelect={() => router.push(`/dashboard/tour-packages/edit/${pkg.id}`)}>
+                            <FilePenLine className="mr-2 h-4 w-4" /> Edit
+                          </DropdownMenuItem>
+                          <DropdownMenuItem
+                            className="text-red-600 focus:text-red-600 focus:bg-red-50"
+                            onSelect={() => setItemToDelete(pkg)}
+                          >
+                            <Trash2 className="mr-2 h-4 w-4" /> Delete
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </div>
+                     <CardDescription className="text-xs capitalize">{pkg.package_type} &bull; {pkg.category}</CardDescription>
+                  </CardHeader>
+                  <CardContent className="p-4 pt-0 text-sm space-y-2">
+                     <div className="flex justify-between">
+                        <span className="text-muted-foreground">Price</span>
+                        <span>{formatCurrency(pkg.base_price)}</span>
+                     </div>
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Duration</span>
+                        <span>{pkg.days}D / {pkg.nights}N</span>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span className="text-muted-foreground">Status</span>
+                        <Badge variant="outline" className={cn("capitalize", getStatusBadgeColor(pkg.is_active ? 'active' : 'inactive'))}>{pkg.is_active ? 'active' : 'inactive'}</Badge>
+                      </div>
+                  </CardContent>
+                </Card>
+              ))
+            ) : (
+              <div className="text-center py-10 text-muted-foreground">No tour packages found.</div>
+            )}
+          </div>
+          
+          {/* Desktop view */}
+          <Table className="hidden md:table">
             <TableHeader>
               <TableRow>
                 <TableHead>Tour Name</TableHead>
