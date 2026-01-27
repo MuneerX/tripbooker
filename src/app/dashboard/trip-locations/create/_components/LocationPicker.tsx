@@ -96,13 +96,13 @@ export function LocationPicker({ initialPosition }: LocationPickerProps) {
   }, []); // Run only once on mount
 
   useEffect(() => {
-    if (mapInstanceRef.current && (position[0] !== initialPosition[0] || position[1] !== initialPosition[1])) {
+    if (mapInstanceRef.current) {
       mapInstanceRef.current.setView(position, 13);
     }
     if (markerRef.current) {
       markerRef.current.setLatLng(position);
     }
-  }, [position, initialPosition]);
+  }, [position]);
 
   useEffect(() => {
     if (debouncedSearch.length > 2) {
@@ -262,5 +262,3 @@ export function LocationPicker({ initialPosition }: LocationPickerProps) {
     </div>
   );
 }
-
-    
