@@ -144,13 +144,13 @@ export default function TripDaysPage() {
                     const activityCount = day.activities?.length || 0;
                     const totalCost = day.activities?.reduce((sum, act) => sum + (Number(act.additional_cost) || 0), 0) || 0;
                     return (
-                    <TableRow key={day.id}>
+                    <TableRow key={day.id} className="cursor-pointer" onClick={() => router.push(`/dashboard/trip-days/${day.id}`)}>
                         <TableCell className="font-medium">{day.title || day.day_name}</TableCell>
                         <TableCell className="hidden md:table-cell">{day.tour_package?.name || 'N/A'}</TableCell>
                         <TableCell className="hidden md:table-cell">{formatCurrency(totalCost)}</TableCell>
                         <TableCell className="hidden sm:table-cell text-center">{day.day_number}</TableCell>
                         <TableCell className="hidden md:table-cell text-center">{activityCount}</TableCell>
-                        <TableCell className="text-right">
+                        <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
                           <DropdownMenu>
                               <DropdownMenuTrigger asChild>
                               <Button aria-haspopup="true" size="icon" variant="ghost">

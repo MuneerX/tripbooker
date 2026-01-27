@@ -215,7 +215,7 @@ export default function TourPackagesPage() {
                 </TableRow>
               ) : paginatedPackages.length > 0 ? (
                 paginatedPackages.map((pkg: TourPackage) => (
-                  <TableRow key={pkg.id}>
+                  <TableRow key={pkg.id} className="cursor-pointer" onClick={() => router.push(`/dashboard/tour-packages/${pkg.id}`)}>
                     <TableCell className="font-medium">{pkg.name}</TableCell>
                     <TableCell className="hidden md:table-cell">{pkg.days}</TableCell>
                     <TableCell className="hidden md:table-cell">{formatCurrency(pkg.base_price)}</TableCell>
@@ -229,7 +229,7 @@ export default function TourPackagesPage() {
                     <TableCell>
                       <Badge variant="outline" className={cn("capitalize", getStatusBadgeColor(pkg.is_active ? 'active' : 'inactive'))}>{pkg.is_active ? 'active' : 'inactive'}</Badge>
                     </TableCell>
-                    <TableCell>
+                    <TableCell onClick={(e) => e.stopPropagation()}>
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                           <Button aria-haspopup="true" size="icon" variant="ghost">

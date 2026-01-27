@@ -203,7 +203,7 @@ export default function BookingsPage() {
                 </TableRow>
               ) : paginatedBookings.length > 0 ? (
                 paginatedBookings.map((booking: Booking) => (
-                  <TableRow key={booking.id}>
+                  <TableRow key={booking.id} className="cursor-pointer" onClick={() => router.push(`/dashboard/bookings/${booking.id}`)}>
                     <TableCell className="font-mono text-xs">{booking.order_id}</TableCell>
                     <TableCell className="font-medium">{booking.tour_package?.name || 'N/A'}</TableCell>
                     <TableCell>{format(new Date(booking.booking_date), "dd MMM, yyyy")}</TableCell>
@@ -214,7 +214,7 @@ export default function BookingsPage() {
                     <TableCell>
                       <Badge className={cn("capitalize", getStatusBadgeColor(booking.booking_status))}>{booking.booking_status}</Badge>
                     </TableCell>
-                     <TableCell>
+                     <TableCell onClick={(e) => e.stopPropagation()}>
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                           <Button aria-haspopup="true" size="icon" variant="ghost">

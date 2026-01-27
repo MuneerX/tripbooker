@@ -208,7 +208,7 @@ export default function TripLocationsPage() {
                       </TableRow>
                   ) : paginatedLocations.length > 0 ? (
                   paginatedLocations.map((location: TripLocation) => (
-                      <TableRow key={location.id}>
+                      <TableRow key={location.id} className="cursor-pointer" onClick={() => router.push(`/dashboard/trip-locations/${location.id}`)}>
                       <TableCell className="hidden sm:table-cell">
                           <Image
                           alt={location.name}
@@ -228,7 +228,7 @@ export default function TripLocationsPage() {
                       <TableCell>
                           <Badge variant="outline" className={cn("capitalize", getStatusBadgeColor(location.is_active ? 'active' : 'inactive'))}>{location.is_active ? 'Active' : 'Inactive'}</Badge>
                       </TableCell>
-                      <TableCell>
+                      <TableCell onClick={(e) => e.stopPropagation()}>
                           <DropdownMenu>
                               <DropdownMenuTrigger asChild>
                               <Button aria-haspopup="true" size="icon" variant="ghost">

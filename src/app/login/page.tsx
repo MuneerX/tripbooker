@@ -82,13 +82,15 @@ export default function LoginPage() {
 
   return (
     <div className="w-full lg:grid lg:min-h-screen lg:grid-cols-2">
-      <div className="relative flex items-center justify-center py-12">
-        <div className="absolute top-6 left-1/2 -translate-x-1/2 lg:left-6 lg:translate-x-0">
+      <div className="relative flex items-center justify-center p-6 lg:p-12">
+        <div className="absolute top-6 left-6 hidden lg:block">
             {mounted && <Image src={logoUrl} alt="Yes To Go Logo" width={120} height={32} />}
         </div>
-        <div className="mx-auto grid w-[350px] gap-6 mt-28 sm:mt-0">
+        <div className="mx-auto grid w-full max-w-[350px] gap-6">
           <div className="grid gap-4 text-center">
-            
+             <div className="flex justify-center lg:hidden">
+                {mounted && <Image src={logoUrl} alt="Yes To Go Logo" width={120} height={32} />}
+            </div>
             <h1 className="text-2xl font-bold">Welcome Back!</h1>
             <p className="text-muted-foreground">
               Enter your email below to login to your account
