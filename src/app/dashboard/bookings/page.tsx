@@ -127,33 +127,35 @@ export default function BookingsPage() {
               <div className="text-center py-10 text-muted-foreground">Loading bookings...</div>
             ) : paginatedBookings.length > 0 ? (
               paginatedBookings.map((booking: Booking) => (
-                <Card key={booking.id}>
+                <Card key={booking.id} className="cursor-pointer" onClick={() => router.push(`/dashboard/bookings/${booking.id}`)}>
                   <CardHeader className="p-4">
                     <div className="flex items-center justify-between">
                       <div className="grid gap-1">
                         <CardTitle className="text-sm font-mono">{booking.order_id}</CardTitle>
                         <CardDescription className="line-clamp-1">{booking.tour_package?.name || 'N/A'}</CardDescription>
                       </div>
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button aria-haspopup="true" size="icon" variant="ghost">
-                            <MoreHorizontal className="h-4 w-4" />
-                            <span className="sr-only">Toggle menu</span>
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                          <DropdownMenuItem onSelect={() => router.push(`/dashboard/bookings/${booking.id}`)}>
-                            <View className="mr-2 h-4 w-4" /> View
-                          </DropdownMenuItem>
-                          <DropdownMenuItem
-                            className="text-red-600 focus:text-red-600 focus:bg-red-50"
-                            onSelect={() => setItemToDelete(booking)}
-                          >
-                            <Trash2 className="mr-2 h-4 w-4" /> Delete
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
+                       <div onClick={(e) => e.stopPropagation()}>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button aria-haspopup="true" size="icon" variant="ghost">
+                              <MoreHorizontal className="h-4 w-4" />
+                              <span className="sr-only">Toggle menu</span>
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                            <DropdownMenuItem onSelect={() => router.push(`/dashboard/bookings/${booking.id}`)}>
+                              <View className="mr-2 h-4 w-4" /> View
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                              className="text-red-600 focus:text-red-600 focus:bg-red-50"
+                              onSelect={() => setItemToDelete(booking)}
+                            >
+                              <Trash2 className="mr-2 h-4 w-4" /> Delete
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </div>
                     </div>
                   </CardHeader>
                   <CardContent className="p-4 pt-0 text-sm space-y-2">

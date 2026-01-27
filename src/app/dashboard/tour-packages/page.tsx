@@ -139,33 +139,35 @@ export default function TourPackagesPage() {
               <div className="text-center py-10 text-muted-foreground">Loading tour packages...</div>
             ) : paginatedPackages.length > 0 ? (
               paginatedPackages.map((pkg: TourPackage) => (
-                <Card key={pkg.id}>
+                <Card key={pkg.id} className="cursor-pointer" onClick={() => router.push(`/dashboard/tour-packages/${pkg.id}`)}>
                   <CardHeader className="p-4">
                     <div className="flex items-center justify-between">
                       <CardTitle className="text-sm line-clamp-1">{pkg.name}</CardTitle>
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button aria-haspopup="true" size="icon" variant="ghost">
-                            <MoreHorizontal className="h-4 w-4" />
-                            <span className="sr-only">Toggle menu</span>
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                          <DropdownMenuItem onSelect={() => router.push(`/dashboard/tour-packages/${pkg.id}`)}>
-                            <View className="mr-2 h-4 w-4" /> View
-                          </DropdownMenuItem>
-                          <DropdownMenuItem onSelect={() => router.push(`/dashboard/tour-packages/edit/${pkg.id}`)}>
-                            <FilePenLine className="mr-2 h-4 w-4" /> Edit
-                          </DropdownMenuItem>
-                          <DropdownMenuItem
-                            className="text-red-600 focus:text-red-600 focus:bg-red-50"
-                            onSelect={() => setItemToDelete(pkg)}
-                          >
-                            <Trash2 className="mr-2 h-4 w-4" /> Delete
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
+                      <div onClick={(e) => e.stopPropagation()}>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button aria-haspopup="true" size="icon" variant="ghost">
+                              <MoreHorizontal className="h-4 w-4" />
+                              <span className="sr-only">Toggle menu</span>
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                            <DropdownMenuItem onSelect={() => router.push(`/dashboard/tour-packages/${pkg.id}`)}>
+                              <View className="mr-2 h-4 w-4" /> View
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onSelect={() => router.push(`/dashboard/tour-packages/edit/${pkg.id}`)}>
+                              <FilePenLine className="mr-2 h-4 w-4" /> Edit
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                              className="text-red-600 focus:text-red-600 focus:bg-red-50"
+                              onSelect={() => setItemToDelete(pkg)}
+                            >
+                              <Trash2 className="mr-2 h-4 w-4" /> Delete
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </div>
                     </div>
                      <CardDescription className="text-xs capitalize">{pkg.package_type} &bull; {pkg.category}</CardDescription>
                   </CardHeader>

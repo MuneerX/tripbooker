@@ -142,9 +142,9 @@ export default function CustomersPage() {
                 <div className="text-center py-10 text-muted-foreground">Loading customers...</div>
             ) : paginatedProfiles.length > 0 ? (
               paginatedProfiles.map((profile: Profile) => (
-                <Card key={profile.id}>
-                    <CardHeader className="p-4 cursor-pointer" onClick={() => router.push(`/dashboard/customers/${profile.id}`)}>
-                         <div className="flex items-center justify-between gap-3">
+                <Card key={profile.id} className="cursor-pointer" onClick={() => router.push(`/dashboard/customers/${profile.id}`)}>
+                    <CardHeader className="p-4">
+                         <div className="flex items-start justify-between gap-3">
                             <div className="flex items-center gap-3 flex-1 min-w-0">
                                 <Avatar className="h-10 w-10 flex-shrink-0">
                                   <AvatarImage src={profile.avatar_url || ''} alt={profile.full_name || ''} />
@@ -180,7 +180,7 @@ export default function CustomersPage() {
                             </div>
                         </div>
                     </CardHeader>
-                    <CardContent className="p-4 pt-0 text-sm flex items-center justify-between">
+                    <CardContent className="p-4 text-sm flex items-center justify-between">
                         <div className="text-muted-foreground">KV Customer: <span className="font-medium text-foreground">{profile.is_kv_customer ? 'Yes' : 'No'}</span></div>
                         <Badge variant="outline" className={cn("capitalize", getStatusBadgeColor(profile.status === 'active' ? 'active' : 'inactive'))}>{profile.status}</Badge>
                     </CardContent>
