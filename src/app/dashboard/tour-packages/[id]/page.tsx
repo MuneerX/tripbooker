@@ -31,6 +31,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { useToast } from "@/hooks/use-toast";
 import { useBreadcrumb } from "../../layout";
+import { MarkdownRenderer } from "@/components/ui/MarkdownRenderer";
 
 
 export default function TourPackageDetailPage() {
@@ -124,19 +125,6 @@ export default function TourPackageDetailPage() {
     { icon: <Check className="text-green-500" />, label: "Featured", value: tourPackage.is_featured ? 'Yes' : 'No' },
   ];
   
-  const renderPointList = (text: string | null | undefined) => {
-    if (!text) return <p className="text-sm text-muted-foreground leading-relaxed">N/A</p>;
-    const points = text.split(/[\n,]+/).map(p => p.trim()).filter(p => p);
-    return (
-      <ul className="list-disc list-inside space-y-1 text-sm text-muted-foreground leading-relaxed">
-        {points.map((point, index) => (
-          <li key={index}>{point}</li>
-        ))}
-      </ul>
-    );
-  };
-  
-
   return (
     <div className="space-y-6">
       <AlertDialog>
@@ -203,7 +191,7 @@ export default function TourPackageDetailPage() {
                                     
                                     <div className="space-y-2">
                                         <h2 className="text-2xl font-bold">{tourPackage.name}</h2>
-                                        <p className="text-muted-foreground">{tourPackage.description}</p>
+                                        <MarkdownRenderer>{tourPackage.description}</MarkdownRenderer>
                                     </div>
 
                                     <div className="flex items-center gap-4">
@@ -258,15 +246,15 @@ export default function TourPackageDetailPage() {
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                                 <div className="space-y-4">
                                     <h3 className="text-lg font-semibold flex items-center gap-2"><Plus className="text-blue-500"/> Highlights</h3>
-                                    {renderPointList(tourPackage.highlights)}
+                                    <MarkdownRenderer>{tourPackage.highlights || ''}</MarkdownRenderer>
                                 </div>
                                 <div className="space-y-4">
                                     <h3 className="text-lg font-semibold flex items-center gap-2"><Check className="text-green-500"/> Inclusions</h3>
-                                    {renderPointList(tourPackage.inclusion)}
+                                    <MarkdownRenderer>{tourPackage.inclusion}</MarkdownRenderer>
                                 </div>
                                 <div className="space-y-4">
                                     <h3 className="text-lg font-semibold flex items-center gap-2"><X className="text-red-500"/> Exclusions</h3>
-                                    {renderPointList(tourPackage.exclusion)}
+                                    <MarkdownRenderer>{tourPackage.exclusion}</MarkdownRenderer>
                                 </div>
                             </div>
                             
@@ -277,15 +265,12 @@ export default function TourPackageDetailPage() {
                                     { title: 'Booking Policies', content: tourPackage.booking_policy },
                                     { title: 'Cancellation Policies', content: tourPackage.cancellation_policy },
                                     { title: 'Terms & Conditions', content: tourPackage.terms_and_conditions },
-                                ]).map(policy => {
-                                    if (!policy.content) return null;
-                                    return (
-                                        <div key={policy.title} className="space-y-3">
-                                            <h3 className="text-lg font-semibold flex items-center gap-2"><Info /> {policy.title}</h3>
-                                            {renderPointList(policy.content)}
-                                        </div>
-                                    )
-                                })}
+                                ]).map(policy => (
+                                    <div key={policy.title} className="space-y-3">
+                                        <h3 className="text-lg font-semibold flex items-center gap-2"><Info /> {policy.title}</h3>
+                                        <MarkdownRenderer>{policy.content}</MarkdownRenderer>
+                                    </div>
+                                ))}
                             </div>
                              <CardFooter className="p-0 pt-6">
                                 <div className="text-xs text-muted-foreground">

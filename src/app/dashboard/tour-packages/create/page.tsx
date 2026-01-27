@@ -10,7 +10,6 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
-import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { useRouter } from "next/navigation"
 import { useToast } from "@/hooks/use-toast"
@@ -18,6 +17,7 @@ import { Switch } from "@/components/ui/switch"
 import { uploadTourImages } from "@/lib/supabase/queries"
 import { Upload, File as FileIcon, X } from "lucide-react"
 import { PayInPartsForm } from "./_components/PayInPartsForm";
+import { MarkdownEditor } from "@/components/ui/MarkdownEditor";
 
 const MAX_FILE_SIZE = 2 * 1024 * 1024; // 2MB
 const ACCEPTED_IMAGE_TYPES = ["image/jpeg", "image/jpg", "image/png", "image/webp"];
@@ -262,13 +262,13 @@ export default function CreateTourPackagePage() {
                     <Card>
                         <CardHeader><CardTitle>Tour Information</CardTitle></CardHeader>
                         <CardContent className="space-y-6">
-                            <FormField control={form.control} name="description" render={({ field }) => ( <FormItem><FormLabel>Tour Description</FormLabel><FormControl><Textarea placeholder="A detailed description of the tour package." {...field} rows={5} /></FormControl><FormMessage /></FormItem> )} />
-                            <FormField control={form.control} name="highlights" render={({ field }) => ( <FormItem><FormLabel>Highlights</FormLabel><FormControl><Textarea placeholder="e.g., Breathtaking mountain views, Rich cultural experiences, ..." {...field} /></FormControl><FormMessage /></FormItem> )} />
-                            <FormField control={form.control} name="inclusion" render={({ field }) => ( <FormItem><FormLabel>Inclusions</FormLabel><FormControl><Textarea placeholder="e.g., Accommodation, Meals, Guide, ..." {...field} /></FormControl><FormMessage /></FormItem> )} />
-                            <FormField control={form.control} name="exclusion" render={({ field }) => ( <FormItem><FormLabel>Exclusions</FormLabel><FormControl><Textarea placeholder="e.g., International flights, Visa fees, ..." {...field} /></FormControl><FormMessage /></FormItem> )} />
-                            <FormField control={form.control} name="booking_policy" render={({ field }) => ( <FormItem><FormLabel>Booking Policies</FormLabel><FormControl><Textarea placeholder="Define the booking policies." {...field} /></FormControl><FormMessage /></FormItem> )} />
-                            <FormField control={form.control} name="cancellation_policy" render={({ field }) => ( <FormItem><FormLabel>Cancellation Policies</FormLabel><FormControl><Textarea placeholder="Define the cancellation policies." {...field} /></FormControl><FormMessage /></FormItem> )} />
-                            <FormField control={form.control} name="terms_and_conditions" render={({ field }) => ( <FormItem><FormLabel>Terms and Conditions</FormLabel><FormControl><Textarea placeholder="Define the terms and conditions." {...field} /></FormControl><FormMessage /></FormItem> )} />
+                            <FormField control={form.control} name="description" render={({ field }) => ( <FormItem><FormLabel>Tour Description</FormLabel><FormControl><MarkdownEditor value={field.value} onChange={field.onChange} /></FormControl><FormMessage /></FormItem> )} />
+                            <FormField control={form.control} name="highlights" render={({ field }) => ( <FormItem><FormLabel>Highlights</FormLabel><FormControl><MarkdownEditor value={field.value} onChange={field.onChange} /></FormControl><FormMessage /></FormItem> )} />
+                            <FormField control={form.control} name="inclusion" render={({ field }) => ( <FormItem><FormLabel>Inclusions</FormLabel><FormControl><MarkdownEditor value={field.value} onChange={field.onChange} /></FormControl><FormMessage /></FormItem> )} />
+                            <FormField control={form.control} name="exclusion" render={({ field }) => ( <FormItem><FormLabel>Exclusions</FormLabel><FormControl><MarkdownEditor value={field.value} onChange={field.onChange} /></FormControl><FormMessage /></FormItem> )} />
+                            <FormField control={form.control} name="booking_policy" render={({ field }) => ( <FormItem><FormLabel>Booking Policies</FormLabel><FormControl><MarkdownEditor value={field.value ?? ''} onChange={field.onChange} /></FormControl><FormMessage /></FormItem> )} />
+                            <FormField control={form.control} name="cancellation_policy" render={({ field }) => ( <FormItem><FormLabel>Cancellation Policies</FormLabel><FormControl><MarkdownEditor value={field.value ?? ''} onChange={field.onChange} /></FormControl><FormMessage /></FormItem> )} />
+                            <FormField control={form.control} name="terms_and_conditions" render={({ field }) => ( <FormItem><FormLabel>Terms and Conditions</FormLabel><FormControl><MarkdownEditor value={field.value ?? ''} onChange={field.onChange} /></FormControl><FormMessage /></FormItem> )} />
                         </CardContent>
                     </Card>
                     <Card>
@@ -329,5 +329,3 @@ export default function CreateTourPackagePage() {
     </div>
   )
 }
-
-    
