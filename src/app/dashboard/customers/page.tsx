@@ -135,7 +135,7 @@ export default function CustomersPage() {
             </div>
           </div>
         </CardHeader>
-        <CardContent className="p-6 md:pt-0">
+        <CardContent className="p-4 md:p-6 md:pt-0">
           {/* Mobile view */}
           <div className="grid gap-4 md:hidden">
             {loading ? (
@@ -150,9 +150,9 @@ export default function CustomersPage() {
                                   <AvatarImage src={profile.avatar_url || ''} alt={profile.full_name || ''} />
                                   <AvatarFallback>{profile.full_name?.charAt(0) || 'U'}</AvatarFallback>
                                 </Avatar>
-                                <div className="flex-1 min-w-0">
-                                    <CardTitle className="text-base truncate">{profile.full_name || 'N/A'}</CardTitle>
-                                    <CardDescription className="truncate">{profile.email || 'N/A'}</CardDescription>
+                                <div className="flex-1 min-w-0 space-y-0.5">
+                                    <p className="text-base font-semibold truncate">{profile.full_name || 'N/A'}</p>
+                                    <p className="text-sm text-muted-foreground truncate">{profile.email || 'N/A'}</p>
                                 </div>
                             </div>
                             <div onClick={(e) => e.stopPropagation()} className="flex-shrink-0">
@@ -180,7 +180,7 @@ export default function CustomersPage() {
                             </div>
                         </div>
                     </CardHeader>
-                    <CardContent className="p-4 text-sm flex items-center justify-between">
+                    <CardContent className="p-4 pt-0 text-sm flex items-center justify-between">
                         <div className="text-muted-foreground">KV Customer: <span className="font-medium text-foreground">{profile.is_kv_customer ? 'Yes' : 'No'}</span></div>
                         <Badge variant="outline" className={cn("capitalize", getStatusBadgeColor(profile.status === 'active' ? 'active' : 'inactive'))}>{profile.status}</Badge>
                     </CardContent>
