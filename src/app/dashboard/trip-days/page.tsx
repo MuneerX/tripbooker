@@ -97,18 +97,18 @@ export default function TripDaysPage() {
     <div className="flex flex-col gap-6">
         <Card>
         <CardHeader>
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col items-start gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
                 <CardTitle>Trip Days</CardTitle>
                 <CardDescription>Manage your trip days from here.</CardDescription>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex w-full items-center gap-2 sm:w-auto">
                 <Input
                     placeholder="Search by title or package..."
                     name="search"
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="w-full md:w-64"
+                    className="w-full sm:w-64"
                 />
                 <Button asChild>
                 <Link href="/dashboard/trip-days/create">

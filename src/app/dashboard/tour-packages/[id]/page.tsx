@@ -1,5 +1,4 @@
 
-
 "use client";
 
 import * as React from "react";
@@ -141,7 +140,7 @@ export default function TourPackageDetailPage() {
   return (
     <div className="space-y-6">
       <AlertDialog>
-        <div className="flex items-center gap-4">
+        <div className="flex flex-col items-start gap-4 sm:flex-row sm:items-center">
             <Button variant="outline" size="icon" className="h-7 w-7" onClick={() => router.back()}>
                 <ArrowLeft className="h-4 w-4" />
                 <span className="sr-only">Back</span>
@@ -152,7 +151,7 @@ export default function TourPackageDetailPage() {
             <Badge variant="outline" className={cn("capitalize", getStatusBadgeColor(tourPackage.is_active ? 'active' : 'inactive'))}>
                 {tourPackage.is_active ? 'Active' : 'Inactive'}
             </Badge>
-            <div className="ml-auto flex items-center gap-2">
+            <div className="flex w-full flex-col items-stretch gap-2 sm:ml-auto sm:w-auto sm:flex-row sm:items-center">
                 <AlertDialogTrigger asChild>
                   <Button variant="outline" size="sm">
                       <Trash2 className="mr-2 h-4 w-4" />
@@ -171,7 +170,7 @@ export default function TourPackageDetailPage() {
         <Tabs defaultValue="overview" className="w-full">
             <Card>
                  <CardHeader className="p-4 border-b">
-                    <TabsList className="grid w-full grid-cols-4 p-0 bg-transparent border-0 shadow-none">
+                    <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4 p-0 bg-transparent border-0 shadow-none">
                         <TabsTrigger value="overview">Overview</TabsTrigger>
                         <TabsTrigger value="booking">Booking</TabsTrigger>
                         <TabsTrigger value="trip_days">Trip Days</TabsTrigger>
@@ -450,5 +449,3 @@ export default function TourPackageDetailPage() {
     </div>
   );
 }
-
-    

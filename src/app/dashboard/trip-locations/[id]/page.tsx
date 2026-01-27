@@ -96,7 +96,7 @@ export default function TripLocationDetailPage() {
   return (
     <div className="flex flex-col gap-4">
       <AlertDialog>
-        <div className="flex items-center gap-4">
+        <div className="flex flex-col items-start gap-4 sm:flex-row sm:items-center">
           <Button variant="outline" size="icon" className="h-7 w-7" onClick={() => router.back()}>
             <ArrowLeft className="h-4 w-4" />
             <span className="sr-only">Back</span>
@@ -105,7 +105,7 @@ export default function TripLocationDetailPage() {
             {location.name}
           </h1>
           <Badge variant="outline" className={getStatusBadgeColor(location.is_active ? 'active' : 'inactive')}>{location.is_active ? 'Active' : 'Inactive'}</Badge>
-          <div className="ml-auto flex items-center gap-2">
+          <div className="flex w-full flex-col items-stretch gap-2 sm:ml-auto sm:w-auto sm:flex-row sm:items-center">
             <AlertDialogTrigger asChild>
                 <Button variant="outline" size="sm">
                     <Trash2 className="mr-2 h-4 w-4" />
@@ -158,7 +158,7 @@ export default function TripLocationDetailPage() {
                 </div>
               <div className="grid gap-6 text-sm">
                 <h3 className="font-semibold text-lg">Location Details</h3>
-                <div className="grid grid-cols-2 gap-y-4 gap-x-2">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-4 gap-x-2">
                   <div className="flex items-center gap-2">
                     <Building className="h-5 w-5 text-muted-foreground" />
                     <div>

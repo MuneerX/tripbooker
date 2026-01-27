@@ -106,23 +106,23 @@ export default function TourPackagesPage() {
   return (
     <div className="flex flex-col gap-6">
       
-      <div className="grid gap-4 md:grid-cols-3">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3">
         {stats.map(stat => <StatCard key={stat.label} card={stat} />)}
       </div>
 
       <Card>
         <CardHeader>
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col items-start gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <CardTitle>All Tour Packages</CardTitle>
               <CardDescription>Manage your tour packages from here.</CardDescription>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex w-full items-center gap-2 sm:w-auto">
               <Input
                 placeholder="Search by tour name..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full md:w-64"
+                className="w-full sm:w-64"
               />
               <Button asChild>
                 <Link href="/dashboard/tour-packages/create">

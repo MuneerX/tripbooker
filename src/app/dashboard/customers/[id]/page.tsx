@@ -94,7 +94,7 @@ export default function CustomerDetailPage() {
   return (
     <div className="space-y-6">
       <AlertDialog>
-        <div className="flex items-center gap-4">
+        <div className="flex flex-col items-start gap-4 sm:flex-row sm:items-center">
             <Button variant="outline" size="icon" className="h-7 w-7" onClick={() => router.back()}>
                 <ArrowLeft className="h-4 w-4" />
                 <span className="sr-only">Back</span>
@@ -102,7 +102,7 @@ export default function CustomerDetailPage() {
             <h1 className="flex-1 shrink-0 whitespace-nowrap text-xl font-semibold tracking-tight sm:grow-0">
                 {profile.full_name}
             </h1>
-            <div className="ml-auto flex items-center gap-2">
+            <div className="flex w-full flex-col items-stretch gap-2 sm:ml-auto sm:w-auto sm:flex-row sm:items-center">
                 <AlertDialogTrigger asChild>
                     <Button variant="outline" size="sm">
                        {profile.status === 'active' ? <UserX className="mr-2 h-4 w-4" /> : <UserCheck className="mr-2 h-4 w-4" />}

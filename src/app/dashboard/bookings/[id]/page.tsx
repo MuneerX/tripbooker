@@ -1,5 +1,4 @@
 
-
 "use client";
 
 import * as React from "react";
@@ -255,7 +254,7 @@ export default function BookingDetailPage() {
   return (
     <div className="space-y-6">
        <AlertDialog open={!!actionToConfirm} onOpenChange={(open) => !open && setActionToConfirm(null)}>
-        <div className="flex items-center gap-4">
+        <div className="flex flex-col items-start gap-4 sm:flex-row sm:items-center">
             <Button variant="outline" size="icon" className="h-7 w-7 shrink-0" onClick={() => router.back()}>
                 <ArrowLeft className="h-4 w-4" />
                 <span className="sr-only">Back</span>
@@ -279,7 +278,7 @@ export default function BookingDetailPage() {
                   </Badge>
                 </div>
             </div>
-            <div className="ml-auto flex items-center gap-2">
+            <div className="flex w-full flex-col items-stretch gap-2 sm:ml-auto sm:w-auto sm:flex-row sm:items-center">
                  {booking.booking_status === 'pending' && (
                     <>
                         <Button variant="destructive" size="sm" onClick={() => setActionToConfirm('cancel')}>
@@ -304,7 +303,7 @@ export default function BookingDetailPage() {
         <Tabs defaultValue="overview" className="w-full">
             <Card>
                 <CardHeader className="p-4 border-b">
-                    <TabsList className="grid w-full grid-cols-4 p-0 bg-transparent border-0 shadow-none">
+                    <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4 p-0 bg-transparent border-0 shadow-none">
                         <TabsTrigger value="overview">Overview</TabsTrigger>
                         <TabsTrigger value="package">Package</TabsTrigger>
                         <TabsTrigger value="guests">Guest Details</TabsTrigger>
@@ -554,7 +553,7 @@ export default function BookingDetailPage() {
                                 <CardContent>
                                     {paymentTimeline.length > 0 ? (
                                         <div className="relative space-y-8">
-                                            <div className="absolute left-2.5 top-0 h-full w-px bg-border" />
+                                            <div className="absolute left-4 top-0 h-full w-px bg-border" />
                                             {paymentTimeline.map((item, index) => {
                                                 const statusInfo = getTimelineStatusInfo(item.status);
                                                 return (
@@ -679,7 +678,3 @@ export default function BookingDetailPage() {
     </div>
   );
 }
-
-    
-
-    
