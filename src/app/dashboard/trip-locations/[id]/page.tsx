@@ -26,6 +26,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { useBreadcrumb } from "../../layout";
+import { MarkdownRenderer } from "@/components/ui/MarkdownRenderer";
 
 export default function TripLocationDetailPage() {
   const router = useRouter();
@@ -212,7 +213,7 @@ export default function TripLocationDetailPage() {
             <Separator className="my-6" />
             <div>
               <h3 className="font-semibold text-lg mb-2">Description</h3>
-              <p className="text-muted-foreground">{location.description}</p>
+              <MarkdownRenderer>{location.description || ''}</MarkdownRenderer>
             </div>
           </CardContent>
         </Card>

@@ -10,7 +10,6 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { Upload, ArrowLeft, File as FileIcon, X } from "lucide-react";
 import { getTripLocationById, updateTripLocation } from "@/lib/supabase/queries";
@@ -21,6 +20,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useBreadcrumb } from "../../../layout";
 import { LocationPicker } from "@/app/dashboard/trip-locations/create/_components/LocationPicker";
 import { Skeleton } from "@/components/ui/skeleton";
+import { MarkdownEditor } from "@/components/ui/MarkdownEditor";
 
 
 const MAX_FILE_SIZE = 4 * 1024 * 1024;
@@ -360,7 +360,7 @@ export default function EditTripLocationPage() {
                     <Card>
                           <CardHeader><CardTitle>Description</CardTitle></CardHeader>
                           <CardContent>
-                              <FormField control={form.control} name="description" render={({ field }) => (<FormItem><FormLabel>Place Description</FormLabel><FormControl><Textarea placeholder="A brief description of the location." {...field} value={field.value ?? ""} rows={5} /></FormControl><FormMessage /></FormItem>)} />
+                              <FormField control={form.control} name="description" render={({ field }) => (<FormItem><FormLabel>Place Description</FormLabel><FormControl><MarkdownEditor value={field.value ?? ""} onChange={field.onChange} /></FormControl><FormMessage /></FormItem>)} />
                           </CardContent>
                     </Card>
                      <Card>

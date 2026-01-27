@@ -9,7 +9,6 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
-import { Textarea } from "@/components/ui/textarea"
 import { useRouter } from "next/navigation"
 import { useToast } from "@/hooks/use-toast"
 import { Upload, File as FileIcon, X } from "lucide-react"
@@ -18,6 +17,7 @@ import { Switch } from "@/components/ui/switch"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import dynamic from 'next/dynamic'
 import { Skeleton } from "@/components/ui/skeleton"
+import { MarkdownEditor } from "@/components/ui/MarkdownEditor"
 
 const LocationPicker = dynamic(() => import('./_components/LocationPicker').then(mod => mod.LocationPicker), {
   ssr: false,
@@ -176,7 +176,7 @@ export default function CreateTripLocationPage() {
                         <CardTitle>Place Information</CardTitle>
                     </CardHeader>
                      <CardContent className="space-y-6">
-                       <FormField control={form.control} name="description" render={({ field }) => ( <FormItem><FormLabel>Place Description</FormLabel><FormControl><Textarea placeholder="A brief description of the location." {...field} rows={5} /></FormControl><FormMessage /></FormItem> )} />
+                       <FormField control={form.control} name="description" render={({ field }) => ( <FormItem><FormLabel>Place Description</FormLabel><FormControl><MarkdownEditor value={field.value} onChange={field.onChange} /></FormControl><FormMessage /></FormItem> )} />
                         <FormField
                             control={form.control}
                             name="image_files"
