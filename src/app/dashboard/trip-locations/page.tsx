@@ -127,85 +127,142 @@ export default function TripLocationsPage() {
             </div>
         </CardHeader>
         <CardContent>
-            <Table>
-            <TableHeader>
-                <TableRow>
-                <TableHead className="hidden w-[100px] sm:table-cell">
-                    <span className="sr-only">Image</span>
-                </TableHead>
-                <TableHead>Location Name</TableHead>
-                <TableHead className="w-[120px]">Type</TableHead>
-                <TableHead className="hidden md:table-cell w-[120px]">City</TableHead>
-                <TableHead className="hidden md:table-cell w-[120px]">State</TableHead>
-                <TableHead className="hidden md:table-cell w-[120px]">District</TableHead>
-                <TableHead className="w-[120px]">Status</TableHead>
-                <TableHead className="w-[80px]">
-                    <span className="sr-only">Actions</span>
-                </TableHead>
-                </TableRow>
-            </TableHeader>
-            <TableBody>
-                {loading ? (
-                    <TableRow>
-                        <TableCell colSpan={8} className="h-24 text-center">Loading...</TableCell>
-                    </TableRow>
-                ) : paginatedLocations.length > 0 ? (
+            {/* Mobile view */}
+            <div className="grid gap-4 md:hidden">
+              {loading ? (
+                  <div className="text-center py-10 text-muted-foreground">Loading...</div>
+              ) : paginatedLocations.length > 0 ? (
                 paginatedLocations.map((location: TripLocation) => (
-                    <TableRow key={location.id}>
-                    <TableCell className="hidden sm:table-cell">
-                        <Image
-                        alt={location.name}
-                        className="aspect-square rounded-md object-cover"
-                        height="64"
-                        src={location.image_urls?.[0] || "https://picsum.photos/seed/placeholder/64/64"}
-                        width="64"
-                        />
-                    </TableCell>
-                    <TableCell className="font-medium">{location.name}</TableCell>
-                    <TableCell>
-                        <Badge variant="secondary" className="capitalize whitespace-nowrap truncate">{location.place_type}</Badge>
-                    </TableCell>
-                    <TableCell className="hidden md:table-cell">{location.city}</TableCell>
-                    <TableCell className="hidden md:table-cell">{location.state}</TableCell>
-                    <TableCell className="hidden md:table-cell">{location.district}</TableCell>
-                    <TableCell>
-                        <Badge variant="outline" className={cn("capitalize", getStatusBadgeColor(location.is_active ? 'active' : 'inactive'))}>{location.is_active ? 'Active' : 'Inactive'}</Badge>
-                    </TableCell>
-                    <TableCell>
-                        <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                            <Button aria-haspopup="true" size="icon" variant="ghost">
-                                <MoreHorizontal className="h-4 w-4" />
-                                <span className="sr-only">Toggle menu</span>
-                            </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                            <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                            <DropdownMenuItem onSelect={() => router.push(`/dashboard/trip-locations/${location.id}`)}>
-                                <View className="mr-2 h-4 w-4" /> View
-                            </DropdownMenuItem>
-                            <DropdownMenuItem onSelect={() => router.push(`/dashboard/trip-locations/edit/${location.id}`)}>
-                                <FilePenLine className="mr-2 h-4 w-4" /> Edit
-                            </DropdownMenuItem>
-                            <DropdownMenuItem 
-                              className="text-red-600 focus:text-red-600 focus:bg-red-50"
-                              onSelect={() => setItemToDelete(location)}
-                            >
-                              <Trash2 className="mr-2 h-4 w-4" /> Delete
-                            </DropdownMenuItem>
-                            </DropdownMenuContent>
-                        </DropdownMenu>
-                    </TableCell>
-                    </TableRow>
+                  <Card key={location.id}>
+                      <CardHeader className="p-4 flex flex-row items-start justify-between">
+                           <div className="flex items-center gap-3">
+                              <Image
+                                  alt={location.name}
+                                  className="aspect-square rounded-md object-cover"
+                                  height="64"
+                                  src={location.image_urls?.[0] || "https://picsum.photos/seed/placeholder/64/64"}
+                                  width="64"
+                              />
+                              <div>
+                                  <CardTitle className="text-base">{location.name}</CardTitle>
+                                  <CardDescription>{location.city}, {location.state}</CardDescription>
+                              </div>
+                          </div>
+                          <DropdownMenu>
+                              <DropdownMenuTrigger asChild>
+                              <Button aria-haspopup="true" size="icon" variant="ghost">
+                                  <MoreHorizontal className="h-4 w-4" />
+                                  <span className="sr-only">Toggle menu</span>
+                              </Button>
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent align="end">
+                              <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                              <DropdownMenuItem onSelect={() => router.push(`/dashboard/trip-locations/${location.id}`)}>
+                                  <View className="mr-2 h-4 w-4" /> View
+                              </DropdownMenuItem>
+                              <DropdownMenuItem onSelect={() => router.push(`/dashboard/trip-locations/edit/${location.id}`)}>
+                                  <FilePenLine className="mr-2 h-4 w-4" /> Edit
+                              </DropdownMenuItem>
+                              <DropdownMenuItem 
+                                className="text-red-600 focus:text-red-600 focus:bg-red-50"
+                                onSelect={() => setItemToDelete(location)}
+                              >
+                                <Trash2 className="mr-2 h-4 w-4" /> Delete
+                              </DropdownMenuItem>
+                              </DropdownMenuContent>
+                          </DropdownMenu>
+                      </CardHeader>
+                      <CardContent className="p-4 pt-0 text-sm flex items-center justify-between">
+                          <Badge variant="secondary" className="capitalize whitespace-nowrap truncate">{location.place_type}</Badge>
+                          <Badge variant="outline" className={cn("capitalize", getStatusBadgeColor(location.is_active ? 'active' : 'inactive'))}>{location.is_active ? 'Active' : 'Inactive'}</Badge>
+                      </CardContent>
+                  </Card>
                 ))
-                ) : (
-                <TableRow>
-                    <TableCell colSpan={8} className="h-24 text-center">
-                    No results found.
-                    </TableCell>
-                </TableRow>
-                )}
-            </TableBody>
+              ) : (
+                  <div className="text-center py-10 text-muted-foreground">No results found.</div>
+              )}
+            </div>
+            
+            {/* Desktop view */}
+            <Table className="hidden md:table">
+              <TableHeader>
+                  <TableRow>
+                  <TableHead className="hidden w-[100px] sm:table-cell">
+                      <span className="sr-only">Image</span>
+                  </TableHead>
+                  <TableHead>Location Name</TableHead>
+                  <TableHead className="w-[120px]">Type</TableHead>
+                  <TableHead className="hidden md:table-cell w-[120px]">City</TableHead>
+                  <TableHead className="hidden md:table-cell w-[120px]">State</TableHead>
+                  <TableHead className="hidden md:table-cell w-[120px]">District</TableHead>
+                  <TableHead className="w-[120px]">Status</TableHead>
+                  <TableHead className="w-[80px]">
+                      <span className="sr-only">Actions</span>
+                  </TableHead>
+                  </TableRow>
+              </TableHeader>
+              <TableBody>
+                  {loading ? (
+                      <TableRow>
+                          <TableCell colSpan={8} className="h-24 text-center">Loading...</TableCell>
+                      </TableRow>
+                  ) : paginatedLocations.length > 0 ? (
+                  paginatedLocations.map((location: TripLocation) => (
+                      <TableRow key={location.id}>
+                      <TableCell className="hidden sm:table-cell">
+                          <Image
+                          alt={location.name}
+                          className="aspect-square rounded-md object-cover"
+                          height="64"
+                          src={location.image_urls?.[0] || "https://picsum.photos/seed/placeholder/64/64"}
+                          width="64"
+                          />
+                      </TableCell>
+                      <TableCell className="font-medium">{location.name}</TableCell>
+                      <TableCell>
+                          <Badge variant="secondary" className="capitalize whitespace-nowrap truncate">{location.place_type}</Badge>
+                      </TableCell>
+                      <TableCell className="hidden md:table-cell">{location.city}</TableCell>
+                      <TableCell className="hidden md:table-cell">{location.state}</TableCell>
+                      <TableCell className="hidden md:table-cell">{location.district}</TableCell>
+                      <TableCell>
+                          <Badge variant="outline" className={cn("capitalize", getStatusBadgeColor(location.is_active ? 'active' : 'inactive'))}>{location.is_active ? 'Active' : 'Inactive'}</Badge>
+                      </TableCell>
+                      <TableCell>
+                          <DropdownMenu>
+                              <DropdownMenuTrigger asChild>
+                              <Button aria-haspopup="true" size="icon" variant="ghost">
+                                  <MoreHorizontal className="h-4 w-4" />
+                                  <span className="sr-only">Toggle menu</span>
+                              </Button>
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent align="end">
+                              <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                              <DropdownMenuItem onSelect={() => router.push(`/dashboard/trip-locations/${location.id}`)}>
+                                  <View className="mr-2 h-4 w-4" /> View
+                              </DropdownMenuItem>
+                              <DropdownMenuItem onSelect={() => router.push(`/dashboard/trip-locations/edit/${location.id}`)}>
+                                  <FilePenLine className="mr-2 h-4 w-4" /> Edit
+                              </DropdownMenuItem>
+                              <DropdownMenuItem 
+                                className="text-red-600 focus:text-red-600 focus:bg-red-50"
+                                onSelect={() => setItemToDelete(location)}
+                              >
+                                <Trash2 className="mr-2 h-4 w-4" /> Delete
+                              </DropdownMenuItem>
+                              </DropdownMenuContent>
+                          </DropdownMenu>
+                      </TableCell>
+                      </TableRow>
+                  ))
+                  ) : (
+                  <TableRow>
+                      <TableCell colSpan={8} className="h-24 text-center">
+                      No results found.
+                      </TableCell>
+                  </TableRow>
+                  )}
+              </TableBody>
             </Table>
         </CardContent>
         <CardFooter>

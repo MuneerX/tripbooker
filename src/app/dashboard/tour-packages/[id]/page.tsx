@@ -297,7 +297,37 @@ export default function TourPackageDetailPage() {
                     </TabsContent>
 
                     <TabsContent value="booking" className="p-6">
-                            <Table>
+                            {/* Mobile view */}
+                            <div className="grid gap-4 md:hidden">
+                            {bookingsForPackage.length > 0 ? (
+                                bookingsForPackage.map((booking) => (
+                                <Card key={booking.id}>
+                                    <CardHeader className="p-4">
+                                        <div className="flex items-center justify-between">
+                                            <CardTitle className="text-sm font-mono">{booking.booking_reference}</CardTitle>
+                                            <Badge variant="outline" className={cn("capitalize", getStatusBadgeColor(booking.booking_status))}>
+                                                {booking.booking_status}
+                                            </Badge>
+                                        </div>
+                                        <CardDescription>{booking.customer_name}</CardDescription>
+                                    </CardHeader>
+                                    <CardContent className="p-4 pt-0 text-sm space-y-2">
+                                        <div className="flex justify-between"><span className="text-muted-foreground">Booking Date</span><span>{format(new Date(booking.booking_date), "PPP")}</span></div>
+                                        <div className="flex justify-between"><span className="text-muted-foreground">Travel Date</span><span>{booking.travel_date ? format(new Date(booking.travel_date), "PPP") : 'N/A'}</span></div>
+                                        <div className="flex justify-between"><span className="text-muted-foreground">Amount</span><span>{formatCurrency(booking.total_amount)}</span></div>
+                                        <div className="flex justify-between"><span className="text-muted-foreground">Guests</span><span>{booking.total_adults + booking.total_children}</span></div>
+                                    </CardContent>
+                                </Card>
+                                ))
+                            ) : (
+                                <div className="text-center text-muted-foreground py-8 h-24">
+                                No bookings found for this package.
+                                </div>
+                            )}
+                            </div>
+                            
+                            {/* Desktop view */}
+                            <Table className="hidden md:table">
                               <TableHeader>
                                 <TableRow>
                                   <TableHead>Booking Ref</TableHead>

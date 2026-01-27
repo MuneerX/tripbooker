@@ -165,7 +165,72 @@ export default function OperatorsPage() {
           </div>
         </CardHeader>
         <CardContent>
-          <Table>
+          {/* Mobile view */}
+          <div className="grid gap-4 md:hidden">
+            {loading ? (
+                <div className="text-center py-10 text-muted-foreground">Loading agents...</div>
+            ) : paginatedOperators.length > 0 ? (
+              paginatedOperators.map((operator: Operator) => (
+                <Card key={operator.id}>
+                    <CardHeader className="p-4 cursor-pointer" onClick={() => router.push(`/dashboard/operators/${operator.id}`)}>
+                         <div className="flex items-start justify-between">
+                            <div className="flex items-center gap-3">
+                                <Avatar className="h-10 w-10">
+                                  <AvatarImage src={operator.logo_url || ''} alt={operator.name || ''} />
+                                  <AvatarFallback>{operator.name?.charAt(0) || 'A'}</AvatarFallback>
+                                </Avatar>
+                                <div>
+                                    <CardTitle className="text-base">{operator.name || 'N/A'}</CardTitle>
+                                    <CardDescription>{operator.email || 'N/A'}</CardDescription>
+                                </div>
+                            </div>
+                            <div onClick={(e) => e.stopPropagation()}>
+                               <DropdownMenu>
+                                  <DropdownMenuTrigger asChild>
+                                    <Button aria-haspopup="true" size="icon" variant="ghost">
+                                      <MoreHorizontal className="h-4 w-4" />
+                                      <span className="sr-only">Toggle menu</span>
+                                    </Button>
+                                  </DropdownMenuTrigger>
+                                  <DropdownMenuContent align="end">
+                                    <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                                    <DropdownMenuItem onSelect={(e) => {e.stopPropagation(); router.push(`/dashboard/operators/${operator.id}`)}}>
+                                      <View className="mr-2 h-4 w-4" /> View
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem onSelect={(e) => {e.stopPropagation(); router.push(`/dashboard/operators/edit/${operator.id}`)}}>
+                                      <FilePenLine className="mr-2 h-4 w-4" /> Edit
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem onSelect={(e) => {e.stopPropagation(); setItemToToggle(operator)}}>
+                                      {operator.status === 'active' ? (
+                                          <><UserX className="mr-2 h-4 w-4" /> Block</>
+                                      ) : (
+                                          <><UserCheck className="mr-2 h-4 w-4" /> Unblock</>
+                                      )}
+                                    </DropdownMenuItem>
+                                     <DropdownMenuItem
+                                      className="text-red-600 focus:text-red-600 focus:bg-red-50"
+                                      onSelect={(e) => {e.stopPropagation(); setItemToDelete(operator)}}
+                                    >
+                                      <Trash2 className="mr-2 h-4 w-4" /> Delete
+                                    </DropdownMenuItem>
+                                  </DropdownMenuContent>
+                                </DropdownMenu>
+                            </div>
+                        </div>
+                    </CardHeader>
+                    <CardContent className="p-4 pt-0 text-sm flex items-center justify-between">
+                         <div className="text-muted-foreground">Ref: <span className="font-medium text-foreground font-mono text-xs">{operator.referral_code || 'N/A'}</span></div>
+                        <Badge variant="outline" className={cn("capitalize", getStatusBadgeColor(operator.status === 'active' ? 'active' : 'inactive'))}>{operator.status}</Badge>
+                    </CardContent>
+                </Card>
+              ))
+            ) : (
+               <div className="text-center py-10 text-muted-foreground">No agents found.</div>
+            )}
+          </div>
+
+          {/* Desktop view */}
+          <Table className="hidden md:table">
             <TableHeader>
               <TableRow>
                 <TableHead>Agent</TableHead>

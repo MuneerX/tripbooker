@@ -523,7 +523,25 @@ export default function BookingDetailPage() {
                         <Card>
                             <CardHeader><CardTitle>Guest Details</CardTitle></CardHeader>
                             <CardContent>
-                                <Table>
+                                {/* Mobile View */}
+                                <div className="grid gap-4 md:hidden">
+                                  {booking.guests && booking.guests.length > 0 ? (
+                                      booking.guests.map((guest: BookingGuest) => (
+                                          <Card key={guest.id} className="p-4">
+                                            <div className="flex justify-between items-start">
+                                              <p className="font-semibold">{guest.first_name} {guest.last_name || ''}</p>
+                                              <Badge variant="outline" className="capitalize">{guest.gender || 'N/A'}</Badge>
+                                            </div>
+                                            <p className="text-sm text-muted-foreground">Age: {guest.age || 'N/A'}</p>
+                                          </Card>
+                                      ))
+                                  ) : (
+                                      <p className="text-center text-muted-foreground py-8">No guest details provided for this booking.</p>
+                                  )}
+                                </div>
+
+                                {/* Desktop View */}
+                                <Table className="hidden md:table">
                                     <TableHeader><TableRow><TableHead>First Name</TableHead><TableHead>Last Name</TableHead><TableHead>Age</TableHead><TableHead>Gender</TableHead></TableRow></TableHeader>
                                     <TableBody>
                                         {booking.guests && booking.guests.length > 0 ? (

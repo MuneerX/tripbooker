@@ -136,7 +136,63 @@ export default function CustomersPage() {
           </div>
         </CardHeader>
         <CardContent>
-          <Table>
+          {/* Mobile view */}
+          <div className="grid gap-4 md:hidden">
+            {loading ? (
+                <div className="text-center py-10 text-muted-foreground">Loading customers...</div>
+            ) : paginatedProfiles.length > 0 ? (
+              paginatedProfiles.map((profile: Profile) => (
+                <Card key={profile.id}>
+                    <CardHeader className="p-4 cursor-pointer" onClick={() => router.push(`/dashboard/customers/${profile.id}`)}>
+                         <div className="flex items-start justify-between">
+                            <div className="flex items-center gap-3">
+                                <Avatar className="h-10 w-10">
+                                  <AvatarImage src={profile.avatar_url || ''} alt={profile.full_name || ''} />
+                                  <AvatarFallback>{profile.full_name?.charAt(0) || 'U'}</AvatarFallback>
+                                </Avatar>
+                                <div>
+                                    <CardTitle className="text-base">{profile.full_name || 'N/A'}</CardTitle>
+                                    <CardDescription>{profile.email || 'N/A'}</CardDescription>
+                                </div>
+                            </div>
+                            <div onClick={(e) => e.stopPropagation()}>
+                              <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                  <Button aria-haspopup="true" size="icon" variant="ghost">
+                                    <MoreHorizontal className="h-4 w-4" />
+                                    <span className="sr-only">Toggle menu</span>
+                                  </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end">
+                                  <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                                  <DropdownMenuItem onSelect={() => router.push(`/dashboard/customers/${profile.id}`)}>
+                                    <View className="mr-2 h-4 w-4" /> View
+                                  </DropdownMenuItem>
+                                  <DropdownMenuItem onSelect={() => setItemToToggle(profile)}>
+                                    {profile.status === 'active' ? (
+                                        <><UserX className="mr-2 h-4 w-4" /> Block</>
+                                    ) : (
+                                        <><UserCheck className="mr-2 h-4 w-4" /> Unblock</>
+                                    )}
+                                  </DropdownMenuItem>
+                                </DropdownMenuContent>
+                              </DropdownMenu>
+                            </div>
+                        </div>
+                    </CardHeader>
+                    <CardContent className="p-4 pt-0 text-sm flex items-center justify-between">
+                        <div className="text-muted-foreground">KV Customer: <span className="font-medium text-foreground">{profile.is_kv_customer ? 'Yes' : 'No'}</span></div>
+                        <Badge variant="outline" className={cn("capitalize", getStatusBadgeColor(profile.status === 'active' ? 'active' : 'inactive'))}>{profile.status}</Badge>
+                    </CardContent>
+                </Card>
+              ))
+            ) : (
+               <div className="text-center py-10 text-muted-foreground">No customers found.</div>
+            )}
+          </div>
+          
+          {/* Desktop view */}
+          <Table className="hidden md:table">
             <TableHeader>
               <TableRow>
                 <TableHead>Customer</TableHead>
