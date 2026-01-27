@@ -135,7 +135,7 @@ export default function CustomersPage() {
             </div>
           </div>
         </CardHeader>
-        <CardContent className="p-4 md:p-6 md:pt-0">
+        <CardContent className="p-6 md:pt-0">
           {/* Mobile view */}
           <div className="grid gap-4 md:hidden">
             {loading ? (
