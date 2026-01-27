@@ -18,7 +18,7 @@ export function MarkdownEditor({ value, onChange }: MarkdownEditorProps) {
       autofocus: false,
       spellChecker: false,
       toolbar: [
-        "bold", "italic", "strikethrough", "heading", "|", 
+        "bold", "italic", "strikethrough", "|", 
         "quote", "unordered-list", "ordered-list", "|", 
         "link", "|", 
         "preview", "side-by-side", "fullscreen"
