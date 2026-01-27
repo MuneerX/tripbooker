@@ -85,11 +85,6 @@ export default function EditTourPackagePage() {
   });
 
   const isFeatured = form.watch('is_featured');
-  const payInPartsValue = form.watch("pay_in_parts");
-
-  React.useEffect(() => {
-    setIsPayInPartsEnabled(!!payInPartsValue && payInPartsValue.length > 0);
-  }, [payInPartsValue]);
   
   React.useEffect(() => {
     if (id) {
@@ -106,6 +101,7 @@ export default function EditTourPackagePage() {
             pay_in_parts: pkg.pay_in_parts || [],
             highlights: pkg.highlights ?? '',
           });
+          setIsPayInPartsEnabled(!!pkg.pay_in_parts && pkg.pay_in_parts.length > 0);
         } else {
           toast({ variant: "destructive", title: "Error", description: "Tour package not found." });
           router.push('/dashboard/tour-packages');

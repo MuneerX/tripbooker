@@ -44,9 +44,9 @@ export default function OperatorDetailPage() {
         const data = await getOperatorById(id as string);
         if (data) {
           setOperator(data);
-          setBreadcrumbName(data.name || 'Operator');
+          setBreadcrumbName(data.name || 'Agent');
         } else {
-          toast({ variant: "destructive", title: "Error", description: "Operator not found." });
+          toast({ variant: "destructive", title: "Error", description: "Agent not found." });
           setBreadcrumbName('Not Found');
           router.push('/dashboard/operators');
         }
@@ -67,13 +67,13 @@ export default function OperatorDetailPage() {
         setOperator(updatedOperator);
         toast({
             title: "Success",
-            description: `Operator "${operator.name}" has been ${newStatus}.`,
+            description: `Agent "${operator.name}" has been ${newStatus}.`,
         });
     } catch (error: any) {
          toast({
             variant: "destructive",
             title: "Error",
-            description: `Failed to ${newStatus} operator.`,
+            description: `Failed to ${newStatus} agent.`,
         });
     }
   };
@@ -81,7 +81,7 @@ export default function OperatorDetailPage() {
   if (loading || !operator) {
     return (
       <div className="flex flex-col items-center justify-center h-full text-center">
-        <h1 className="text-2xl font-bold">Loading Operator Details...</h1>
+        <h1 className="text-2xl font-bold">Loading Agent Details...</h1>
         <p className="text-muted-foreground">Please wait a moment.</p>
       </div>
     );
@@ -125,7 +125,7 @@ export default function OperatorDetailPage() {
                         <div className="flex justify-center">
                             <Avatar className="h-40 w-40 border-4 border-primary/20">
                                 <AvatarImage src={operator.logo_url || ''} alt={operator.name || 'logo'}/>
-                                <AvatarFallback className="text-6xl">{operator.name?.charAt(0) || 'O'}</AvatarFallback>
+                                <AvatarFallback className="text-6xl">{operator.name?.charAt(0) || 'A'}</AvatarFallback>
                             </Avatar>
                         </div>
                         <div className="text-center">
@@ -136,7 +136,7 @@ export default function OperatorDetailPage() {
                             <div className="flex items-start gap-2">
                                 <Hash className="h-5 w-5 text-muted-foreground mt-0.5" />
                                 <div>
-                                    <p className="font-medium text-muted-foreground">Operator Code</p>
+                                    <p className="font-medium text-muted-foreground">Agent Code</p>
                                     <p>{operator.code || 'N/A'}</p>
                                 </div>
                             </div>
@@ -207,7 +207,7 @@ export default function OperatorDetailPage() {
                                 </div>
                             </div>
                         ) : (
-                            <p className="text-sm text-muted-foreground">Agent commission is not enabled for this operator.</p>
+                            <p className="text-sm text-muted-foreground">Agent commission is not enabled for this agent.</p>
                         )}
                     </CardContent>
                 </Card>
@@ -218,7 +218,7 @@ export default function OperatorDetailPage() {
           <AlertDialogHeader>
             <AlertDialogTitle>Are you sure?</AlertDialogTitle>
             <AlertDialogDescription>
-              This will {operator.status === 'active' ? 'block' : 'unblock'} the operator "{operator.name}".
+              This will {operator.status === 'active' ? 'block' : 'unblock'} the agent "{operator.name}".
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

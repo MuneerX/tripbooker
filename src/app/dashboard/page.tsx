@@ -128,13 +128,13 @@ export default function DashboardPage() {
           packageOverview: [
             { label: 'Tours', value: packages.length, icon: <Package />, iconBg: 'bg-sky-500/10', iconColor: 'text-sky-500' },
             { label: 'Tripdays', value: tripDays.length, icon: <Calendar />, iconBg: 'bg-purple-500/10', iconColor: 'text-purple-500' },
-            { label: 'Operators', value: operators.length, icon: <UserCog />, iconBg: 'bg-red-500/10', iconColor: 'text-red-500' },
+            { label: 'Agents', value: operators.length, icon: <UserCog />, iconBg: 'bg-red-500/10', iconColor: 'text-red-500' },
             { label: 'Customers', value: profiles.length, icon: <Users />, iconBg: 'bg-green-500/10', iconColor: 'text-green-500' },
             { label: 'Locations', value: locations.length, icon: <MapPin />, iconBg: 'bg-yellow-500/10', iconColor: 'text-yellow-500' }
           ],
           operatorSummary: [
-            { label: 'Referred Operator', value: referredOperators, icon: <UserPlus />, iconBg: 'bg-green-500/10', iconColor: 'text-green-500' },
-            { label: 'Unreferred Operator', value: unReferredOperators, icon: <User />, iconBg: 'bg-red-500/10', iconColor: 'text-red-500' }
+            { label: 'Referred Agent', value: referredOperators, icon: <UserPlus />, iconBg: 'bg-green-500/10', iconColor: 'text-green-500' },
+            { label: 'Unreferred Agent', value: unReferredOperators, icon: <User />, iconBg: 'bg-red-500/10', iconColor: 'text-red-500' }
           ],
         });
         
@@ -253,7 +253,7 @@ export default function DashboardPage() {
                 <Button variant="outline" asChild className="w-full sm:w-auto">
                     <Link href="/dashboard/operators/create">
                         <PlusCircle className="mr-2 h-4 w-4" />
-                        <span className="sm:inline">Create Operator</span>
+                        <span className="sm:inline">Create Agent</span>
                     </Link>
                 </Button>
             </div>
@@ -293,8 +293,8 @@ export default function DashboardPage() {
 
             <Card>
               <CardHeader>
-                <CardTitle>Operator Summary</CardTitle>
-                <CardDescription>A summary of your tour operators.</CardDescription>
+                <CardTitle>Agent Summary</CardTitle>
+                <CardDescription>A summary of your tour agents.</CardDescription>
               </CardHeader>
               <CardContent className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                   {stats.operatorSummary.map((stat:any) => <StatItem key={stat.label} {...stat} layout="horizontal" />)}

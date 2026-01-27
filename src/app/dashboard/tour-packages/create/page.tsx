@@ -95,11 +95,6 @@ export default function CreateTourPackagePage() {
   
   const imageFiles = form.watch("image_files");
   const featuredImageFile = form.watch("featured_image_file");
-  const payInPartsValue = form.watch("pay_in_parts");
-
-  React.useEffect(() => {
-    setIsPayInPartsEnabled(!!payInPartsValue && payInPartsValue.length > 0);
-  }, [payInPartsValue]);
 
   const handleRemoveImage = (indexToRemove: number) => {
     const currentFiles = form.getValues("image_files");

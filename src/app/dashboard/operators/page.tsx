@@ -49,7 +49,7 @@ export default function OperatorsPage() {
       } catch (error: any) {
         toast({
           variant: "destructive",
-          title: "Error fetching operators",
+          title: "Error fetching agents",
           description: error.message,
         });
       }
@@ -80,7 +80,7 @@ export default function OperatorsPage() {
         setAllOperators(prev => prev.map(p => p.id === itemToToggle.id ? { ...p, status: updatedOperator.status, is_active: updatedOperator.is_active } : p));
         toast({
             title: "Success",
-            description: `Operator "${itemToToggle.name}" has been ${newStatus}.`,
+            description: `Agent "${itemToToggle.name}" has been ${newStatus}.`,
         });
     } catch (error: any) {
         toast({
@@ -100,12 +100,12 @@ export default function OperatorsPage() {
         setAllOperators(prev => prev.filter(op => op.id !== itemToDelete.id));
         toast({
             title: "Success",
-            description: `Operator "${itemToDelete.name}" has been deleted.`,
+            description: `Agent "${itemToDelete.name}" has been deleted.`,
         });
     } catch (error: any) {
         toast({
             variant: "destructive",
-            title: "Error deleting operator",
+            title: "Error deleting agent",
             description: error.message,
         });
     } finally {
@@ -130,7 +130,7 @@ export default function OperatorsPage() {
   const blockedOperators = totalOperators - activeOperators;
 
   const stats = [
-    { label: "Total Operators", value: totalOperators, icon: <UserCog className="h-4 w-4" /> },
+    { label: "Total Agents", value: totalOperators, icon: <UserCog className="h-4 w-4" /> },
     { label: "Active", value: activeOperators, icon: <UserCheck className="h-4 w-4" /> },
     { label: "Blocked", value: blockedOperators, icon: <UserX className="h-4 w-4" /> },
   ];
@@ -146,8 +146,8 @@ export default function OperatorsPage() {
         <CardHeader>
           <div className="flex items-center justify-between">
             <div>
-              <CardTitle>All Operators</CardTitle>
-              <CardDescription>Manage all registered tour operators.</CardDescription>
+              <CardTitle>All Agents</CardTitle>
+              <CardDescription>Manage all registered tour agents.</CardDescription>
             </div>
             <div className="flex items-center gap-2">
               <Input
@@ -158,7 +158,7 @@ export default function OperatorsPage() {
               />
               <Button asChild>
                 <Link href="/dashboard/operators/create">
-                  <PlusCircle className="mr-2 h-4 w-4" /> Create Operator
+                  <PlusCircle className="mr-2 h-4 w-4" /> Create Agent
                 </Link>
               </Button>
             </div>
@@ -168,9 +168,9 @@ export default function OperatorsPage() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Operator</TableHead>
+                <TableHead>Agent</TableHead>
                 <TableHead>Referral Code</TableHead>
-                <TableHead>Operator Code</TableHead>
+                <TableHead>Agent Code</TableHead>
                 <TableHead className="hidden md:table-cell">Email</TableHead>
                 <TableHead className="hidden lg:table-cell">Phone</TableHead>
                 <TableHead>Status</TableHead>
@@ -183,7 +183,7 @@ export default function OperatorsPage() {
               {loading ? (
                 <TableRow>
                   <TableCell colSpan={7} className="h-24 text-center">
-                    Loading operators...
+                    Loading agents...
                   </TableCell>
                 </TableRow>
               ) : paginatedOperators.length > 0 ? (
@@ -193,7 +193,7 @@ export default function OperatorsPage() {
                       <div className="flex items-center gap-3">
                         <Avatar className="h-9 w-9">
                           <AvatarImage src={operator.logo_url || ''} alt={operator.name || ''} />
-                          <AvatarFallback>{operator.name?.charAt(0) || 'O'}</AvatarFallback>
+                          <AvatarFallback>{operator.name?.charAt(0) || 'A'}</AvatarFallback>
                         </Avatar>
                         <span className="font-medium">{operator.name || 'N/A'}</span>
                       </div>
@@ -242,7 +242,7 @@ export default function OperatorsPage() {
               ) : (
                 <TableRow>
                   <TableCell colSpan={7} className="h-24 text-center">
-                    No operators found.
+                    No agents found.
                   </TableCell>
                 </TableRow>
               )}
@@ -251,7 +251,7 @@ export default function OperatorsPage() {
         </CardContent>
          <CardFooter>
             <div className="text-xs text-muted-foreground">
-                Showing <strong>{(currentPage - 1) * rowsPerPage + 1}-{(currentPage - 1) * rowsPerPage + paginatedOperators.length}</strong> of <strong>{filteredOperators.length}</strong> operators
+                Showing <strong>{(currentPage - 1) * rowsPerPage + 1}-{(currentPage - 1) * rowsPerPage + paginatedOperators.length}</strong> of <strong>{filteredOperators.length}</strong> agents
             </div>
             <div className="ml-auto flex items-center gap-2">
               <Button
@@ -280,7 +280,7 @@ export default function OperatorsPage() {
             <AlertDialogHeader>
               <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
               <AlertDialogDescription>
-                This will {itemToToggle.status === 'active' ? 'block' : 'unblock'} the operator "{itemToToggle.name}".
+                This will {itemToToggle.status === 'active' ? 'block' : 'unblock'} the agent "{itemToToggle.name}".
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
@@ -299,7 +299,7 @@ export default function OperatorsPage() {
                 <AlertDialogHeader>
                 <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
                 <AlertDialogDescription>
-                    This action cannot be undone. This will permanently delete the operator "{itemToDelete.name}".
+                    This action cannot be undone. This will permanently delete the agent "{itemToDelete.name}".
                 </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>

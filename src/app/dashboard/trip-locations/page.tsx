@@ -3,7 +3,7 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { PlusCircle, MoreHorizontal, FilePenLine, Trash2, View, MapPin } from "lucide-react";
+import { PlusCircle, MoreHorizontal, FilePenLine, Trash2, View, MapPin, CheckCircle, XCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -95,8 +95,8 @@ export default function TripLocationsPage() {
 
   const stats = [
     { label: "Total Locations", value: totalLocations, icon: <MapPin className="h-4 w-4" /> },
-    { label: "Active", value: activeLocations, icon: <div className="h-2.5 w-2.5 rounded-full bg-green-500" /> },
-    { label: "Inactive", value: inactiveLocations, icon: <div className="h-2.5 w-2.5 rounded-full bg-red-500" /> },
+    { label: "Active", value: activeLocations, icon: <CheckCircle className="h-4 w-4 text-green-500" /> },
+    { label: "Inactive", value: inactiveLocations, icon: <XCircle className="h-4 w-4 text-red-500" /> },
   ];
 
   return (

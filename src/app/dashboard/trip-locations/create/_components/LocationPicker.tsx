@@ -97,7 +97,7 @@ export function LocationPicker({ initialPosition }: LocationPickerProps) {
 
   useEffect(() => {
     if (mapInstanceRef.current && (position[0] !== initialPosition[0] || position[1] !== initialPosition[1])) {
-      mapInstanceRef.current.setView(position, mapInstanceRef.current.getZoom());
+      mapInstanceRef.current.setView(position, 13);
     }
     if (markerRef.current) {
       markerRef.current.setLatLng(position);

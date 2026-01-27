@@ -1,4 +1,3 @@
-
 "use client";
 
 import Link from 'next/link';
@@ -41,13 +40,10 @@ import { useTheme } from 'next-themes';
 const navItems: NavItem[] = [
   { title: 'Dashboard', href: '/dashboard', icon: LayoutGrid, subItems:[] },
   {
-    title: 'Tour Packages',
-    href: '/dashboard/tour-packages',
-    icon: Package,
-    subItems: [
-      { title: 'All Packages', href: '/dashboard/tour-packages', icon: Package },
-      { title: 'Create New', href: '/dashboard/tour-packages/create', icon: PlusCircle },
-    ],
+    title: 'Notifications',
+    href: '/dashboard/notifications',
+    icon: Bell,
+    subItems: [],
   },
   {
     title: 'Bookings',
@@ -62,19 +58,13 @@ const navItems: NavItem[] = [
     subItems: [],
   },
   {
-    title: 'Operators',
-    href: '/dashboard/operators',
-    icon: UserCog,
+    title: 'Tour Packages',
+    href: '/dashboard/tour-packages',
+    icon: Package,
     subItems: [
-      { title: 'All Operators', href: '/dashboard/operators', icon: UserCog },
-      { title: 'Create New', href: '/dashboard/operators/create', icon: PlusCircle },
+      { title: 'All Packages', href: '/dashboard/tour-packages', icon: Package },
+      { title: 'Create New', href: '/dashboard/tour-packages/create', icon: PlusCircle },
     ],
-  },
-    {
-    title: 'Notifications',
-    href: '/dashboard/notifications',
-    icon: Bell,
-    subItems: [],
   },
   {
     title: 'Trip Days',
@@ -92,6 +82,15 @@ const navItems: NavItem[] = [
     subItems: [
       { title: 'All Locations', href: '/dashboard/trip-locations', icon: MapPin },
       { title: 'Create New', href: '/dashboard/trip-locations/create', icon: PlusCircle },
+    ],
+  },
+  {
+    title: 'Agents',
+    href: '/dashboard/operators',
+    icon: UserCog,
+    subItems: [
+      { title: 'All Agents', href: '/dashboard/operators', icon: UserCog },
+      { title: 'Create New', href: '/dashboard/operators/create', icon: PlusCircle },
     ],
   },
 ];

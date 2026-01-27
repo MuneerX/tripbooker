@@ -22,7 +22,7 @@ const MAX_FILE_SIZE = 2 * 1024 * 1024; // 2MB
 const ACCEPTED_IMAGE_TYPES = ["image/jpeg", "image/jpg", "image/png", "image/webp"];
 
 const operatorSchema = z.object({
-  name: z.string().min(1, "Operator name is required"),
+  name: z.string().min(1, "Agent name is required"),
   email: z.string().email("Invalid email address").optional().or(z.literal('')),
   phone: z.string().optional(),
   contact_person: z.string().optional(),
@@ -88,8 +88,8 @@ export default function CreateOperatorPage() {
     if (!operatorName) {
         toast({
             variant: "destructive",
-            title: "Operator Name Required",
-            description: "Please enter an operator name to generate a referral code.",
+            title: "Agent Name Required",
+            description: "Please enter an agent name to generate a referral code.",
         });
         return;
     }
@@ -116,7 +116,7 @@ export default function CreateOperatorPage() {
       await createOperator(formData);
       toast({
         title: "Success!",
-        description: "New operator has been created.",
+        description: "New agent has been created.",
       });
       router.push('/dashboard/operators');
       router.refresh();
@@ -124,7 +124,7 @@ export default function CreateOperatorPage() {
       toast({
         variant: "destructive",
         title: "Uh oh! Something went wrong.",
-        description: error.message || "Could not create the operator.",
+        description: error.message || "Could not create the agent.",
       });
     }
   };
@@ -138,13 +138,13 @@ export default function CreateOperatorPage() {
                     <ArrowLeft className="h-4 w-4" />
                     <span className="sr-only">Back</span>
                 </Button>
-                <h1 className="flex-1 text-xl font-semibold">Create New Operator</h1>
+                <h1 className="flex-1 text-xl font-semibold">Create New Agent</h1>
                 <div className="flex items-center gap-2">
                     <Button type="button" variant="outline" onClick={() => router.back()}>
                     Cancel
                     </Button>
                     <Button type="submit" disabled={form.formState.isSubmitting}>
-                    {form.formState.isSubmitting ? "Creating..." : "Create Operator"}
+                    {form.formState.isSubmitting ? "Creating..." : "Create Agent"}
                     </Button>
                 </div>
             </div>
@@ -154,20 +154,20 @@ export default function CreateOperatorPage() {
                 <div className="space-y-6">
                     <Card>
                         <CardHeader>
-                            <CardTitle>Operator Details</CardTitle>
-                            <CardDescription>Fill in the main details of the operator.</CardDescription>
+                            <CardTitle>Agent Details</CardTitle>
+                            <CardDescription>Fill in the main details of the agent.</CardDescription>
                         </CardHeader>
                         <CardContent className="space-y-6">
-                            <FormField control={form.control} name="name" render={({ field }) => ( <FormItem><FormLabel>Operator Name</FormLabel><FormControl><Input placeholder="e.g., Happy Trails Inc." {...field} /></FormControl><FormMessage /></FormItem> )} />
-                            <FormField control={form.control} name="description" render={({ field }) => ( <FormItem><FormLabel>Description</FormLabel><FormControl><Textarea placeholder="A brief description of the operator." {...field} /></FormControl><FormMessage /></FormItem> )} />
-                            <FormField control={form.control} name="address" render={({ field }) => ( <FormItem><FormLabel>Address</FormLabel><FormControl><Textarea placeholder="Operator's full address" {...field} /></FormControl><FormMessage /></FormItem> )} />
+                            <FormField control={form.control} name="name" render={({ field }) => ( <FormItem><FormLabel>Agent Name</FormLabel><FormControl><Input placeholder="e.g., Happy Trails Inc." {...field} /></FormControl><FormMessage /></FormItem> )} />
+                            <FormField control={form.control} name="description" render={({ field }) => ( <FormItem><FormLabel>Description</FormLabel><FormControl><Textarea placeholder="A brief description of the agent." {...field} /></FormControl><FormMessage /></FormItem> )} />
+                            <FormField control={form.control} name="address" render={({ field }) => ( <FormItem><FormLabel>Address</FormLabel><FormControl><Textarea placeholder="Agent's full address" {...field} /></FormControl><FormMessage /></FormItem> )} />
 
                              <FormField
                                 control={form.control}
                                 name="logo_file"
                                 render={({ field }) => (
                                 <FormItem>
-                                    <FormLabel>Operator Logo</FormLabel>
+                                    <FormLabel>Agent Logo</FormLabel>
                                     <FormControl>
                                         <div className="flex items-center gap-4">
                                             <label htmlFor="logo-file" className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-10 px-4 py-2 cursor-pointer shadow-sm">
@@ -227,7 +227,7 @@ export default function CreateOperatorPage() {
                             <CardTitle>Codes</CardTitle>
                         </CardHeader>
                         <CardContent className="space-y-4">
-                            <FormField control={form.control} name="code" render={({ field }) => ( <FormItem><FormLabel>Operator Code</FormLabel><FormControl><Input placeholder="e.g., HTI001" {...field} /></FormControl><FormMessage /></FormItem> )} />
+                            <FormField control={form.control} name="code" render={({ field }) => ( <FormItem><FormLabel>Agent Code</FormLabel><FormControl><Input placeholder="e.g., HTI001" {...field} /></FormControl><FormMessage /></FormItem> )} />
                             <FormField control={form.control} name="referral_code" render={({ field }) => ( 
                                 <FormItem>
                                     <FormLabel>Referral Code</FormLabel>
