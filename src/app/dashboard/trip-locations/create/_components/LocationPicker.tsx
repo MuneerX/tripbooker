@@ -248,7 +248,7 @@ export function LocationPicker({ initialPosition }: LocationPickerProps) {
             </Popover>
         </div>
 
-        <div ref={mapRef} className="h-80 w-full rounded-md overflow-hidden border"></div>
+        <div ref={mapRef} className="h-80 w-full rounded-md overflow-hidden border relative z-0"></div>
         <div className="grid grid-cols-2 gap-4">
              <div className="grid gap-2">
                 <label className="text-sm font-medium">Latitude</label>

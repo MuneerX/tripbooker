@@ -144,18 +144,16 @@ export default function CustomersPage() {
               paginatedProfiles.map((profile: Profile) => (
                 <Card key={profile.id}>
                     <CardHeader className="p-4 cursor-pointer" onClick={() => router.push(`/dashboard/customers/${profile.id}`)}>
-                         <div className="flex items-start justify-between gap-4">
-                            <div className="flex items-center gap-3 flex-1 min-w-0">
-                                <Avatar className="h-10 w-10">
-                                  <AvatarImage src={profile.avatar_url || ''} alt={profile.full_name || ''} />
-                                  <AvatarFallback>{profile.full_name?.charAt(0) || 'U'}</AvatarFallback>
-                                </Avatar>
-                                <div className="flex-1 min-w-0">
-                                    <CardTitle className="text-base truncate">{profile.full_name || 'N/A'}</CardTitle>
-                                    <CardDescription className="truncate">{profile.email || 'N/A'}</CardDescription>
-                                </div>
+                         <div className="flex items-center gap-3">
+                            <Avatar className="h-10 w-10 flex-shrink-0">
+                              <AvatarImage src={profile.avatar_url || ''} alt={profile.full_name || ''} />
+                              <AvatarFallback>{profile.full_name?.charAt(0) || 'U'}</AvatarFallback>
+                            </Avatar>
+                            <div className="flex-1 min-w-0">
+                                <CardTitle className="text-base truncate">{profile.full_name || 'N/A'}</CardTitle>
+                                <CardDescription className="truncate">{profile.email || 'N/A'}</CardDescription>
                             </div>
-                            <div onClick={(e) => e.stopPropagation()}>
+                            <div onClick={(e) => e.stopPropagation()} className="flex-shrink-0">
                               <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
                                   <Button aria-haspopup="true" size="icon" variant="ghost">
