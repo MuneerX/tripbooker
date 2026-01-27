@@ -144,14 +144,16 @@ export default function CustomersPage() {
               paginatedProfiles.map((profile: Profile) => (
                 <Card key={profile.id}>
                     <CardHeader className="p-4 cursor-pointer" onClick={() => router.push(`/dashboard/customers/${profile.id}`)}>
-                         <div className="flex items-center gap-3">
-                            <Avatar className="h-10 w-10 flex-shrink-0">
-                              <AvatarImage src={profile.avatar_url || ''} alt={profile.full_name || ''} />
-                              <AvatarFallback>{profile.full_name?.charAt(0) || 'U'}</AvatarFallback>
-                            </Avatar>
-                            <div className="flex-1 min-w-0">
-                                <CardTitle className="text-base truncate">{profile.full_name || 'N/A'}</CardTitle>
-                                <CardDescription className="truncate">{profile.email || 'N/A'}</CardDescription>
+                         <div className="flex items-center justify-between gap-3">
+                            <div className="flex items-center gap-3 flex-1 min-w-0">
+                                <Avatar className="h-10 w-10 flex-shrink-0">
+                                  <AvatarImage src={profile.avatar_url || ''} alt={profile.full_name || ''} />
+                                  <AvatarFallback>{profile.full_name?.charAt(0) || 'U'}</AvatarFallback>
+                                </Avatar>
+                                <div className="flex-1 min-w-0">
+                                    <CardTitle className="text-base truncate">{profile.full_name || 'N/A'}</CardTitle>
+                                    <CardDescription className="truncate">{profile.email || 'N/A'}</CardDescription>
+                                </div>
                             </div>
                             <div onClick={(e) => e.stopPropagation()} className="flex-shrink-0">
                               <DropdownMenu>
