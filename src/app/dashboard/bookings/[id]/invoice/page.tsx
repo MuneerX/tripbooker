@@ -47,9 +47,16 @@ const InvoiceDetail = ({ booking }: { booking: Booking }) => {
                 <div>
                     <h3 className="font-semibold mb-2">Billed To:</h3>
                     <p className="font-bold">{customer.full_name}</p>
-                    <p>{customer.address?.city}, {customer.address?.pincode}</p>
-                    <p>{customer.email}</p>
-                    <p>{customer.address?.phone_number}</p>
+                    {customer.address && <p>{customer.address}</p>}
+                    {(customer.city || customer.pincode) &&
+                        <p>
+                            {customer.city}
+                            {customer.city && customer.pincode && ', '}
+                            {customer.pincode}
+                        </p>
+                    }
+                    {customer.email && <p>{customer.email}</p>}
+                    {customer.phone_number && <p>{customer.phone_number}</p>}
                 </div>
                 <div className="text-right">
                     <p><span className="font-semibold">Invoice Date:</span> {format(new Date(), "PPP")}</p>

@@ -25,7 +25,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { useToast } from "@/hooks/use-toast";
 import { useBreadcrumb } from "../../layout";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import Link from "next/link";
 
 export default function CustomerDetailPage() {
@@ -62,20 +62,20 @@ export default function CustomerDetailPage() {
   const handleStatusToggle = async () => {
     if (!profile) return;
     
-    const newStatus = profile.status === 'active' ? 'blocked' : 'active';
+    const newStatus = profile.status === 'active' ? 'inactive' : 'active';
     
     try {
         const updatedProfile = await updateProfileStatus(profile.id, newStatus);
         setProfile(updatedProfile);
         toast({
             title: "Success",
-            description: `Customer "${profile.full_name}" has been ${newStatus}.`,
+            description: `Customer "${profile.full_name}" has been set to ${newStatus}.`,
         });
     } catch (error: any) {
          toast({
             variant: "destructive",
             title: "Error",
-            description: `Failed to ${newStatus} customer.`,
+            description: `Failed to update customer status.`,
         });
     }
   };
@@ -106,7 +106,7 @@ export default function CustomerDetailPage() {
                 <AlertDialogTrigger asChild>
                     <Button variant="outline" size="sm">
                        {profile.status === 'active' ? <UserX className="mr-2 h-4 w-4" /> : <UserCheck className="mr-2 h-4 w-4" />}
-                       {profile.status === 'active' ? 'Block' : 'Unblock'}
+                       {profile.status === 'active' ? 'Deactivate' : 'Activate'}
                     </Button>
                 </AlertDialogTrigger>
                 <Button size="sm" asChild>
@@ -126,6 +126,7 @@ export default function CustomerDetailPage() {
                     <CardContent className="space-y-6">
                         <div className="flex justify-center">
                             <Avatar className="h-40 w-40 border-4 border-primary/20">
+                                <AvatarImage src={profile.avatar_url || ''} alt={profile.full_name || ''} />
                                 <AvatarFallback className="text-6xl">{profile.full_name?.charAt(0) || 'C'}</AvatarFallback>
                             </Avatar>
                         </div>
@@ -175,7 +176,7 @@ export default function CustomerDetailPage() {
                          <div className="flex items-start gap-3"><UserX className="h-5 w-5 text-muted-foreground mt-1" />
                             <div>
                                 <p className="text-sm text-muted-foreground">Status</p>
-                                <Badge variant="outline" className={cn("capitalize mt-1", getStatusBadgeColor(profile.status === 'active' ? 'active' : 'inactive'))}>{profile.status}</Badge>
+                                <Badge variant="outline" className={cn("capitalize mt-1", getStatusBadgeColor(profile.status))}>{profile.status}</Badge>
                             </div>
                         </div>
                     </CardContent>
@@ -187,13 +188,13 @@ export default function CustomerDetailPage() {
           <AlertDialogHeader>
             <AlertDialogTitle>Are you sure?</AlertDialogTitle>
             <AlertDialogDescription>
-              This will {profile.status === 'active' ? 'block' : 'unblock'} the customer "{profile.full_name}".
+              This will {profile.status === 'active' ? 'deactivate' : 'activate'} the customer "{profile.full_name}".
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
             <AlertDialogAction onClick={handleStatusToggle} className={cn(profile.status === 'active' && "bg-destructive hover:bg-destructive/90")}>
-              {profile.status === 'active' ? 'Block' : 'Unblock'}
+              {profile.status === 'active' ? 'Deactivate' : 'Activate'}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

@@ -32,6 +32,7 @@ const profileSchema = z.object({
   district: z.string().min(1, "District is required"),
   pincode: z.string().min(1, "Pincode is required"),
   is_kv_customer: z.boolean().default(false),
+  is_active: z.boolean().default(true),
 });
 
 type ProfileFormValues = z.infer<typeof profileSchema>;
@@ -247,18 +248,35 @@ export default function EditCustomerPage() {
               <FormField control={form.control} name="district" render={({ field }) => ( <FormItem><FormLabel>District</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem> )} />
               <FormField control={form.control} name="state" render={({ field }) => ( <FormItem><FormLabel>State</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem> )} />
               <FormField control={form.control} name="pincode" render={({ field }) => ( <FormItem><FormLabel>Pincode</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem> )} />
+              <FormField control={form.control} name="is_kv_customer" render={({ field }) => (
+                  <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                    <div className="space-y-0.5">
+                      <FormLabel className="text-base">KV Customer</FormLabel>
+                      <FormDescription>
+                        Indicates if this is a Kendriya Vidyalaya customer.
+                      </FormDescription>
+                    </div>
+                    <FormControl>
+                      <Switch
+                        checked={field.value}
+                        onCheckedChange={field.onChange}
+                      />
+                    </FormControl>
+                  </FormItem>
+                )}
+              />
             </div>
-            <FormField control={form.control} name="is_kv_customer" render={({ field }) => (
+            <FormField control={form.control} name="is_active" render={({ field }) => (
                 <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4 mt-6">
                   <div className="space-y-0.5">
                     <FormLabel className="text-base">Active Customer</FormLabel>
                     <FormDescription>
-                      Inactive (blocked) customers cannot log in or make new bookings.
+                      Inactive customers cannot log in or make new bookings.
                     </FormDescription>
                   </div>
                   <FormControl>
                     <Switch
-                      checked={field.value}
+                      checked={field.value ?? false}
                       onCheckedChange={field.onChange}
                     />
                   </FormControl>
@@ -271,5 +289,3 @@ export default function EditCustomerPage() {
     </Form>
   );
 }
-
-    

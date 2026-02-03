@@ -1078,7 +1078,7 @@ export async function getProfiles(): Promise<Profile[]> {
     
     return (data || []).map(profile => ({
       ...profile,
-      status: profile.is_kv_customer ? 'active' : 'blocked'
+      status: profile.is_active ? 'active' : 'inactive'
     })) as Profile[];
 }
 
@@ -1100,17 +1100,17 @@ export async function getProfileById(id: string): Promise<Profile | null> {
 
     return {
       ...data,
-      status: data.is_kv_customer ? 'active' : 'blocked'
+      status: data.is_active ? 'active' : 'inactive'
     } as Profile;
 }
 
 
-export async function updateProfileStatus(id: string, newStatus: 'active' | 'blocked') {
+export async function updateProfileStatus(id: string, newStatus: 'active' | 'inactive') {
     const supabase = createAdminClient();
-    const is_kv_customer = newStatus === 'active';
+    const is_active = newStatus === 'active';
     const { data, error } = await supabase
         .from('profiles')
-        .update({ is_kv_customer, updated_at: new Date().toISOString() })
+        .update({ is_active, updated_at: new Date().toISOString() })
         .eq('id', id)
         .select()
         .single();
@@ -1122,7 +1122,7 @@ export async function updateProfileStatus(id: string, newStatus: 'active' | 'blo
     
     return {
       ...data,
-      status: data.is_kv_customer ? 'active' : 'blocked'
+      status: data.is_active ? 'active' : 'inactive'
     } as Profile;
 }
 
@@ -1145,7 +1145,7 @@ export async function updateProfile(id: string, profileData: Partial<Profile>) {
     
     return {
       ...data,
-      status: data.is_kv_customer ? 'active' : 'blocked'
+      status: data.is_active ? 'active' : 'inactive'
     } as Profile;
 }
 
@@ -1420,7 +1420,3 @@ export async function cancelBooking(bookingId: string) {
   }
   return data;
 }
-
-    
-
-    

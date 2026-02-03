@@ -70,14 +70,14 @@ export default function CustomersPage() {
   const handleStatusToggle = async () => {
     if (!itemToToggle) return;
     
-    const newStatus = itemToToggle.status === 'active' ? 'blocked' : 'active';
+    const newStatus = itemToToggle.status === 'active' ? 'inactive' : 'active';
     
     try {
         const updatedProfile = await updateProfileStatus(itemToToggle.id, newStatus);
         setAllProfiles(prev => prev.map(p => p.id === itemToToggle.id ? { ...p, status: updatedProfile.status } : p));
         toast({
             title: "Success",
-            description: `Customer "${itemToToggle.full_name}" has been ${newStatus}.`,
+            description: `Customer "${itemToToggle.full_name}" has been set to ${newStatus}.`,
         });
     } catch (error: any) {
         toast({
@@ -108,7 +108,7 @@ export default function CustomersPage() {
   const stats = [
     { label: "Total Customers", value: totalCustomers, icon: <Users className="h-4 w-4" /> },
     { label: "Active", value: activeCustomers, icon: <UserCheck className="h-4 w-4" /> },
-    { label: "Blocked", value: blockedCustomers, icon: <UserX className="h-4 w-4" /> },
+    { label: "Inactive", value: blockedCustomers, icon: <UserX className="h-4 w-4" /> },
   ];
 
   return (
@@ -170,9 +170,9 @@ export default function CustomersPage() {
                                   </DropdownMenuItem>
                                   <DropdownMenuItem onSelect={() => setItemToToggle(profile)}>
                                     {profile.status === 'active' ? (
-                                        <><UserX className="mr-2 h-4 w-4" /> Block</>
+                                        <><UserX className="mr-2 h-4 w-4" /> Deactivate</>
                                     ) : (
-                                        <><UserCheck className="mr-2 h-4 w-4" /> Unblock</>
+                                        <><UserCheck className="mr-2 h-4 w-4" /> Activate</>
                                     )}
                                   </DropdownMenuItem>
                                 </DropdownMenuContent>
@@ -182,7 +182,7 @@ export default function CustomersPage() {
                     </CardHeader>
                     <CardContent className="p-4 pt-0 text-sm flex items-center justify-between">
                         <div className="text-muted-foreground">KV Customer: <span className="font-medium text-foreground">{profile.is_kv_customer ? 'Yes' : 'No'}</span></div>
-                        <Badge variant="outline" className={cn("capitalize", getStatusBadgeColor(profile.status === 'active' ? 'active' : 'inactive'))}>{profile.status}</Badge>
+                        <Badge variant="outline" className={cn("capitalize", getStatusBadgeColor(profile.status))}>{profile.status}</Badge>
                     </CardContent>
                 </Card>
               ))
@@ -228,7 +228,7 @@ export default function CustomersPage() {
                     <TableCell className="hidden lg:table-cell">{profile.phone_number || 'N/A'}</TableCell>
                     <TableCell>{profile.is_kv_customer ? 'Yes' : 'No'}</TableCell>
                     <TableCell>
-                      <Badge variant="outline" className={cn("capitalize", getStatusBadgeColor(profile.status === 'active' ? 'active' : 'inactive'))}>{profile.status}</Badge>
+                      <Badge variant="outline" className={cn("capitalize", getStatusBadgeColor(profile.status))}>{profile.status}</Badge>
                     </TableCell>
                      <TableCell onClick={(e) => e.stopPropagation()}>
                       <DropdownMenu>
@@ -246,11 +246,11 @@ export default function CustomersPage() {
                           <DropdownMenuItem onSelect={() => setItemToToggle(profile)}>
                             {profile.status === 'active' ? (
                                 <>
-                                    <UserX className="mr-2 h-4 w-4" /> Block
+                                    <UserX className="mr-2 h-4 w-4" /> Deactivate
                                 </>
                             ) : (
                                 <>
-                                    <UserCheck className="mr-2 h-4 w-4" /> Unblock
+                                    <UserCheck className="mr-2 h-4 w-4" /> Activate
                                 </>
                             )}
                           </DropdownMenuItem>
@@ -300,13 +300,13 @@ export default function CustomersPage() {
             <AlertDialogHeader>
               <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
               <AlertDialogDescription>
-                This will {itemToToggle.status === 'active' ? 'block' : 'unblock'} the customer "{itemToToggle.full_name}".
+                This will {itemToToggle.status === 'active' ? 'deactivate' : 'activate'} the customer "{itemToToggle.full_name}".
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
               <AlertDialogCancel onClick={() => setItemToToggle(null)}>Cancel</AlertDialogCancel>
               <AlertDialogAction onClick={handleStatusToggle} className={cn(itemToToggle.status === 'active' && "bg-destructive hover:bg-destructive/90")}>
-                {itemToToggle.status === 'active' ? 'Block' : 'Unblock'}
+                {itemToToggle.status === 'active' ? 'Deactivate' : 'Activate'}
               </AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>

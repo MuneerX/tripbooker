@@ -96,24 +96,16 @@ export type TripLocation = {
   updated_at: string | null;
 };
 
-type CustomerAddress = {
-    id: string;
-    user_id: string;
-    address_line_1: string | null;
-    address_line_2: string | null;
-    city: string | null;
-    state: string | null;
-    country: string | null;
-    pincode: string | null;
-    phone_number: string | null;
-};
-
 type CustomerProfile = {
     id: string;
     full_name: string;
     email: string;
     avatar_url: string | null;
-    address: CustomerAddress | null;
+    address: string | null;
+    city: string | null;
+    state: string | null;
+    pincode: string | null;
+    phone_number: string | null;
 };
 
 export type BookingGuest = {
@@ -206,7 +198,8 @@ export type Profile = {
     pincode: string;
     avatar_url: string | null;
     is_kv_customer: boolean;
-    status: 'active' | 'blocked';
+    is_active: boolean | null;
+    status: 'active' | 'inactive';
 };
 
 export type Operator = {
@@ -248,5 +241,3 @@ export type NavItem = {
   icon: React.ComponentType<{ className?: string }>;
   subItems?: NavItem[];
 };
-
-    
