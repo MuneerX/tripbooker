@@ -64,42 +64,46 @@ const InvoiceDetail = ({ booking }: { booking: Booking }) => {
                     <p><span className="font-semibold">Travel Date:</span> {booking.travel_date ? format(new Date(booking.travel_date), "PPP") : 'N/A'}</p>
                 </div>
             </div>
-
-            <h2 className="text-xl font-semibold mb-4">Booking Details</h2>
-            <div className="border rounded-lg">
-                <div className="p-4 grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div>
-                        <h3 className="font-semibold">{tourPackage.name}</h3>
-                        <p className="text-sm text-muted-foreground capitalize">{tourPackage.package_type} / {tourPackage.category}</p>
-                    </div>
-                     <div>
-                        <p className="text-sm text-muted-foreground">Duration</p>
-                        <p className="font-medium">{tourPackage.days} Days / {tourPackage.nights} Nights</p>
-                    </div>
-                     <div>
-                        <p className="text-sm text-muted-foreground">Guests</p>
-                        <p className="font-medium">{booking.total_adults} Adult(s), {booking.total_children} Child(ren)</p>
+            
+            <div className="print:break-inside-avoid">
+                <h2 className="text-xl font-semibold mb-4">Booking Details</h2>
+                <div className="border rounded-lg">
+                    <div className="p-4 grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div>
+                            <h3 className="font-semibold">{tourPackage.name}</h3>
+                            <p className="text-sm text-muted-foreground capitalize">{tourPackage.package_type} / {tourPackage.category}</p>
+                        </div>
+                         <div>
+                            <p className="text-sm text-muted-foreground">Duration</p>
+                            <p className="font-medium">{tourPackage.days} Days / {tourPackage.nights} Nights</p>
+                        </div>
+                         <div>
+                            <p className="text-sm text-muted-foreground">Guests</p>
+                            <p className="font-medium">{booking.total_adults} Adult(s), {booking.total_children} Child(ren)</p>
+                        </div>
                     </div>
                 </div>
             </div>
 
-            <h2 className="text-xl font-semibold mt-8 mb-4">Payment Summary</h2>
-             <div className="border rounded-lg">
-                <div className="p-4 space-y-2">
-                    <div className="flex justify-between"><span>Package Amount</span><span>{formatCurrency(tourPackage.base_price)}</span></div>
-                    <div className="flex justify-between"><span>Service Fee</span><span>{formatCurrency(0)}</span></div>
-                    <div className="flex justify-between"><span>Taxes (GST)</span><span>{formatCurrency(0)}</span></div>
-                    <div className="flex justify-between text-muted-foreground"><span >Discount</span><span>- {formatCurrency(0)}</span></div>
-                    <Separator className="my-2"/>
-                    <div className="flex justify-between font-bold text-lg"><span >Total Amount</span><span>{formatCurrency(booking.total_amount)}</span></div>
-                     <Separator className="my-2"/>
-                     <div className="flex justify-between font-bold text-green-600"><span >Amount Paid</span><span>{formatCurrency(booking.payments?.reduce((sum, p) => sum + p.amount, 0) ?? 0)}</span></div>
+            <div className="mt-8 print:break-inside-avoid">
+                <h2 className="text-xl font-semibold mb-4">Payment Summary</h2>
+                 <div className="border rounded-lg">
+                    <div className="p-4 space-y-2">
+                        <div className="flex justify-between"><span>Package Amount</span><span>{formatCurrency(tourPackage.base_price)}</span></div>
+                        <div className="flex justify-between"><span>Service Fee</span><span>{formatCurrency(0)}</span></div>
+                        <div className="flex justify-between"><span>Taxes (GST)</span><span>{formatCurrency(0)}</span></div>
+                        <div className="flex justify-between text-muted-foreground"><span >Discount</span><span>- {formatCurrency(0)}</span></div>
+                        <Separator className="my-2"/>
+                        <div className="flex justify-between font-bold text-lg"><span >Total Amount</span><span>{formatCurrency(booking.total_amount)}</span></div>
+                         <Separator className="my-2"/>
+                         <div className="flex justify-between font-bold text-green-600"><span >Amount Paid</span><span>{formatCurrency(booking.payments?.reduce((sum, p) => sum + p.amount, 0) ?? 0)}</span></div>
+                    </div>
                 </div>
             </div>
 
             {booking.payments && booking.payments.length > 0 && (
-                 <>
-                    <h2 className="text-xl font-semibold mt-8 mb-4">Payment Transactions</h2>
+                 <div className="mt-8 print:break-inside-avoid">
+                    <h2 className="text-xl font-semibold mb-4">Payment Transactions</h2>
                     <div className="border rounded-lg">
                         {booking.payments.map((payment, index) => (
                             <React.Fragment key={payment.id}>
@@ -125,11 +129,11 @@ const InvoiceDetail = ({ booking }: { booking: Booking }) => {
                            </React.Fragment>
                         ))}
                     </div>
-                </>
+                </div>
             )}
 
 
-            <footer className="mt-12 text-center text-muted-foreground text-sm">
+            <footer className="mt-12 text-center text-muted-foreground text-sm print:break-before-page">
                 <p>Thank you for booking with Yes To Go!</p>
                 <p>This is a computer-generated invoice and does not require a signature.</p>
             </footer>

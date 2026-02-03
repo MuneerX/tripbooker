@@ -55,6 +55,10 @@ export default function CustomersPage() {
     };
     fetchProfiles();
   }, [toast]);
+  
+  React.useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm]);
 
   React.useEffect(() => {
     if (itemToToggle) {
