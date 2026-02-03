@@ -615,7 +615,7 @@ export default function BookingDetailPage() {
                                 <CardHeader><CardTitle>Payment Records</CardTitle></CardHeader>
                                 <CardContent className="space-y-6">
                                     {booking.payments && booking.payments.length > 0 ? (
-                                        booking.payments.map((payment: Payment) => (
+                                        booking.payments.map((payment: Payment, index) => (
                                             <React.Fragment key={payment.id}>
                                                 <div className="grid grid-cols-2 gap-x-4 gap-y-6">
                                                     <div className="flex items-start gap-3">
@@ -651,12 +651,14 @@ export default function BookingDetailPage() {
                                                     <Button 
                                                         variant="outline" 
                                                         size="sm"
-                                                        onClick={() => toast({ title: "Feature in development", description: "Invoice download will be available soon."})}
+                                                        asChild
                                                     >
+                                                      <Link href={`/dashboard/bookings/${booking.id}/invoice`} target="_blank">
                                                         <FileDown className="mr-2 h-4 w-4" /> Download Invoice
+                                                      </Link>
                                                     </Button>
                                                  </div>
-                                                 {booking.payments.length > 1 && <Separator className="my-6" />}
+                                                 {booking.payments && index < booking.payments.length - 1 && <Separator className="my-6" />}
                                             </React.Fragment>
                                         ))
                                     ) : (
@@ -702,5 +704,3 @@ export default function BookingDetailPage() {
     </div>
   );
 }
-
-    
