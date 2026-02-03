@@ -1,3 +1,4 @@
+
 "use client";
 
 import Link from 'next/link';
@@ -182,7 +183,14 @@ export function AppSidebar() {
                 </SidebarMenuButton>
             </SidebarMenuItem>
           </SidebarMenu>
+          <div className="flex items-center justify-center p-4 opacity-75 group-data-[collapsible=icon]:hidden">
+            <a href="https://matrimore.com/" target="_blank" rel="noopener noreferrer">
+              <Image src="https://startups.startupmission.in/storage/uploads/DIPP49538/logo-6490c7a948ccc.png" alt="Matrimore Logo" width={100} height={25} />
+            </a>
+          </div>
         </SidebarFooter>
       </Sidebar>
   );
 }
+
+    

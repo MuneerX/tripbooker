@@ -48,6 +48,10 @@ export default function BookingsPage() {
     };
     fetchBookings();
   }, []);
+  
+  React.useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm]);
 
   React.useEffect(() => {
     if (itemToDelete) {
@@ -296,3 +300,5 @@ export default function BookingsPage() {
     </div>
   );
 }
+
+    

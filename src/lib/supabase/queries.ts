@@ -488,6 +488,7 @@ export async function getTripDays(): Promise<any[]> {
             tour_package:package_id(name), 
             activities:trip_day_activities(additional_cost)
         `)
+        .order('package_id', { ascending: true })
         .order('day_number', { ascending: true });
 
     if (error) {
@@ -1419,5 +1420,7 @@ export async function cancelBooking(bookingId: string) {
   }
   return data;
 }
+
+    
 
     

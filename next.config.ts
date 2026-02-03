@@ -75,6 +75,12 @@ const nextConfig: NextConfig = {
         port: '',
         pathname: '/**',
       },
+      {
+        protocol: 'https',
+        hostname: 'startups.startupmission.in',
+        port: '',
+        pathname: '/**',
+      },
     ],
   },
   env: {
@@ -84,3 +90,5 @@ const nextConfig: NextConfig = {
 };
 
 export default nextConfig;
+
+    

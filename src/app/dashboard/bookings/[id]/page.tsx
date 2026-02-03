@@ -648,7 +648,13 @@ export default function BookingDetailPage() {
                                                     </div>
                                                 </div>
                                                  <div className="mt-4">
-                                                    <Button variant="outline" size="sm"><FileDown className="mr-2 h-4 w-4" /> Download Invoice</Button>
+                                                    <Button 
+                                                        variant="outline" 
+                                                        size="sm"
+                                                        onClick={() => toast({ title: "Feature in development", description: "Invoice download will be available soon."})}
+                                                    >
+                                                        <FileDown className="mr-2 h-4 w-4" /> Download Invoice
+                                                    </Button>
                                                  </div>
                                                  {booking.payments.length > 1 && <Separator className="my-6" />}
                                             </React.Fragment>
@@ -696,3 +702,5 @@ export default function BookingDetailPage() {
     </div>
   );
 }
+
+    

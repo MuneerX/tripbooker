@@ -61,79 +61,73 @@ export function AppHeader() {
       <div className="hidden flex-1 md:flex">
         <Breadcrumbs />
       </div>
-      <div className="flex flex-1 items-center gap-4 md:ml-auto md:flex-initial">
-        <form className="relative w-full">
-            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-            <Input
-            type="search"
-            placeholder="Search..."
-            className="h-9 w-full rounded-lg bg-background pl-8"
-            />
-        </form>
-      </div>
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Button variant="outline" size="icon" className="relative h-9 w-9">
-            <Bell className="h-5 w-5" />
-            {notifications.length > 0 && (
-              <Badge className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full p-0 text-[10px]" variant="destructive">
-                {notifications.length}
-              </Badge>
-            )}
-            <span className="sr-only">Toggle notifications</span>
-          </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="end" className="w-80">
-          <DropdownMenuLabel>Notifications</DropdownMenuLabel>
-          <DropdownMenuSeparator />
-          {recentNotifications.length > 0 ? (
-            recentNotifications.map(booking => (
-              <DropdownMenuItem key={booking.id} asChild className="cursor-pointer">
-                 <Link href={`/dashboard/bookings/${booking.id}`}>
-                    <div className="flex flex-col">
-                      <p className="text-sm font-medium">New Booking: {booking.order_id}</p>
-                      <p className="text-xs text-muted-foreground">{booking.customer_name} booked {booking.tour_package?.name}</p>
-                      <p className="text-xs text-muted-foreground mt-1">{formatDistanceToNow(new Date(booking.created_at), { addSuffix: true })}</p>
-                    </div>
-                </Link>
-              </DropdownMenuItem>
-            ))
-          ) : (
-            <div className="px-2 py-4 text-center text-sm text-muted-foreground">No new notifications</div>
-          )}
-          <DropdownMenuSeparator />
-          <div className="p-1">
-            <Button asChild variant="outline" className="w-full">
-              <Link href="/dashboard/notifications">
-                View All Notifications
-              </Link>
+      <div className="flex flex-1 items-center justify-end gap-2 md:ml-auto md:flex-initial">
+        <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+            <Button variant="outline" size="icon" className="relative h-9 w-9">
+                <Bell className="h-5 w-5" />
+                {notifications.length > 0 && (
+                <Badge className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full p-0 text-[10px]" variant="destructive">
+                    {notifications.length}
+                </Badge>
+                )}
+                <span className="sr-only">Toggle notifications</span>
             </Button>
-          </div>
-        </DropdownMenuContent>
-      </DropdownMenu>
-      
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-           <Button variant="outline" size="icon" className="h-9 w-9">
-            <User className="h-5 w-5" />
-            <span className="sr-only">Toggle user menu</span>
-          </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="end">
-          <DropdownMenuLabel>
-            <div className="flex flex-col space-y-1">
-              <p className="text-sm font-medium leading-none">{displayName}</p>
-              <p className="text-xs leading-none text-muted-foreground">
-                {displayEmail}
-              </p>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-80">
+            <DropdownMenuLabel>Notifications</DropdownMenuLabel>
+            <DropdownMenuSeparator />
+            {recentNotifications.length > 0 ? (
+                recentNotifications.map(booking => (
+                <DropdownMenuItem key={booking.id} asChild className="cursor-pointer">
+                    <Link href={`/dashboard/bookings/${booking.id}`}>
+                        <div className="flex flex-col">
+                        <p className="text-sm font-medium">New Booking: {booking.order_id}</p>
+                        <p className="text-xs text-muted-foreground">{booking.customer_name} booked {booking.tour_package?.name}</p>
+                        <p className="text-xs text-muted-foreground mt-1">{formatDistanceToNow(new Date(booking.created_at), { addSuffix: true })}</p>
+                        </div>
+                    </Link>
+                </DropdownMenuItem>
+                ))
+            ) : (
+                <div className="px-2 py-4 text-center text-sm text-muted-foreground">No new notifications</div>
+            )}
+            <DropdownMenuSeparator />
+            <div className="p-1">
+                <Button asChild variant="outline" className="w-full">
+                <Link href="/dashboard/notifications">
+                    View All Notifications
+                </Link>
+                </Button>
             </div>
-          </DropdownMenuLabel>
-          <DropdownMenuSeparator />
-          <ThemeToggle />
-          <DropdownMenuSeparator />
-          <DropdownMenuItem onClick={handleLogout}>Logout</DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
+            </DropdownMenuContent>
+        </DropdownMenu>
+        
+        <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+            <Button variant="outline" size="icon" className="h-9 w-9">
+                <User className="h-5 w-5" />
+                <span className="sr-only">Toggle user menu</span>
+            </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+            <DropdownMenuLabel>
+                <div className="flex flex-col space-y-1">
+                <p className="text-sm font-medium leading-none">{displayName}</p>
+                <p className="text-xs leading-none text-muted-foreground">
+                    {displayEmail}
+                </p>
+                </div>
+            </DropdownMenuLabel>
+            <DropdownMenuSeparator />
+            <ThemeToggle />
+            <DropdownMenuSeparator />
+            <DropdownMenuItem onClick={handleLogout}>Logout</DropdownMenuItem>
+            </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
     </header>
   );
 }
+
+    
