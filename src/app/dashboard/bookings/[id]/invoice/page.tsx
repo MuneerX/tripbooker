@@ -133,7 +133,7 @@ const InvoiceDetail = ({ booking }: { booking: Booking }) => {
             )}
 
 
-            <footer className="mt-12 text-center text-muted-foreground text-sm print:break-before-page">
+            <footer className="mt-12 text-center text-muted-foreground text-sm">
                 <p>Thank you for booking with Yes To Go!</p>
                 <p>This is a computer-generated invoice and does not require a signature.</p>
             </footer>
