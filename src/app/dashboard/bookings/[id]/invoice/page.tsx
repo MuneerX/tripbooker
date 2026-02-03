@@ -163,7 +163,7 @@ export default function BookingInvoicePage() {
 
     return (
         <>
-            <div className="absolute top-4 right-4 print:hidden">
+            <div className="absolute top-20 right-4 print:hidden">
                 <Button onClick={() => window.print()}>
                     <Printer className="mr-2 h-4 w-4" />
                     Print / Save as PDF
