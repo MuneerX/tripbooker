@@ -39,7 +39,7 @@ const InvoiceDetail = ({ booking }: { booking: Booking }) => {
                 </div>
                 <div className="text-right">
                     <h1 className="text-3xl font-bold text-primary">INVOICE</h1>
-                    <p className="text-sm text-muted-foreground"># {booking.order_id}</p>
+                    <p className="text-sm text-muted-foreground font-mono"># {booking.order_id}</p>
                 </div>
             </header>
 
