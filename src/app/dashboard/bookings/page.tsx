@@ -2,7 +2,7 @@
 "use client";
 
 import * as React from "react";
-import { Book, MoreHorizontal, FilePenLine, Trash2, View, BookCheck, BookX } from "lucide-react";
+import { Book, MoreHorizontal, FilePenLine, Trash2, View, BookCheck, BookX, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -90,14 +90,14 @@ export default function BookingsPage() {
     currentPage * rowsPerPage
   );
   
-  const totalBookings = allBookings.length;
   const confirmedBookings = allBookings.filter(p => p.booking_status === 'confirmed').length;
   const pendingBookings = allBookings.filter(p => p.booking_status === 'pending').length;
+  const totalActiveBookings = confirmedBookings + pendingBookings;
 
   const stats = [
-    { label: "Total Bookings", value: totalBookings, icon: <Book className="h-4 w-4" /> },
+    { label: "Total Active Bookings", value: totalActiveBookings, icon: <Book className="h-4 w-4" /> },
     { label: "Confirmed", value: confirmedBookings, icon: <BookCheck className="h-4 w-4" /> },
-    { label: "Pending", value: pendingBookings, icon: <BookX className="h-4 w-4" /> },
+    { label: "Pending", value: pendingBookings, icon: <Clock className="h-4 w-4" /> },
   ];
 
   return (
@@ -300,5 +300,3 @@ export default function BookingsPage() {
     </div>
   );
 }
-
-    

@@ -158,7 +158,7 @@ export default function CreateOperatorPage() {
                             <CardDescription>Fill in the main details of the agent.</CardDescription>
                         </CardHeader>
                         <CardContent className="space-y-6">
-                            <FormField control={form.control} name="name" render={({ field }) => ( <FormItem><FormLabel>Agent Name</FormLabel><FormControl><Input placeholder="e.g., Happy Trails Inc." {...field} /></FormControl><FormMessage /></FormItem> )} />
+                            <FormField control={form.control} name="name" render={({ field }) => ( <FormItem><FormLabel>Agent Name <span className="text-destructive">*</span></FormLabel><FormControl><Input placeholder="e.g., Happy Trails Inc." {...field} /></FormControl><FormMessage /></FormItem> )} />
                             <FormField control={form.control} name="description" render={({ field }) => ( <FormItem><FormLabel>Description</FormLabel><FormControl><Textarea placeholder="A brief description of the agent." {...field} /></FormControl><FormMessage /></FormItem> )} />
                             <FormField control={form.control} name="address" render={({ field }) => ( <FormItem><FormLabel>Address</FormLabel><FormControl><Textarea placeholder="Agent's full address" {...field} /></FormControl><FormMessage /></FormItem> )} />
 

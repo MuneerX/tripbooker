@@ -41,6 +41,7 @@ export default function CreateTripDayPage() {
   const [isSubmitting, setIsSubmitting] = React.useState(false);
   const [existingDayNumbers, setExistingDayNumbers] = React.useState<number[]>([]);
   const [locations, setLocations] = React.useState<TripLocation[]>([]);
+  const [selectedPackageDays, setSelectedPackageDays] = React.useState<number | null>(null);
 
 
   React.useEffect(() => {
@@ -57,6 +58,13 @@ export default function CreateTripDayPage() {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
         message: "This day number already exists for the selected package.",
+        path: ["day_number"],
+      });
+    }
+    if (selectedPackageDays && day_number > selectedPackageDays) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: `Day number cannot exceed the total days (${selectedPackageDays}) for this package.`,
         path: ["day_number"],
       });
     }
@@ -85,23 +93,26 @@ export default function CreateTripDayPage() {
 
   React.useEffect(() => {
     const setNextDayNumber = async () => {
-      if (selectedPackageId) {
-        const existingDays = await getTripDaysForPackage(selectedPackageId);
-        const days = existingDays.map(day => day.day_number);
-        setExistingDayNumbers(days);
-        
-        let nextDay = 1;
-        while (days.includes(nextDay)) {
-            nextDay++;
-        }
-        form.setValue("day_number", nextDay);
-        form.trigger("day_number"); // Re-trigger validation
+      const selectedPkg = tourPackages.find(p => p.id === selectedPackageId);
+      if (selectedPkg) {
+          setSelectedPackageDays(selectedPkg.days);
+          const existingDays = await getTripDaysForPackage(selectedPackageId);
+          const days = existingDays.map(day => day.day_number);
+          setExistingDayNumbers(days);
+          
+          let nextDay = 1;
+          while (days.includes(nextDay)) {
+              nextDay++;
+          }
+          form.setValue("day_number", nextDay);
+          form.trigger("day_number"); // Re-trigger validation
       } else {
-        setExistingDayNumbers([]);
+          setSelectedPackageDays(null);
+          setExistingDayNumbers([]);
       }
     };
     setNextDayNumber();
-  }, [selectedPackageId, form]);
+  }, [selectedPackageId, form, tourPackages]);
 
   const onSubmit = async (data: TripDayFormValues) => {
     setIsSubmitting(true);
@@ -155,7 +166,7 @@ export default function CreateTripDayPage() {
                         name="package_id"
                         render={({ field }) => (
                             <FormItem>
-                            <FormLabel>Tour Package</FormLabel>
+                            <FormLabel>Tour Package <span className="text-destructive">*</span></FormLabel>
                             <Select onValueChange={field.onChange} defaultValue={field.value}>
                                 <FormControl>
                                 <SelectTrigger>
@@ -173,11 +184,11 @@ export default function CreateTripDayPage() {
                         )}
                         />
                     <div className="grid grid-cols-2 gap-4">
-                        <FormField control={form.control} name="day_name" render={({ field }) => ( <FormItem><FormLabel>Day Name</FormLabel><FormControl><Input placeholder="e.g., Arrival in Paris" {...field} /></FormControl><FormMessage /></FormItem> )} />
-                        <FormField control={form.control} name="day_number" render={({ field }) => ( <FormItem><FormLabel>Day No.</FormLabel><FormControl><Input type="number" {...field} /></FormControl><FormMessage /></FormItem> )} />
+                        <FormField control={form.control} name="day_name" render={({ field }) => ( <FormItem><FormLabel>Day Name <span className="text-destructive">*</span></FormLabel><FormControl><Input placeholder="e.g., Arrival in Paris" {...field} /></FormControl><FormMessage /></FormItem> )} />
+                        <FormField control={form.control} name="day_number" render={({ field }) => ( <FormItem><FormLabel>Day No. <span className="text-destructive">*</span></FormLabel><FormControl><Input type="number" {...field} /></FormControl><FormMessage /></FormItem> )} />
                     </div>
                     <FormField control={form.control} name="title" render={({ field }) => ( <FormItem><FormLabel>Title</FormLabel><FormControl><Input placeholder="e.g., City Exploration" {...field} /></FormControl><FormMessage /></FormItem> )} />
-                    <FormField control={form.control} name="description" render={({ field }) => ( <FormItem><FormLabel>Day's Description</FormLabel><FormControl><Textarea placeholder="Describe the plan for the day..." {...field} /></FormControl><FormMessage /></FormItem> )} />
+                    <FormField control={form.control} name="description" render={({ field }) => ( <FormItem><FormLabel>Day's Description <span className="text-destructive">*</span></FormLabel><FormControl><Textarea placeholder="Describe the plan for the day..." {...field} /></FormControl><FormMessage /></FormItem> )} />
                 </CardContent>
                 </Card>
             </div>

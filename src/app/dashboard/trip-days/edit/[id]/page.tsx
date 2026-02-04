@@ -46,6 +46,7 @@ export default function EditTripDayPage() {
   const [originalDayNumber, setOriginalDayNumber] = React.useState<number | null>(null);
   const [tourPackages, setTourPackages] = React.useState<TourPackage[]>([]);
   const [locations, setLocations] = React.useState<TripLocation[]>([]);
+  const [selectedPackage, setSelectedPackage] = React.useState<TourPackage | null>(null);
 
   const formSchema = tripDayEditSchema.superRefine(({ day_number, package_id }, ctx) => {
     const isOriginalPackage = package_id === form.getValues('package_id');
@@ -58,6 +59,14 @@ export default function EditTripDayPage() {
           path: ["day_number"],
         });
       }
+    }
+
+    if (selectedPackage && day_number > selectedPackage.days) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: `Day number cannot exceed the total days (${selectedPackage.days}) for this package.`,
+        path: ["day_number"],
+      });
     }
   });
   
@@ -74,6 +83,8 @@ export default function EditTripDayPage() {
     },
   });
 
+  const selectedPackageId = form.watch("package_id");
+
   React.useEffect(() => {
     const fetchInitialData = async () => {
         setLoading(true);
@@ -85,6 +96,9 @@ export default function EditTripDayPage() {
         if (id) {
             const day = await getTripDayById(id);
             if (day && day.package_id) {
+                const selectedPkg = packages.find(p => p.id === day.package_id);
+                setSelectedPackage(selectedPkg || null);
+
                 const existingDays = await getTripDaysForPackage(day.package_id);
                 setExistingDayNumbers(existingDays.map(d => d.day_number));
                 setOriginalDayNumber(day.day_number);
@@ -117,10 +131,10 @@ export default function EditTripDayPage() {
     return () => setBreadcrumbName('');
   }, [id, router, toast, form, setBreadcrumbName]);
 
-  const selectedPackageId = form.watch("package_id");
-
   React.useEffect(() => {
     const fetchDaysForSelectedPackage = async () => {
+      const selectedPkg = tourPackages.find(p => p.id === selectedPackageId);
+      setSelectedPackage(selectedPkg || null);
       if (selectedPackageId) {
         const existingDays = await getTripDaysForPackage(selectedPackageId);
         setExistingDayNumbers(existingDays.map(day => day.day_number));
@@ -128,7 +142,7 @@ export default function EditTripDayPage() {
       }
     };
     fetchDaysForSelectedPackage();
-  }, [selectedPackageId, form]);
+  }, [selectedPackageId, form, tourPackages]);
 
   const { fields, append, remove, update } = useFieldArray({
     control: form.control,
@@ -198,7 +212,7 @@ export default function EditTripDayPage() {
               name="package_id"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Tour Package</FormLabel>
+                  <FormLabel>Tour Package <span className="text-destructive">*</span></FormLabel>
                   <Select onValueChange={field.onChange} value={field.value}>
                     <FormControl>
                       <SelectTrigger>
@@ -215,10 +229,10 @@ export default function EditTripDayPage() {
                 </FormItem>
               )}
             />
-            <FormField control={form.control} name="day_name" render={({ field }) => ( <FormItem><FormLabel>Day Name</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem> )} />
-            <FormField control={form.control} name="day_number" render={({ field }) => ( <FormItem><FormLabel>Day Number</FormLabel><FormControl><Input type="number" {...field} /></FormControl><FormMessage /></FormItem> )} />
+            <FormField control={form.control} name="day_name" render={({ field }) => ( <FormItem><FormLabel>Day Name <span className="text-destructive">*</span></FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem> )} />
+            <FormField control={form.control} name="day_number" render={({ field }) => ( <FormItem><FormLabel>Day Number <span className="text-destructive">*</span></FormLabel><FormControl><Input type="number" {...field} /></FormControl><FormMessage /></FormItem> )} />
             <FormField control={form.control} name="title" render={({ field }) => ( <FormItem className="lg:col-span-3"><FormLabel>Title</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem> )} />
-            <FormField control={form.control} name="description" render={({ field }) => ( <FormItem className="lg:col-span-3"><FormLabel>Day's Description</FormLabel><FormControl><Textarea {...field} /></FormControl><FormMessage /></FormItem> )} />
+            <FormField control={form.control} name="description" render={({ field }) => ( <FormItem className="lg:col-span-3"><FormLabel>Day's Description <span className="text-destructive">*</span></FormLabel><FormControl><Textarea {...field} /></FormControl><FormMessage /></FormItem> )} />
           </CardContent>
         </Card>
 

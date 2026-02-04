@@ -176,7 +176,7 @@ export default function CreateTripLocationPage() {
                         <CardTitle>Place Information</CardTitle>
                     </CardHeader>
                      <CardContent className="space-y-6">
-                       <FormField control={form.control} name="description" render={({ field }) => ( <FormItem><FormLabel>Place Description</FormLabel><FormControl><MarkdownEditor value={field.value} onChange={field.onChange} /></FormControl><FormMessage /></FormItem> )} />
+                       <FormField control={form.control} name="description" render={({ field }) => ( <FormItem><FormLabel>Place Description <span className="text-destructive">*</span></FormLabel><FormControl><MarkdownEditor value={field.value} onChange={field.onChange} /></FormControl><FormMessage /></FormItem> )} />
                         <FormField
                             control={form.control}
                             name="image_files"
@@ -229,13 +229,13 @@ export default function CreateTripLocationPage() {
                             <CardTitle>General Information</CardTitle>
                         </CardHeader>
                         <CardContent className="space-y-4">
-                            <FormField control={form.control} name="name" render={({ field }) => ( <FormItem><FormLabel>Location Name</FormLabel><FormControl><Input placeholder="e.g., Eiffel Tower" {...field} /></FormControl><FormMessage /></FormItem> )} />
-                            <FormField control={form.control} name="place_type" render={({ field }) => ( <FormItem><FormLabel>Location Type</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Select a location type" /></SelectTrigger></FormControl><SelectContent>{locationTypeOptions.map(option => ( <SelectItem key={option} value={option}>{option}</SelectItem> ))}</SelectContent></Select><FormMessage /></FormItem> )} />
-                            <FormField control={form.control} name="city" render={({ field }) => (<FormItem><FormLabel>City</FormLabel><FormControl><Input placeholder="e.g., Paris" {...field} /></FormControl><FormMessage /></FormItem>)} />
-                            <FormField control={form.control} name="state" render={({ field }) => (<FormItem><FormLabel>State</FormLabel><FormControl><Input placeholder="e.g., Île-de-France" {...field} /></FormControl><FormMessage /></FormItem>)} />
-                            <FormField control={form.control} name="district" render={({ field }) => (<FormItem><FormLabel>District</FormLabel><FormControl><Input placeholder="e.g., Paris" {...field} /></FormControl><FormMessage /></FormItem>)} />
-                            <FormField control={form.control} name="country" render={({ field }) => (<FormItem><FormLabel>Country</FormLabel><FormControl><Input placeholder="e.g., France" {...field} /></FormControl><FormMessage /></FormItem>)} />
-                            <FormField control={form.control} name="code" render={({ field }) => ( <FormItem><FormLabel>Location Code</FormLabel><FormControl><Input placeholder="e.g., PAR-EFL" {...field} /></FormControl><FormMessage /></FormItem> )} />
+                            <FormField control={form.control} name="name" render={({ field }) => ( <FormItem><FormLabel>Location Name <span className="text-destructive">*</span></FormLabel><FormControl><Input placeholder="e.g., Eiffel Tower" {...field} /></FormControl><FormMessage /></FormItem> )} />
+                            <FormField control={form.control} name="place_type" render={({ field }) => ( <FormItem><FormLabel>Location Type <span className="text-destructive">*</span></FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Select a location type" /></SelectTrigger></FormControl><SelectContent>{locationTypeOptions.map(option => ( <SelectItem key={option} value={option}>{option}</SelectItem> ))}</SelectContent></Select><FormMessage /></FormItem> )} />
+                            <FormField control={form.control} name="city" render={({ field }) => (<FormItem><FormLabel>City <span className="text-destructive">*</span></FormLabel><FormControl><Input placeholder="e.g., Paris" {...field} /></FormControl><FormMessage /></FormItem>)} />
+                            <FormField control={form.control} name="state" render={({ field }) => (<FormItem><FormLabel>State <span className="text-destructive">*</span></FormLabel><FormControl><Input placeholder="e.g., Île-de-France" {...field} /></FormControl><FormMessage /></FormItem>)} />
+                            <FormField control={form.control} name="district" render={({ field }) => (<FormItem><FormLabel>District <span className="text-destructive">*</span></FormLabel><FormControl><Input placeholder="e.g., Paris" {...field} /></FormControl><FormMessage /></FormItem>)} />
+                            <FormField control={form.control} name="country" render={({ field }) => (<FormItem><FormLabel>Country <span className="text-destructive">*</span></FormLabel><FormControl><Input placeholder="e.g., France" {...field} /></FormControl><FormMessage /></FormItem>)} />
+                            <FormField control={form.control} name="code" render={({ field }) => ( <FormItem><FormLabel>Location Code <span className="text-destructive">*</span></FormLabel><FormControl><Input placeholder="e.g., PAR-EFL" {...field} /></FormControl><FormMessage /></FormItem> )} />
                         </CardContent>
                     </Card>
                      <Card>
@@ -260,5 +260,3 @@ export default function CreateTripLocationPage() {
     </div>
   )
 }
-
-    
