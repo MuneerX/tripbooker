@@ -11,7 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { ArrowLeft, Check, X, Calendar, Users, Clock, Info, Star, CheckCircle, XCircle, ArrowUpRight, Sun, Moon, CreditCard, User, Phone, MapPinIcon, Hash, FileDown, Plus, ChevronDown } from "lucide-react";
 import { formatCurrency, getStatusBadgeColor, cn } from "@/lib/utils";
 import { Separator } from "@/components/ui/separator";
-import { addMonths, format, isBefore, isAfter, parseISO } from "date-fns";
+import { addMonths, format, isBefore, isAfter, parseISO, startOfDay } from "date-fns";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { getBookingById, acceptBooking, cancelBooking } from "@/lib/supabase/queries";
@@ -31,11 +31,12 @@ import {
 import { useToast } from "@/hooks/use-toast";
 
 
-type TimelineStatus = 'paid' | 'overdue-paid' | 'overdue' | 'next-pay' | 'locked';
+type TimelineStatus = 'paid' | 'paid-ahead' | 'overdue-paid' | 'overdue' | 'next-pay' | 'locked';
 
 const getTimelineStatusInfo = (status: TimelineStatus) => {
     switch (status) {
         case 'paid': return { text: 'Paid', className: 'bg-green-500', icon: <Check className="h-4 w-4" /> };
+        case 'paid-ahead': return { text: 'Paid Ahead', className: 'bg-blue-500', icon: <Check className="h-4 w-4" /> };
         case 'overdue-paid': return { text: 'Overdue Paid', className: 'bg-yellow-500', icon: <Check className="h-4 w-4" /> };
         case 'overdue': return { text: 'Overdue', className: 'bg-red-500', icon: <X className="h-4 w-4" /> };
         case 'next-pay': return { text: 'Next Pay', className: 'bg-blue-500', icon: <Clock className="h-4 w-4" /> };
@@ -120,11 +121,16 @@ export default function BookingDetailPage() {
         const dueDate = parseISO(part.due_date);
         const paidDate = part.paid_date ? parseISO(part.paid_date) : null;
         let status: TimelineStatus = 'locked';
-        const today = new Date();
 
         if (part.is_paid) {
-            status = paidDate && isAfter(paidDate, dueDate) ? 'overdue-paid' : 'paid';
-        } else if (isAfter(today, dueDate)) {
+            if (paidDate && isBefore(startOfDay(paidDate), startOfDay(dueDate))) {
+                status = 'paid-ahead';
+            } else if (paidDate && isAfter(startOfDay(paidDate), startOfDay(dueDate))) {
+                status = 'overdue-paid';
+            } else {
+                status = 'paid';
+            }
+        } else if (isAfter(startOfDay(new Date()), startOfDay(dueDate))) {
             status = 'overdue';
         }
         
@@ -141,7 +147,6 @@ export default function BookingDetailPage() {
     if(firstUnpaidIndex !== -1 && schedule[firstUnpaidIndex].status !== 'overdue') {
         schedule[firstUnpaidIndex].status = 'next-pay';
     }
-
 
     return schedule;
   }, [booking]);
@@ -202,6 +207,7 @@ export default function BookingDetailPage() {
         const width = (part.amount / totalScheduledAmount) * 100;
         let color = 'bg-gray-300 dark:bg-gray-700'; // Locked
         if (part.status === 'paid') color = 'bg-green-500';
+        if (part.status === 'paid-ahead') color = 'bg-blue-500';
         if (part.status === 'overdue-paid') color = 'bg-yellow-500';
         if (part.status === 'overdue') color = 'bg-red-500';
         if (part.status === 'next-pay') color = 'bg-blue-500'; 
@@ -272,7 +278,7 @@ export default function BookingDetailPage() {
                     {tourPackage.name}
                 </h1>
                 <div className="flex items-center gap-2">
-                  <p className="text-sm text-muted-foreground">Ref: {booking.order_id}</p>
+                  <p className="font-mono text-sm text-muted-foreground">Ref: {booking.order_id}</p>
                   <Badge className={cn("capitalize", getStatusBadgeColor(booking.booking_status))}>
                     {booking.booking_status}
                   </Badge>
