@@ -6,7 +6,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { Button } from "@/components/ui/button";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage, FormDescription } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -28,7 +28,7 @@ export const activitySchema = z.object({
     id: z.string().uuid().optional().or(z.literal('')),
     trip_day_id: z.string().uuid().optional().or(z.literal('')),
     title: z.string().min(1, "Activity title is required"),
-    activity_type: z.enum(["food", "explore", "stay"]),
+    activity_type: z.enum(["food", "explore", "stay", "activity"]),
     activity_time: z.string().regex(/^(0[0-9]|1[0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]$/, "Invalid time format. Use HH:mm:ss").optional().nullable(),
     duration_minutes: z.coerce.number().int().min(0, "Duration must be a positive number").optional().nullable(),
     travel_duration_minutes: z.coerce.number().int().min(0, "Travel duration must be a positive number").optional().nullable(),
@@ -71,6 +71,15 @@ export function ActivityFormModal({ children, activity, onSave }: ActivityFormMo
         resolver: zodResolver(activitySchema),
         defaultValues: activity || defaultActivityValues,
     });
+    
+    const activityType = activityForm.watch("activity_type");
+
+    React.useEffect(() => {
+        if (activityType !== 'explore') {
+            activityForm.setValue('place_id', null);
+        }
+    }, [activityType, activityForm]);
+
 
     React.useEffect(() => {
         const fetchLocations = async () => {
@@ -114,38 +123,58 @@ export function ActivityFormModal({ children, activity, onSave }: ActivityFormMo
                                   <SelectItem value="food">Food</SelectItem>
                                   <SelectItem value="explore">Explore</SelectItem>
                                   <SelectItem value="stay">Stay</SelectItem>
+                                  <SelectItem value="activity">Activity</SelectItem>
                                   </SelectContent></Select><FormMessage /></FormItem> )} />
                                 <FormField control={activityForm.control} name="activity_time" render={({ field }) => ( <FormItem><FormLabel>Time (HH:mm:ss)</FormLabel><FormControl><Input placeholder="e.g., 17:30:00" {...field} value={field.value ?? ""} /></FormControl><FormMessage /></FormItem>)} />
                             </div>
 
-                            <FormField
-                                control={activityForm.control}
-                                name="place_id"
-                                render={({ field }) => (
-                                    <FormItem>
-                                    <FormLabel>Location</FormLabel>
-                                    <Select 
-                                        onValueChange={(value) => field.onChange(value === "none" ? null : value)} 
-                                        value={field.value ?? "none"}
-                                    >
-                                        <FormControl>
-                                        <SelectTrigger>
-                                            <SelectValue placeholder="Select a location (optional)" />
-                                        </SelectTrigger>
-                                        </FormControl>
-                                        <SelectContent>
-                                            <SelectItem value="none">None</SelectItem>
-                                            {locations.map(loc => (
-                                                <SelectItem key={loc.id} value={loc.id}>
-                                                    {loc.name}
-                                                </SelectItem>
-                                            ))}
-                                        </SelectContent>
-                                    </Select>
-                                    <FormMessage />
-                                    </FormItem>
-                                )}
+                            {activityType === 'explore' ? (
+                                <FormField
+                                    control={activityForm.control}
+                                    name="place_id"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                        <FormLabel>Location</FormLabel>
+                                        <Select 
+                                            onValueChange={(value) => field.onChange(value === "none" ? null : value)} 
+                                            value={field.value ?? "none"}
+                                        >
+                                            <FormControl>
+                                            <SelectTrigger>
+                                                <SelectValue placeholder="Select a pre-defined tour location" />
+                                            </SelectTrigger>
+                                            </FormControl>
+                                            <SelectContent>
+                                                <SelectItem value="none">None</SelectItem>
+                                                {locations.map(loc => (
+                                                    <SelectItem key={loc.id} value={loc.id}>
+                                                        {loc.name}
+                                                    </SelectItem>
+                                                ))}
+                                            </SelectContent>
+                                        </Select>
+                                        <FormDescription>Select a location from your list of Trip Locations.</FormDescription>
+                                        <FormMessage />
+                                        </FormItem>
+                                    )}
+                                    />
+                            ) : (
+                                <FormField
+                                    control={activityForm.control}
+                                    name="special_instructions"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>Location Address / Name</FormLabel>
+                                            <FormControl>
+                                                <Textarea placeholder="e.g., Hotel Taj, Mumbai or 123 Main St, New York" {...field} value={field.value ?? ""} />
+                                            </FormControl>
+                                            <FormDescription>Enter a custom location for this food or stay activity. This will be saved in 'Special Instructions'.</FormDescription>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
                                 />
+                            )}
+
 
                              <div className="grid md:grid-cols-2 gap-4">
                                 <FormField control={activityForm.control} name="duration_minutes" render={({ field }) => ( <FormItem><FormLabel>Activity Duration (minutes)</FormLabel><FormControl><Input type="number" placeholder="e.g., 120" {...field} value={field.value ?? ""} /></FormControl><FormMessage /></FormItem>)} />
@@ -153,7 +182,10 @@ export function ActivityFormModal({ children, activity, onSave }: ActivityFormMo
                             </div>
 
                             <FormField control={activityForm.control} name="description" render={({ field }) => ( <FormItem><FormLabel>Description</FormLabel><FormControl><Textarea placeholder="Describe the activity" {...field} value={field.value ?? ""} /></FormControl><FormMessage /></FormItem>)} />
-                            <FormField control={activityForm.control} name="special_instructions" render={({ field }) => ( <FormItem><FormLabel>Special Instructions</FormLabel><FormControl><Textarea placeholder="e.g., Bring sunscreen" {...field} value={field.value ?? ""} /></FormControl><FormMessage /></FormItem>)} />
+                            
+                            {activityType === 'explore' && (
+                                <FormField control={activityForm.control} name="special_instructions" render={({ field }) => ( <FormItem><FormLabel>Special Instructions</FormLabel><FormControl><Textarea placeholder="e.g., Bring sunscreen" {...field} value={field.value ?? ""} /></FormControl><FormMessage /></FormItem>)} />
+                            )}
 
                              <div className="grid md:grid-cols-3 gap-4 items-center">
                                 <FormField control={activityForm.control} name="additional_cost" render={({ field }) => ( <FormItem><FormLabel>Additional Cost (INR)</FormLabel><FormControl><Input type="number" {...field} value={field.value ?? ""} /></FormControl><FormMessage /></FormItem>)} />

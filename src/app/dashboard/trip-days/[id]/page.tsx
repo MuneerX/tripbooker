@@ -149,12 +149,31 @@ export default function TripDayDetailPage() {
                           <span>Duration: {activity.duration_minutes} mins</span>
                         </div>
 
-                         {activity.place && activity.place.id && (
-                            <div className="flex items-center text-sm gap-2 mt-2 text-muted-foreground">
-                                <MapPin className="h-4 w-4" />
-                                <span>Location: <Link href={`/dashboard/trip-locations/${activity.place.id}`} className="underline hover:text-primary ml-1">{activity.place.name}</Link></span>
-                            </div>
-                        )}
+                         {activity.activity_type === 'explore' ? (
+                            <>
+                                {activity.place && activity.place.id && (
+                                    <div className="flex items-center text-sm gap-2 mt-2 text-muted-foreground">
+                                        <MapPin className="h-4 w-4" />
+                                        <span>Location: <Link href={`/dashboard/trip-locations/${activity.place.id}`} className="underline hover:text-primary ml-1">{activity.place.name}</Link></span>
+                                    </div>
+                                )}
+                                {activity.special_instructions && (
+                                  <div className="flex items-start text-sm gap-2 mt-2 text-sky-600">
+                                    <AlertTriangle className="h-4 w-4 mt-0.5" />
+                                    <span>{activity.special_instructions}</span>
+                                  </div>
+                                )}
+                            </>
+                         ) : (
+                            <>
+                                {activity.special_instructions && (
+                                    <div className="flex items-center text-sm gap-2 mt-2 text-muted-foreground">
+                                        <MapPin className="h-4 w-4" />
+                                        <span>Location: {activity.special_instructions}</span>
+                                    </div>
+                                )}
+                            </>
+                         )}
 
                         <div className="flex items-center text-sm gap-4 mt-2">
                           <div className="flex items-center gap-1">
@@ -171,12 +190,6 @@ export default function TripDayDetailPage() {
                                 <DollarSign className="h-4 w-4" />
                                 <span>Additional Cost: {formatCurrency(Number(activity.additional_cost))}</span>
                             </div>
-                        )}
-                        {activity.special_instructions && (
-                          <div className="flex items-start text-sm gap-2 mt-2 text-sky-600">
-                            <AlertTriangle className="h-4 w-4 mt-0.5" />
-                            <span>{activity.special_instructions}</span>
-                          </div>
                         )}
                       </div>
                     </div>

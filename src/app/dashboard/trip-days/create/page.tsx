@@ -75,7 +75,6 @@ export default function CreateTripDayPage() {
     resolver: zodResolver(formSchema),
     defaultValues: {
       day_name: "",
-      day_number: 1,
       description: "",
       package_id: "",
       activities: [],
@@ -218,20 +217,32 @@ export default function CreateTripDayPage() {
                                     </div>
                                     <p className="text-sm text-muted-foreground">{activity.description}</p>
 
-                                    {activity.place_id && findLocationName(activity.place_id) && (
-                                        <div className="flex items-center text-sm gap-2 mt-2 text-muted-foreground">
-                                            <MapPin className="h-4 w-4" />
-                                            <span>Location: <Link href={`/dashboard/trip-locations/${activity.place_id}`} className="underline hover:text-primary ml-1">{findLocationName(activity.place_id)}</Link></span>
-                                        </div>
+                                    {activity.activity_type === 'explore' ? (
+                                        <>
+                                            {activity.place_id && findLocationName(activity.place_id) && (
+                                                <div className="flex items-center text-sm gap-2 mt-2 text-muted-foreground">
+                                                    <MapPin className="h-4 w-4" />
+                                                    <span>Location: <Link href={`/dashboard/trip-locations/${activity.place_id}`} className="underline hover:text-primary ml-1">{findLocationName(activity.place_id)}</Link></span>
+                                                </div>
+                                            )}
+                                            {activity.special_instructions && (
+                                                <div className="flex items-start text-sm gap-2 mt-2 text-sky-600">
+                                                    <AlertTriangle className="h-4 w-4 mt-0.5" />
+                                                    <span>{activity.special_instructions}</span>
+                                                </div>
+                                            )}
+                                        </>
+                                    ) : (
+                                        <>
+                                            {activity.special_instructions && (
+                                                <div className="flex items-center text-sm gap-2 mt-2 text-muted-foreground">
+                                                    <MapPin className="h-4 w-4" />
+                                                    <span>Location: {activity.special_instructions}</span>
+                                                </div>
+                                            )}
+                                        </>
                                     )}
                                     
-                                    {activity.special_instructions && (
-                                        <div className="flex items-start text-sm gap-2 mt-2 text-sky-600">
-                                            <AlertTriangle className="h-4 w-4 mt-0.5" />
-                                            <span>{activity.special_instructions}</span>
-                                        </div>
-                                    )}
-
                                     <div className="flex items-center text-sm gap-4 mt-2">
                                         <div className="flex items-center gap-1.5">
                                             {activity.cost_included ? <CheckCircle className="h-4 w-4 text-green-500" /> : <XCircle className="h-4 w-4 text-red-500" />}
@@ -280,5 +291,3 @@ export default function CreateTripDayPage() {
     </div>
   )
 }
-
-    
