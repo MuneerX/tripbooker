@@ -28,7 +28,7 @@ const tripDaySchema = z.object({
   description: z.string().min(1, "Description is required"),
   package_id: z.string().min(1, "Please select a tour package"),
   activities: z.array(activitySchema).optional(),
-  title: z.string().optional(),
+  title: z.string().min(1, "Title is required"),
   meals_included: z.array(z.string()).optional(),
 });
 
@@ -99,13 +99,7 @@ export default function CreateTripDayPage() {
           const existingDays = await getTripDaysForPackage(selectedPackageId);
           const days = existingDays.map(day => day.day_number);
           setExistingDayNumbers(days);
-          
-          let nextDay = 1;
-          while (days.includes(nextDay)) {
-              nextDay++;
-          }
-          form.setValue("day_number", nextDay);
-          form.trigger("day_number"); // Re-trigger validation
+          form.trigger("day_number");
       } else {
           setSelectedPackageDays(null);
           setExistingDayNumbers([]);
@@ -187,7 +181,7 @@ export default function CreateTripDayPage() {
                         <FormField control={form.control} name="day_name" render={({ field }) => ( <FormItem><FormLabel>Day Name <span className="text-destructive">*</span></FormLabel><FormControl><Input placeholder="e.g., Arrival in Paris" {...field} /></FormControl><FormMessage /></FormItem> )} />
                         <FormField control={form.control} name="day_number" render={({ field }) => ( <FormItem><FormLabel>Day No. <span className="text-destructive">*</span></FormLabel><FormControl><Input type="number" {...field} /></FormControl><FormMessage /></FormItem> )} />
                     </div>
-                    <FormField control={form.control} name="title" render={({ field }) => ( <FormItem><FormLabel>Title</FormLabel><FormControl><Input placeholder="e.g., City Exploration" {...field} /></FormControl><FormMessage /></FormItem> )} />
+                    <FormField control={form.control} name="title" render={({ field }) => ( <FormItem><FormLabel>Title <span className="text-destructive">*</span></FormLabel><FormControl><Input placeholder="e.g., City Exploration" {...field} /></FormControl><FormMessage /></FormItem> )} />
                     <FormField control={form.control} name="description" render={({ field }) => ( <FormItem><FormLabel>Day's Description <span className="text-destructive">*</span></FormLabel><FormControl><Textarea placeholder="Describe the plan for the day..." {...field} /></FormControl><FormMessage /></FormItem> )} />
                 </CardContent>
                 </Card>
@@ -286,3 +280,5 @@ export default function CreateTripDayPage() {
     </div>
   )
 }
+
+    

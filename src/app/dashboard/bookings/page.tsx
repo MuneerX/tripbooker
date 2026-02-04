@@ -90,12 +90,12 @@ export default function BookingsPage() {
     currentPage * rowsPerPage
   );
   
+  const totalBookings = allBookings.length;
   const confirmedBookings = allBookings.filter(p => p.booking_status === 'confirmed').length;
   const pendingBookings = allBookings.filter(p => p.booking_status === 'pending').length;
-  const totalActiveBookings = confirmedBookings + pendingBookings;
 
   const stats = [
-    { label: "Total Active Bookings", value: totalActiveBookings, icon: <Book className="h-4 w-4" /> },
+    { label: "Total Bookings", value: totalBookings, icon: <Book className="h-4 w-4" /> },
     { label: "Confirmed", value: confirmedBookings, icon: <BookCheck className="h-4 w-4" /> },
     { label: "Pending", value: pendingBookings, icon: <Clock className="h-4 w-4" /> },
   ];
@@ -300,3 +300,5 @@ export default function BookingsPage() {
     </div>
   );
 }
+
+    

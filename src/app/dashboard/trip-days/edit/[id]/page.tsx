@@ -26,7 +26,7 @@ const tripDayEditSchema = z.object({
   day_number: z.coerce.number().int().min(1),
   description: z.string().min(1, "Description is required"),
   activities: z.array(activitySchema).optional(),
-  title: z.string().optional(),
+  title: z.string().min(1, "Title is required"),
   meals_included: z.array(z.string()).optional(),
   package_id: z.string().min(1, "Please select a tour package."),
 });
@@ -231,7 +231,7 @@ export default function EditTripDayPage() {
             />
             <FormField control={form.control} name="day_name" render={({ field }) => ( <FormItem><FormLabel>Day Name <span className="text-destructive">*</span></FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem> )} />
             <FormField control={form.control} name="day_number" render={({ field }) => ( <FormItem><FormLabel>Day Number <span className="text-destructive">*</span></FormLabel><FormControl><Input type="number" {...field} /></FormControl><FormMessage /></FormItem> )} />
-            <FormField control={form.control} name="title" render={({ field }) => ( <FormItem className="lg:col-span-3"><FormLabel>Title</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem> )} />
+            <FormField control={form.control} name="title" render={({ field }) => ( <FormItem className="lg:col-span-3"><FormLabel>Title <span className="text-destructive">*</span></FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem> )} />
             <FormField control={form.control} name="description" render={({ field }) => ( <FormItem className="lg:col-span-3"><FormLabel>Day's Description <span className="text-destructive">*</span></FormLabel><FormControl><Textarea {...field} /></FormControl><FormMessage /></FormItem> )} />
           </CardContent>
         </Card>
@@ -318,3 +318,5 @@ export default function EditTripDayPage() {
     </Form>
   );
 }
+
+    
