@@ -123,11 +123,14 @@ export default function BookingDetailPage() {
         let status: TimelineStatus = 'locked';
 
         if (part.is_paid) {
-            if (paidDate && isBefore(startOfDay(paidDate), startOfDay(dueDate))) {
+            if (paidDate && isBefore(startOfDay(paidDate), startOfDay(dueDate)) && isBefore(startOfDay(new Date()), startOfDay(dueDate))) {
+                // Paid early and the due date is still in the future.
                 status = 'paid-ahead';
             } else if (paidDate && isAfter(startOfDay(paidDate), startOfDay(dueDate))) {
+                // Paid after the due date.
                 status = 'overdue-paid';
             } else {
+                // Paid on time, or paid early but the due date has now passed.
                 status = 'paid';
             }
         } else if (isAfter(startOfDay(new Date()), startOfDay(dueDate))) {
