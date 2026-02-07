@@ -757,40 +757,41 @@ export default function BookingDetailPage() {
               </AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>
+      </AlertDialog>
 
-           <Dialog open={isCancelDialogOpen} onOpenChange={setIsCancelDialogOpen}>
-            <DialogContent>
-                <DialogHeader>
-                <DialogTitle>Cancel Booking</DialogTitle>
-                <DialogDescription>
-                    Select a reason for cancelling booking "{booking.order_id}". This action cannot be undone.
-                </DialogDescription>
-                </DialogHeader>
-                <div className="space-y-4 py-4">
-                    <RadioGroup value={cancellationReason} onValueChange={setCancellationReason}>
-                        {CANCELLATION_REASONS.map(reason => (
-                            <div key={reason} className="flex items-center space-x-2">
-                                <RadioGroupItem value={reason} id={`r-${reason}`} />
-                                <Label htmlFor={`r-${reason}`}>{reason}</Label>
-                            </div>
-                        ))}
-                    </RadioGroup>
-                    {cancellationReason === 'Other' && (
-                        <Textarea 
-                            placeholder="Please specify the reason for cancellation"
-                            value={otherReason}
-                            onChange={(e) => setOtherReason(e.target.value)}
-                        />
-                    )}
-                </div>
-                <DialogFooter>
-                <Button variant="outline" onClick={() => setIsCancelDialogOpen(false)}>Cancel</Button>
-                <Button variant="destructive" onClick={handleCancelBooking}>
-                    Confirm Cancellation
-                </Button>
-                </DialogFooter>
-            </DialogContent>
-        </Dialog>
+       <Dialog open={isCancelDialogOpen} onOpenChange={setIsCancelDialogOpen}>
+        <DialogContent>
+            <DialogHeader>
+            <DialogTitle>Cancel Booking</DialogTitle>
+            <DialogDescription>
+                Select a reason for cancelling booking "{booking.order_id}". This action cannot be undone.
+            </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-4 py-4">
+                <RadioGroup value={cancellationReason} onValueChange={setCancellationReason}>
+                    {CANCELLATION_REASONS.map(reason => (
+                        <div key={reason} className="flex items-center space-x-2">
+                            <RadioGroupItem value={reason} id={`r-${reason}`} />
+                            <Label htmlFor={`r-${reason}`}>{reason}</Label>
+                        </div>
+                    ))}
+                </RadioGroup>
+                {cancellationReason === 'Other' && (
+                    <Textarea 
+                        placeholder="Please specify the reason for cancellation"
+                        value={otherReason}
+                        onChange={(e) => setOtherReason(e.target.value)}
+                    />
+                )}
+            </div>
+            <DialogFooter>
+            <Button variant="outline" onClick={() => setIsCancelDialogOpen(false)}>Cancel</Button>
+            <Button variant="destructive" onClick={handleCancelBooking}>
+                Confirm Cancellation
+            </Button>
+            </DialogFooter>
+        </DialogContent>
+    </Dialog>
     </div>
   );
 }
