@@ -1,4 +1,3 @@
-
 "use client";
 
 import * as React from "react";
@@ -23,6 +22,7 @@ import {
 import type { Activity, TripLocation } from "@/lib/types";
 import { getTripLocations } from "@/lib/supabase/queries";
 import { Combobox } from "@/components/ui/combobox";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 
 export const activitySchema = z.object({
@@ -108,15 +108,16 @@ export function ActivityFormModal({ children, activity, onSave }: ActivityFormMo
     return (
          <Dialog open={isOpen} onOpenChange={setIsOpen}>
             <DialogTrigger asChild>{children}</DialogTrigger>
-            <DialogContent className="sm:max-w-[600px]">
+            <DialogContent className="sm:max-w-[600px] grid-rows-[auto_minmax(0,1fr)_auto] p-0 max-h-[90vh]">
                  <Form {...activityForm}>
-                    <form onSubmit={(e) => e.preventDefault()} className="space-y-6">
-                        <DialogHeader>
+                    <form onSubmit={(e) => e.preventDefault()} className="contents">
+                        <DialogHeader className="p-6 pb-0">
                             <DialogTitle>{activity?.id ? 'Edit' : 'Add'} Activity</DialogTitle>
                             <DialogDescription>Fill in the details for the activity.</DialogDescription>
                         </DialogHeader>
 
-                        <div className="grid gap-4 py-4 max-h-[70vh] overflow-y-auto px-4">
+                        <ScrollArea className="h-full">
+                          <div className="grid gap-4 p-6">
                             <FormField control={activityForm.control} name="title" render={({ field }) => ( <FormItem><FormLabel>Activity Title</FormLabel><FormControl><Input placeholder="e.g., Sunset Cruise" {...field} /></FormControl><FormMessage /></FormItem>)} />
                             
                             <div className="grid md:grid-cols-2 gap-4">
@@ -185,9 +186,10 @@ export function ActivityFormModal({ children, activity, onSave }: ActivityFormMo
                                 <FormField control={activityForm.control} name="cost_included" render={({ field }) => (<FormItem className="flex items-center gap-2 pt-8"><FormControl><Checkbox checked={field.value ?? false} onCheckedChange={field.onChange} /></FormControl><FormLabel>Cost Included</FormLabel></FormItem>)} />
                                 <FormField control={activityForm.control} name="booking_required" render={({ field }) => (<FormItem className="flex items-center gap-2 pt-8"><FormControl><Checkbox checked={field.value ?? false} onCheckedChange={field.onChange} /></FormControl><FormLabel>Booking Required</FormLabel></FormItem>)} />
                             </div>
-                        </div>
+                          </div>
+                        </ScrollArea>
 
-                        <DialogFooter>
+                        <DialogFooter className="p-6 pt-0">
                             <Button type="button" variant="outline" onClick={() => setIsOpen(false)}>Cancel</Button>
                             <Button type="button" onClick={activityForm.handleSubmit(handleSave)}>Save Activity</Button>
                         </DialogFooter>
@@ -197,5 +199,3 @@ export function ActivityFormModal({ children, activity, onSave }: ActivityFormMo
         </Dialog>
     )
 }
-
-    
