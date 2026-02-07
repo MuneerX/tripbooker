@@ -1061,7 +1061,49 @@ export async function getReviews(packageId?: string): Promise<Review[]> {
     comment: item.comment,
     customer_name: item.customer?.full_name || 'Anonymous',
     avatar_url: item.customer?.avatar_url,
+    status: item.status || 'pending',
   }));
+}
+
+export async function getPendingReviews(): Promise<Review[]> {
+    const supabase = createAdminClient();
+    const { data, error } = await supabase
+        .from('reviews')
+        .select(`
+            *,
+            customer:profiles (full_name, avatar_url),
+            tour_package:package_id (name)
+        `)
+        .eq('status', 'pending')
+        .order('created_at', { ascending: false });
+    
+    if (error) {
+        console.error('Error fetching pending reviews:', error);
+        return [];
+    }
+
+    return (data || []).map((item: any) => ({
+        ...item,
+        comment: item.comment,
+        customer_name: item.customer?.full_name || 'Anonymous',
+        avatar_url: item.customer?.avatar_url,
+    }));
+}
+
+export async function updateReviewStatus(reviewId: string, status: 'approved' | 'rejected') {
+    const supabase = createAdminClient();
+    const { data, error } = await supabase
+        .from('reviews')
+        .update({ status })
+        .eq('id', reviewId)
+        .select()
+        .single();
+    
+    if (error) {
+        console.error(`Error updating review ${reviewId}:`, error);
+        throw new Error(error.message);
+    }
+    return data;
 }
 
 export async function getProfiles(): Promise<Profile[]> {

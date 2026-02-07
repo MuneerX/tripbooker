@@ -26,8 +26,12 @@ import { getProfiles, updateProfileStatus } from "@/lib/supabase/queries";
 import { useToast } from "@/hooks/use-toast";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useRouter } from "next/navigation";
+import { isWithinInterval } from "date-fns";
+import type { DateRange } from "react-day-picker";
+import { DateRangePicker } from "@/components/ui/date-range-picker";
 
-type SortableKeys = 'full_name' | 'is_kv_customer' | 'status';
+
+type SortableKeys = 'full_name' | 'is_kv_customer' | 'status' | 'created_at';
 
 export default function CustomersPage() {
   const { toast } = useToast();
@@ -38,6 +42,7 @@ export default function CustomersPage() {
   const [loading, setLoading] = React.useState(true);
   const [itemToToggle, setItemToToggle] = React.useState<Profile | null>(null);
   const [sortConfig, setSortConfig] = React.useState<{ key: SortableKeys; direction: 'asc' | 'desc' } | null>(null);
+  const [dateRange, setDateRange] = React.useState<DateRange | undefined>(undefined);
 
   const rowsPerPage = 10;
 
@@ -61,7 +66,7 @@ export default function CustomersPage() {
   
   React.useEffect(() => {
     setCurrentPage(1);
-  }, [searchTerm, sortConfig]);
+  }, [searchTerm, sortConfig, dateRange]);
 
   React.useEffect(() => {
     if (itemToToggle) {
@@ -97,10 +102,19 @@ export default function CustomersPage() {
     }
   };
 
-  const filteredProfiles = allProfiles.filter((profile) =>
-    profile.full_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    profile.email?.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredProfiles = allProfiles
+    .filter((profile) =>
+        profile.full_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        profile.email?.toLowerCase().includes(searchTerm.toLowerCase())
+    )
+    .filter((profile) => {
+        if (!dateRange?.from || !profile.created_at) return true;
+        const creationDate = new Date(profile.created_at);
+        const toDate = dateRange.to ? new Date(dateRange.to) : new Date(dateRange.from);
+        // Set time to end of day for 'to' date
+        toDate.setHours(23, 59, 59, 999);
+        return isWithinInterval(creationDate, { start: dateRange.from, end: toDate });
+    });
   
   const handleSort = (key: SortableKeys) => {
     let direction: 'asc' | 'desc' = 'asc';
@@ -124,6 +138,14 @@ export default function CustomersPage() {
 
         if (aValue === null || aValue === undefined) return 1;
         if (bValue === null || bValue === undefined) return -1;
+        
+        if (sortConfig.key === 'created_at') {
+            const dateA = new Date(aValue as string).getTime();
+            const dateB = new Date(bValue as string).getTime();
+            if (dateA < dateB) return sortConfig.direction === 'asc' ? -1 : 1;
+            if (dateA > dateB) return sortConfig.direction === 'asc' ? 1 : -1;
+            return 0;
+        }
 
         if (typeof aValue === 'string' && typeof bValue === 'string') {
           return aValue.localeCompare(bValue) * (sortConfig.direction === 'asc' ? 1 : -1);
@@ -167,12 +189,13 @@ export default function CustomersPage() {
               <CardTitle>All Customers</CardTitle>
               <CardDescription>Manage all registered customers.</CardDescription>
             </div>
-            <div className="flex w-full items-center gap-2 sm:w-auto">
+            <div className="flex w-full flex-col sm:flex-row items-center gap-2 sm:w-auto">
+               <DateRangePicker date={dateRange} onDateChange={setDateRange} />
               <Input
                 placeholder="Search by name or email..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full sm:w-64"
+                className="w-full sm:w-auto"
               />
             </div>
           </div>
@@ -246,6 +269,9 @@ export default function CustomersPage() {
                 <TableHead className="hidden lg:table-cell">
                    Phone
                 </TableHead>
+                <TableHead className="hidden lg:table-cell cursor-pointer hover:bg-muted" onClick={() => handleSort('created_at')}>
+                   <div className="flex items-center">Joined Date {renderSortArrow('created_at')}</div>
+                </TableHead>
                 <TableHead className="cursor-pointer hover:bg-muted" onClick={() => handleSort('is_kv_customer')}>
                    <div className="flex items-center">KV Customer {renderSortArrow('is_kv_customer')}</div>
                 </TableHead>
@@ -260,7 +286,7 @@ export default function CustomersPage() {
             <TableBody>
               {loading ? (
                 <TableRow>
-                  <TableCell colSpan={6} className="h-24 text-center">
+                  <TableCell colSpan={7} className="h-24 text-center">
                     Loading customers...
                   </TableCell>
                 </TableRow>
@@ -278,6 +304,7 @@ export default function CustomersPage() {
                     </TableCell>
                     <TableCell className="hidden md:table-cell">{profile.email || 'N/A'}</TableCell>
                     <TableCell className="hidden lg:table-cell">{profile.phone_number || 'N/A'}</TableCell>
+                     <TableCell className="hidden lg:table-cell">{profile.created_at ? new Date(profile.created_at).toLocaleDateString() : 'N/A'}</TableCell>
                     <TableCell>{profile.is_kv_customer ? 'Yes' : 'No'}</TableCell>
                     <TableCell>
                       <Badge variant="outline" className={cn("capitalize", getStatusBadgeColor(profile.status))}>{profile.status}</Badge>
@@ -313,7 +340,7 @@ export default function CustomersPage() {
                 ))
               ) : (
                 <TableRow>
-                  <TableCell colSpan={6} className="h-24 text-center">
+                  <TableCell colSpan={7} className="h-24 text-center">
                     No customers found.
                   </TableCell>
                 </TableRow>
@@ -367,5 +394,3 @@ export default function CustomersPage() {
     </div>
   );
 }
-
-    

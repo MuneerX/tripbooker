@@ -181,11 +181,13 @@ export type Review = {
   comment: string | null;
   created_at: string;
   avatar_url?: string | null;
+  status: 'pending' | 'approved' | 'rejected';
 };
 
 export type Profile = {
     id: string;
     updated_at: string | null;
+    created_at: string;
     full_name: string;
     email: string;
     phone_number: string;
