@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import * as React from "react";
@@ -217,7 +218,9 @@ export default function BookingDetailPage() {
         };
     }
     
-    const paidAmount = booking.payments?.filter(p => p.payment_status === 'completed').reduce((sum, p) => sum + p.amount, 0) ?? 0;
+    const paidAmount = paymentTimeline.length > 0
+        ? paymentTimeline.filter(p => p.is_paid).reduce((sum, p) => sum + p.amount, 0)
+        : booking.payments?.filter(p => p.payment_status === 'completed').reduce((sum, p) => sum + p.amount, 0) ?? 0;
 
     if (paymentTimeline.length === 0) {
         const totalAmount = booking.total_amount;
@@ -795,3 +798,4 @@ export default function BookingDetailPage() {
     </div>
   );
 }
+

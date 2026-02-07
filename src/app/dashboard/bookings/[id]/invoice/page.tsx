@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import * as React from "react";
@@ -28,7 +29,12 @@ const InvoiceDetail = ({ booking }: { booking: Booking }) => {
     const customer = booking.customer;
     const tourPackage = booking.tour_package;
     
-    const totalPaid = booking.payments?.filter(p => p.payment_status === 'completed').reduce((sum, p) => sum + p.amount, 0) ?? 0;
+    const hasInstallments = booking.user_pip_schedules && booking.user_pip_schedules.length > 0;
+    
+    const totalPaid = hasInstallments
+      ? booking.user_pip_schedules?.filter(p => p.is_paid).reduce((sum, p) => sum + p.amount, 0) ?? 0
+      : booking.payments?.filter(p => p.payment_status === 'completed').reduce((sum, p) => sum + p.amount, 0) ?? 0;
+
 
     return (
         <div className="max-w-4xl mx-auto p-8 bg-background text-foreground rounded-lg shadow-lg my-12 print:shadow-none print:my-0 print:bg-white print:text-black">
