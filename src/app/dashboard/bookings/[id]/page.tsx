@@ -40,7 +40,7 @@ type TimelineStatus = 'paid' | 'paid-ahead' | 'overdue-paid' | 'overdue' | 'next
 const getTimelineStatusInfo = (status: TimelineStatus) => {
     switch (status) {
         case 'paid': return { text: 'Paid', className: 'bg-green-500', icon: <Check className="h-4 w-4" /> };
-        case 'paid-ahead': return { text: 'Paid Ahead', className: 'bg-blue-500', icon: <Check className="h-4 w-4" /> };
+        case 'paid-ahead': return { text: 'Paid Ahead', className: 'bg-green-500', icon: <Check className="h-4 w-4" /> };
         case 'overdue-paid': return { text: 'Overdue Paid', className: 'bg-yellow-500', icon: <Check className="h-4 w-4" /> };
         case 'overdue': return { text: 'Overdue', className: 'bg-red-500', icon: <X className="h-4 w-4" /> };
         case 'next-pay': return { text: 'Next Pay', className: 'bg-blue-500', icon: <Clock className="h-4 w-4" /> };
@@ -263,7 +263,7 @@ export default function BookingDetailPage() {
         const width = (part.amount / totalScheduledAmount) * 100;
         let color = 'bg-gray-300 dark:bg-gray-700'; // Locked
         if (part.status === 'paid') color = 'bg-green-500';
-        if (part.status === 'paid-ahead') color = 'bg-blue-500';
+        if (part.status === 'paid-ahead') color = 'bg-green-500';
         if (part.status === 'overdue-paid') color = 'bg-yellow-500';
         if (part.status === 'overdue') color = 'bg-red-500';
         if (part.status === 'next-pay') color = 'bg-blue-500'; 
@@ -741,7 +741,7 @@ export default function BookingDetailPage() {
                                 <div className="flex justify-between"><span className="text-muted-foreground">GST</span><span>{formatCurrency(0)}</span></div>
                                 <div className="flex justify-between"><span className="text-muted-foreground">Deduction</span><span>- {formatCurrency(0)}</span></div>
                                 <Separator className="col-span-2" />
-                                <div className="flex justify-between font-bold"><span >Total Amount Paid</span><span>{formatCurrency(booking.total_amount)}</span></div>
+                                <div className="flex justify-between font-bold"><span >Total Amount Paid</span><span>{formatCurrency(paymentProgress.paidAmount)}</span></div>
                             </CardContent>
                         </Card>
                     </TabsContent>
@@ -800,7 +800,5 @@ export default function BookingDetailPage() {
     </div>
   );
 }
-
-    
 
     
