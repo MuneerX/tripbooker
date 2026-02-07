@@ -2,14 +2,14 @@
 "use client";
 
 import * as React from "react";
-import { Book, MoreHorizontal, FilePenLine, Trash2, View, BookCheck, BookX, Clock, CheckCircle, ArrowUp, ArrowDown } from "lucide-react";
+import { Book, MoreHorizontal, FilePenLine, Trash2, View, BookCheck, BookX, Clock, CheckCircle, ArrowUp, ArrowDown, FileDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
-import type { Booking } from "@/lib/types";
+import type { Booking, Operator } from "@/lib/types";
 import { formatCurrency, getStatusBadgeColor, cn } from "@/lib/utils";
 import { StatCard } from "@/components/dashboard/StatCard";
 import { useRouter } from 'next/navigation';
@@ -24,7 +24,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { getBookings } from "@/lib/supabase/queries";
+import { getBookings, getOperators } from "@/lib/supabase/queries";
 import { useToast } from "@/hooks/use-toast";
 
 type SortableKeys = 'tour_package.name' | 'booking_date' | 'total_amount' | 'booking_status';
@@ -35,6 +35,7 @@ export default function BookingsPage() {
   const [searchTerm, setSearchTerm] = React.useState("");
   const [currentPage, setCurrentPage] = React.useState(1);
   const [allBookings, setAllBookings] = React.useState<Booking[]>([]);
+  const [allOperators, setAllOperators] = React.useState<Operator[]>([]);
   const [loading, setLoading] = React.useState(true);
   const [itemToDelete, setItemToDelete] = React.useState<Booking | null>(null);
   const [sortConfig, setSortConfig] = React.useState<{ key: SortableKeys; direction: 'asc' | 'desc' } | null>(null);
@@ -42,13 +43,17 @@ export default function BookingsPage() {
   const rowsPerPage = 10;
 
   React.useEffect(() => {
-    const fetchBookings = async () => {
+    const fetchInitialData = async () => {
       setLoading(true);
-      const bookings = await getBookings();
+      const [bookings, operators] = await Promise.all([
+        getBookings(),
+        getOperators(),
+      ]);
       setAllBookings(bookings);
+      setAllOperators(operators);
       setLoading(false);
     };
-    fetchBookings();
+    fetchInitialData();
   }, []);
   
   React.useEffect(() => {
@@ -65,6 +70,58 @@ export default function BookingsPage() {
       document.body.style.pointerEvents = '';
     };
   }, [itemToDelete]);
+
+  const handleExport = () => {
+    if (loading || allBookings.length === 0) {
+        toast({
+            variant: "destructive",
+            title: "Nothing to export",
+            description: "There is no booking data available to export.",
+        });
+        return;
+    }
+
+    const agentMap = new Map(allOperators.map(op => [op.referral_code, op.name]).filter(([code]) => code));
+
+    const headers = [
+        "Order ID", "Tour Name", "Reservation Date", "Customer Name", 
+        "Total Amount", "Booking Status", "Referral Code", "Agent Name"
+    ];
+
+    const csvRows = [headers.join(",")];
+
+    allBookings.forEach(booking => {
+        const agentName = booking.referral_code ? agentMap.get(booking.referral_code) || "N/A" : "N/A";
+        
+        const row = [
+            `"${booking.order_id || 'N/A'}"`,
+            `"${booking.tour_package?.name?.replace(/"/g, '""') || 'N/A'}"`,
+            `"${format(new Date(booking.booking_date), "yyyy-MM-dd")}"`,
+            `"${booking.customer?.full_name?.replace(/"/g, '""') || 'N/A'}"`,
+            booking.total_amount,
+            `"${booking.booking_status}"`,
+            `"${booking.referral_code || 'N/A'}"`,
+            `"${agentName.replace(/"/g, '""')}"`,
+        ];
+        
+        csvRows.push(row.join(","));
+    });
+
+    const csvString = csvRows.join("\n");
+    const blob = new Blob([csvString], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement("a");
+    const url = URL.createObjectURL(blob);
+    link.setAttribute("href", url);
+    link.setAttribute("download", `bookings_export_${new Date().toISOString().split('T')[0]}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    
+    toast({
+        title: "Export Successful",
+        description: "Your booking data has been downloaded as a CSV file.",
+    });
+  };
 
   const handleDelete = async () => {
     if (!itemToDelete) return;
@@ -168,6 +225,10 @@ export default function BookingsPage() {
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="w-full sm:w-64"
               />
+              <Button onClick={handleExport}>
+                <FileDown className="mr-2 h-4 w-4" />
+                Export CSV
+              </Button>
             </div>
           </div>
         </CardHeader>
