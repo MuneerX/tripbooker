@@ -84,8 +84,10 @@ export default function BookingsPage() {
     const agentMap = new Map(allOperators.map(op => [op.referral_code, op.name]).filter(([code]) => code));
 
     const headers = [
-        "Order ID", "Tour Name", "Reservation Date", "Customer Name", 
-        "Total Amount", "Booking Status", "Referral Code", "Agent Name"
+        "Order ID", "Tour Name", "Reservation Date", "Travel Date", 
+        "Customer Name", "Customer Email", "Adults", "Children",
+        "Total Amount", "Booking Status", "Payment Status", "Payment Method", "Transaction ID",
+        "Referral Code", "Agent Name"
     ];
 
     const csvRows = [headers.join(",")];
@@ -97,9 +99,16 @@ export default function BookingsPage() {
             `"${booking.order_id || 'N/A'}"`,
             `"${booking.tour_package?.name?.replace(/"/g, '""') || 'N/A'}"`,
             `"${format(new Date(booking.booking_date), "yyyy-MM-dd")}"`,
+            `"${booking.travel_date ? format(new Date(booking.travel_date), "yyyy-MM-dd") : 'N/A'}"`,
             `"${booking.customer?.full_name?.replace(/"/g, '""') || 'N/A'}"`,
+            `"${booking.customer_email || 'N/A'}"`,
+            booking.total_adults,
+            booking.total_children,
             booking.total_amount,
             `"${booking.booking_status}"`,
+            `"${booking.payment_status || 'N/A'}"`,
+            `"${booking.payment_method || 'N/A'}"`,
+            `"${booking.transaction_id || 'N/A'}"`,
             `"${booking.referral_code || 'N/A'}"`,
             `"${agentName.replace(/"/g, '""')}"`,
         ];
@@ -424,5 +433,7 @@ export default function BookingsPage() {
     </div>
   );
 }
+
+    
 
     
