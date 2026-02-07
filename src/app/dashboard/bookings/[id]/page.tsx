@@ -158,38 +158,31 @@ export default function BookingDetailPage() {
     if (!booking || !booking.user_pip_schedules || booking.user_pip_schedules.length === 0) {
         return [];
     }
-    
-    // Round to 2 decimal places to avoid floating point issues.
-    const paidAmount = Math.round((booking.payments?.reduce((sum, p) => sum + p.amount, 0) ?? 0) * 100) / 100;
-    let cumulativeRequired = 0;
 
     const schedule = booking.user_pip_schedules.map((part) => {
-        const partAmount = Math.round(part.amount * 100) / 100;
-        cumulativeRequired += partAmount;
-        
-        // Check if the total amount paid so far covers the cumulative amount required for this installment.
-        const isPaid = paidAmount >= (cumulativeRequired - 0.01); // Use an epsilon for float comparison.
-
         const dueDate = parseISO(part.due_date);
         const paidDate = part.paid_date ? parseISO(part.paid_date) : null;
         let status: TimelineStatus = 'locked';
 
-        if (isPaid) {
+        // Trust the is_paid flag from the database for each installment.
+        if (part.is_paid) {
             const isFutureDueDate = isBefore(startOfDay(new Date()), startOfDay(dueDate));
             
-            // If due date is in the future, it's paid ahead.
+            // If it's paid and the due date is still in the future, it's 'paid-ahead'.
             if (isFutureDueDate) {
                 status = 'paid-ahead';
             } 
-            // If it was paid late (requires paidDate to be accurate)
+            // If it was paid late (requires an accurate paid_date from the DB)
             else if (paidDate && isAfter(startOfDay(paidDate), startOfDay(dueDate))) {
                 status = 'overdue-paid';
             } 
-            // Otherwise, it's paid (on time, or early but due date has passed).
+            // Otherwise, it's considered regularly 'paid'.
             else {
                 status = 'paid';
             }
-        } else if (isAfter(startOfDay(new Date()), startOfDay(dueDate))) {
+        } 
+        // If not paid, check if it's overdue.
+        else if (isAfter(startOfDay(new Date()), startOfDay(dueDate))) {
             status = 'overdue';
         }
         
@@ -197,15 +190,18 @@ export default function BookingDetailPage() {
             ...part,
             dueDate: dueDate,
             paidOn: paidDate,
-            is_paid: isPaid,
+            // is_paid property from DB is kept for consistency in the returned object
+            is_paid: part.is_paid, 
             status: status,
         };
     });
 
-    // Determine the 'next-pay' status
+    // Find the very first unpaid installment and mark it as 'next-pay' if it's not already overdue.
     const firstUnpaidIndex = schedule.findIndex(s => !s.is_paid);
-    if(firstUnpaidIndex !== -1 && schedule[firstUnpaidIndex].status !== 'overdue') {
-        schedule[firstUnpaidIndex].status = 'next-pay';
+    if (firstUnpaidIndex !== -1) {
+        if (schedule[firstUnpaidIndex].status !== 'overdue') {
+           schedule[firstUnpaidIndex].status = 'next-pay';
+        }
     }
 
     return schedule;
@@ -804,5 +800,7 @@ export default function BookingDetailPage() {
     </div>
   );
 }
+
+    
 
     
