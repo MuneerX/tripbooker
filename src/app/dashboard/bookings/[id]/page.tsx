@@ -159,13 +159,16 @@ export default function BookingDetailPage() {
         return [];
     }
     
-    const paidAmount = booking.payments?.reduce((sum, p) => sum + p.amount, 0) ?? 0;
+    // Round to 2 decimal places to avoid floating point issues.
+    const paidAmount = Math.round((booking.payments?.reduce((sum, p) => sum + p.amount, 0) ?? 0) * 100) / 100;
     let cumulativePaid = 0;
 
     const schedule = booking.user_pip_schedules.map((part) => {
-        const isPaid = (cumulativePaid + part.amount) <= paidAmount;
+        const partAmount = Math.round(part.amount * 100) / 100;
+        // Use a small epsilon for comparison to be safe
+        const isPaid = (cumulativePaid + partAmount) <= (paidAmount + 0.01);
         if(isPaid) {
-          cumulativePaid += part.amount;
+          cumulativePaid += partAmount;
         }
 
         const dueDate = parseISO(part.due_date);
@@ -173,11 +176,18 @@ export default function BookingDetailPage() {
         let status: TimelineStatus = 'locked';
 
         if (isPaid) {
-            if (paidDate && isBefore(startOfDay(paidDate), startOfDay(dueDate)) && isBefore(startOfDay(new Date()), startOfDay(dueDate))) {
+            const isFutureDueDate = isBefore(startOfDay(new Date()), startOfDay(dueDate));
+            
+            // If due date is in the future, it's paid ahead.
+            if (isFutureDueDate) {
                 status = 'paid-ahead';
-            } else if (paidDate && isAfter(startOfDay(paidDate), startOfDay(dueDate))) {
+            } 
+            // If it was paid late (requires paidDate to be accurate)
+            else if (paidDate && isAfter(startOfDay(paidDate), startOfDay(dueDate))) {
                 status = 'overdue-paid';
-            } else {
+            } 
+            // Otherwise, it's paid (on time, or early but due date has passed).
+            else {
                 status = 'paid';
             }
         } else if (isAfter(startOfDay(new Date()), startOfDay(dueDate))) {
@@ -795,3 +805,5 @@ export default function BookingDetailPage() {
     </div>
   );
 }
+
+    
