@@ -30,6 +30,9 @@ export default function DashboardLayout({
             <AppHeader />
             <main className="flex flex-1 flex-col gap-4 bg-muted/40 p-4 md:gap-8 md:p-8">
               {children}
+               <footer className="mt-auto pt-8 text-center text-xs text-muted-foreground">
+                &copy; {new Date().getFullYear()} Matrimore Technologies. All rights reserved.
+              </footer>
             </main>
           </div>
         </div>

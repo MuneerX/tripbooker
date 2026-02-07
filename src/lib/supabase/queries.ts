@@ -1405,11 +1405,11 @@ export async function acceptBooking(bookingId: string) {
 }
 
 
-export async function cancelBooking(bookingId: string) {
+export async function cancelBooking(bookingId: string, reason: string) {
   const supabase = createAdminClient();
   const { data, error } = await supabase
     .from('tour_bookings')
-    .update({ booking_status: 'cancelled' })
+    .update({ booking_status: 'cancelled', cancellation_reason: reason })
     .eq('id', bookingId)
     .select()
     .single();

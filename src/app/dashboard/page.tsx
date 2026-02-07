@@ -309,10 +309,10 @@ export default function DashboardPage() {
         </div>
 
         {/* Tables */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        {/* <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             <PopularPackagesTable data={tableData.popularPackages} />
             <ExpiringPackagesTable data={tableData.expiringPackages} />
-        </div>
+        </div> */}
     </div>
   );
 }
@@ -320,3 +320,4 @@ export default function DashboardPage() {
     
 
     
+

@@ -2,7 +2,7 @@
 "use client";
 
 import * as React from "react";
-import { Book, MoreHorizontal, FilePenLine, Trash2, View, BookCheck, BookX, Clock } from "lucide-react";
+import { Book, MoreHorizontal, FilePenLine, Trash2, View, BookCheck, BookX, Clock, CheckCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -96,8 +96,8 @@ export default function BookingsPage() {
 
   const stats = [
     { label: "Total Bookings", value: totalBookings, icon: <Book className="h-4 w-4" /> },
-    { label: "Confirmed", value: confirmedBookings, icon: <BookCheck className="h-4 w-4" /> },
-    { label: "Pending", value: pendingBookings, icon: <Clock className="h-4 w-4" /> },
+    { label: "Confirmed", value: confirmedBookings, icon: <CheckCircle className="h-4 w-4 text-green-500" /> },
+    { label: "Pending", value: pendingBookings, icon: <Clock className="h-4 w-4 text-yellow-500" /> },
   ];
 
   return (

@@ -168,6 +168,7 @@ export type Booking = {
   guests?: BookingGuest[];
   payments?: Payment[];
   user_pip_schedules?: UserPipSchedule[];
+  cancellation_reason?: string | null;
 };
 
 

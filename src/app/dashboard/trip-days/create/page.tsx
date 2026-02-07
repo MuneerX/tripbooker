@@ -11,7 +11,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { useRouter } from "next/navigation"
 import { useToast } from "@/hooks/use-toast"
 import { PlusCircle, Trash2, MapPin, AlertTriangle, DollarSign, CheckCircle, XCircle } from "lucide-react"
@@ -20,6 +19,7 @@ import type { TourPackage, TripLocation } from "@/lib/types"
 import { ActivityFormModal, activitySchema } from "./_components/ActivityFormModal"
 import { formatCurrency } from "@/lib/utils";
 import Link from "next/link";
+import { Combobox } from "@/components/ui/combobox"
 
 
 const tripDaySchema = z.object({
@@ -160,18 +160,16 @@ export default function CreateTripDayPage() {
                         render={({ field }) => (
                             <FormItem>
                             <FormLabel>Tour Package <span className="text-destructive">*</span></FormLabel>
-                            <Select onValueChange={field.onChange} defaultValue={field.value}>
-                                <FormControl>
-                                <SelectTrigger>
-                                    <SelectValue placeholder="Select a tour package" />
-                                </SelectTrigger>
-                                </FormControl>
-                                <SelectContent>
-                                {tourPackages.map(pkg => (
-                                    <SelectItem key={pkg.id} value={pkg.id}>{pkg.name}</SelectItem>
-                                ))}
-                                </SelectContent>
-                            </Select>
+                            <FormControl>
+                              <Combobox
+                                options={tourPackages.map(pkg => ({ value: pkg.id, label: pkg.name }))}
+                                value={field.value}
+                                onChange={field.onChange}
+                                placeholder="Select a tour package"
+                                searchPlaceholder="Search packages..."
+                                emptyText="No package found."
+                              />
+                            </FormControl>
                             <FormMessage />
                             </FormItem>
                         )}

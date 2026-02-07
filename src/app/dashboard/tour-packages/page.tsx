@@ -199,7 +199,7 @@ export default function TourPackagesPage() {
                 <TableHead>Tour Name</TableHead>
                 <TableHead className="hidden md:table-cell">Days</TableHead>
                 <TableHead className="hidden md:table-cell">Price</TableHead>
-                <TableHead className="hidden md:table-cell">Start Date</TableHead>
+                <TableHead className="hidden md:table-cell">Created Date</TableHead>
                 <TableHead className="hidden lg:table-cell">Type</TableHead>
                 <TableHead className="hidden lg:table-cell">Category</TableHead>
                 <TableHead>Status</TableHead>

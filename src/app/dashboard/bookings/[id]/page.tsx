@@ -28,7 +28,11 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 
 
 type TimelineStatus = 'paid' | 'paid-ahead' | 'overdue-paid' | 'overdue' | 'next-pay' | 'locked';
@@ -55,7 +59,17 @@ export default function BookingDetailPage() {
 
   const [booking, setBooking] = React.useState<Booking | null>(null);
   const [openDays, setOpenDays] = React.useState<Record<string, boolean>>({});
-  const [actionToConfirm, setActionToConfirm] = React.useState<'accept' | 'cancel' | null>(null);
+  const [actionToConfirm, setActionToConfirm] = React.useState<'accept' | null>(null);
+  const [isCancelDialogOpen, setIsCancelDialogOpen] = React.useState(false);
+  const [cancellationReason, setCancellationReason] = React.useState('');
+  const [otherReason, setOtherReason] = React.useState('');
+
+  const CANCELLATION_REASONS = [
+    "Customer request",
+    "Payment not received",
+    "Tour no longer available",
+    "Other",
+  ];
   
   const fetchBooking = React.useCallback(async () => {
     if (id) {
@@ -94,9 +108,6 @@ export default function BookingDetailPage() {
       if (actionToConfirm === 'accept') {
         await acceptBooking(booking.id);
         toast({ title: "Success", description: "Booking has been confirmed." });
-      } else {
-        await cancelBooking(booking.id);
-        toast({ title: "Success", description: "Booking has been cancelled." });
       }
       fetchBooking(); // Refresh data
       router.refresh();
@@ -111,26 +122,62 @@ export default function BookingDetailPage() {
     }
   };
 
+  const handleCancelBooking = async () => {
+    if (!booking) return;
+
+    const finalReason = cancellationReason === 'Other' ? otherReason : cancellationReason;
+    if (!finalReason) {
+      toast({
+        variant: "destructive",
+        title: "Reason required",
+        description: "Please select or provide a reason for cancellation.",
+      });
+      return;
+    }
+
+    try {
+      await cancelBooking(booking.id, finalReason);
+      toast({ title: "Success", description: "Booking has been cancelled." });
+      fetchBooking(); // Refresh data
+      router.refresh();
+    } catch (error: any) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: error.message || `Failed to cancel booking.`,
+      });
+    } finally {
+      setIsCancelDialogOpen(false);
+      setCancellationReason('');
+      setOtherReason('');
+    }
+  };
+
     
   const paymentTimeline = React.useMemo(() => {
     if (!booking || !booking.user_pip_schedules || booking.user_pip_schedules.length === 0) {
         return [];
     }
     
+    const paidAmount = booking.payments?.reduce((sum, p) => sum + p.amount, 0) ?? 0;
+    let cumulativePaid = 0;
+
     const schedule = booking.user_pip_schedules.map((part) => {
+        const isPaid = (cumulativePaid + part.amount) <= paidAmount;
+        if(isPaid) {
+          cumulativePaid += part.amount;
+        }
+
         const dueDate = parseISO(part.due_date);
         const paidDate = part.paid_date ? parseISO(part.paid_date) : null;
         let status: TimelineStatus = 'locked';
 
-        if (part.is_paid) {
+        if (isPaid) {
             if (paidDate && isBefore(startOfDay(paidDate), startOfDay(dueDate)) && isBefore(startOfDay(new Date()), startOfDay(dueDate))) {
-                // Paid early and the due date is still in the future.
                 status = 'paid-ahead';
             } else if (paidDate && isAfter(startOfDay(paidDate), startOfDay(dueDate))) {
-                // Paid after the due date.
                 status = 'overdue-paid';
             } else {
-                // Paid on time, or paid early but the due date has now passed.
                 status = 'paid';
             }
         } else if (isAfter(startOfDay(new Date()), startOfDay(dueDate))) {
@@ -141,6 +188,7 @@ export default function BookingDetailPage() {
             ...part,
             dueDate: dueDate,
             paidOn: paidDate,
+            is_paid: isPaid,
             status: status, // initial status
         };
     });
@@ -290,7 +338,7 @@ export default function BookingDetailPage() {
             <div className="flex w-full flex-col items-stretch gap-2 sm:ml-auto sm:w-auto sm:flex-row sm:items-center">
                  {booking.booking_status === 'pending' && (
                     <>
-                        <Button variant="destructive" size="sm" onClick={() => setActionToConfirm('cancel')}>
+                        <Button variant="destructive" size="sm" onClick={() => setIsCancelDialogOpen(true)}>
                             <X className="mr-2 h-4 w-4" />
                             Cancel Booking
                         </Button>
@@ -301,7 +349,7 @@ export default function BookingDetailPage() {
                     </>
                  )}
                  {booking.booking_status === 'confirmed' && (
-                     <Button variant="destructive" size="sm" onClick={() => setActionToConfirm('cancel')}>
+                     <Button variant="destructive" size="sm" onClick={() => setIsCancelDialogOpen(true)}>
                         <X className="mr-2 h-4 w-4" />
                         Cancel Booking
                     </Button>
@@ -699,17 +747,50 @@ export default function BookingDetailPage() {
             <AlertDialogHeader>
               <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
               <AlertDialogDescription>
-                This action will {actionToConfirm === 'accept' ? 'confirm' : 'cancel'} the booking with reference "{booking.order_id}".
+                This action will confirm the booking with reference "{booking.order_id}".
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
               <AlertDialogCancel onClick={() => setActionToConfirm(null)}>Cancel</AlertDialogCancel>
-              <AlertDialogAction onClick={handleActionConfirm} className={cn(actionToConfirm === 'cancel' && "bg-destructive hover:bg-destructive/90")}>
-                {actionToConfirm === 'accept' ? 'Accept' : 'Confirm Cancellation'}
+              <AlertDialogAction onClick={handleActionConfirm}>
+                Accept
               </AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>
-      </AlertDialog>
+
+           <Dialog open={isCancelDialogOpen} onOpenChange={setIsCancelDialogOpen}>
+            <DialogContent>
+                <DialogHeader>
+                <DialogTitle>Cancel Booking</DialogTitle>
+                <DialogDescription>
+                    Select a reason for cancelling booking "{booking.order_id}". This action cannot be undone.
+                </DialogDescription>
+                </DialogHeader>
+                <div className="space-y-4 py-4">
+                    <RadioGroup value={cancellationReason} onValueChange={setCancellationReason}>
+                        {CANCELLATION_REASONS.map(reason => (
+                            <div key={reason} className="flex items-center space-x-2">
+                                <RadioGroupItem value={reason} id={`r-${reason}`} />
+                                <Label htmlFor={`r-${reason}`}>{reason}</Label>
+                            </div>
+                        ))}
+                    </RadioGroup>
+                    {cancellationReason === 'Other' && (
+                        <Textarea 
+                            placeholder="Please specify the reason for cancellation"
+                            value={otherReason}
+                            onChange={(e) => setOtherReason(e.target.value)}
+                        />
+                    )}
+                </div>
+                <DialogFooter>
+                <Button variant="outline" onClick={() => setIsCancelDialogOpen(false)}>Cancel</Button>
+                <Button variant="destructive" onClick={handleCancelBooking}>
+                    Confirm Cancellation
+                </Button>
+                </DialogFooter>
+            </DialogContent>
+        </Dialog>
     </div>
   );
 }
