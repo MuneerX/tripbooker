@@ -22,6 +22,7 @@ import {
 } from "@/components/ui/dialog";
 import type { Activity, TripLocation } from "@/lib/types";
 import { getTripLocations } from "@/lib/supabase/queries";
+import { Combobox } from "@/components/ui/combobox";
 
 
 export const activitySchema = z.object({
@@ -133,31 +134,23 @@ export function ActivityFormModal({ children, activity, onSave }: ActivityFormMo
                                     control={activityForm.control}
                                     name="place_id"
                                     render={({ field }) => (
-                                        <FormItem>
-                                        <FormLabel>Location</FormLabel>
-                                        <Select 
-                                            onValueChange={(value) => field.onChange(value === "none" ? null : value)} 
-                                            value={field.value ?? "none"}
-                                        >
+                                        <FormItem className="flex flex-col">
+                                            <FormLabel>Location</FormLabel>
                                             <FormControl>
-                                            <SelectTrigger>
-                                                <SelectValue placeholder="Select a pre-defined tour location" />
-                                            </SelectTrigger>
+                                                <Combobox
+                                                    options={locations.map(loc => ({ value: loc.id, label: loc.name }))}
+                                                    value={field.value ?? undefined}
+                                                    onChange={(value) => field.onChange(value || null)}
+                                                    placeholder="Select a location"
+                                                    searchPlaceholder="Search locations..."
+                                                    emptyText="No location found."
+                                                />
                                             </FormControl>
-                                            <SelectContent>
-                                                <SelectItem value="none">None</SelectItem>
-                                                {locations.map(loc => (
-                                                    <SelectItem key={loc.id} value={loc.id}>
-                                                        {loc.name}
-                                                    </SelectItem>
-                                                ))}
-                                            </SelectContent>
-                                        </Select>
-                                        <FormDescription>Select a location from your list of Trip Locations.</FormDescription>
-                                        <FormMessage />
+                                            <FormDescription>Select a location from your list of Trip Locations.</FormDescription>
+                                            <FormMessage />
                                         </FormItem>
                                     )}
-                                    />
+                                />
                             ) : (
                                 <FormField
                                     control={activityForm.control}
@@ -204,3 +197,5 @@ export function ActivityFormModal({ children, activity, onSave }: ActivityFormMo
         </Dialog>
     )
 }
+
+    

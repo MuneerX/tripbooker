@@ -28,7 +28,7 @@ import { StatCard } from "@/components/dashboard/StatCard";
 import { getTripLocations, deleteTripLocation } from "@/lib/supabase/queries";
 import { useToast } from "@/hooks/use-toast";
 
-type SortableKeys = 'name' | 'place_type' | 'city' | 'state' | 'district' | 'is_active';
+type SortableKeys = 'name' | 'is_active';
 
 export default function TripLocationsPage() {
   const router = useRouter();
@@ -234,17 +234,17 @@ export default function TripLocationsPage() {
                   <TableHead className="cursor-pointer hover:bg-muted" onClick={() => handleSort('name')}>
                     <div className="flex items-center">Location Name {renderSortArrow('name')}</div>
                   </TableHead>
-                  <TableHead className="w-[120px] cursor-pointer hover:bg-muted" onClick={() => handleSort('place_type')}>
-                    <div className="flex items-center">Type {renderSortArrow('place_type')}</div>
+                  <TableHead className="w-[120px]">
+                    Type
                   </TableHead>
-                  <TableHead className="hidden md:table-cell w-[120px] cursor-pointer hover:bg-muted" onClick={() => handleSort('city')}>
-                    <div className="flex items-center">City {renderSortArrow('city')}</div>
+                  <TableHead className="hidden md:table-cell w-[120px]">
+                    City
                   </TableHead>
-                  <TableHead className="hidden md:table-cell w-[120px] cursor-pointer hover:bg-muted" onClick={() => handleSort('state')}>
-                    <div className="flex items-center">State {renderSortArrow('state')}</div>
+                  <TableHead className="hidden md:table-cell w-[120px]">
+                    State
                   </TableHead>
-                  <TableHead className="hidden md:table-cell w-[120px] cursor-pointer hover:bg-muted" onClick={() => handleSort('district')}>
-                    <div className="flex items-center">District {renderSortArrow('district')}</div>
+                  <TableHead className="hidden md:table-cell w-[120px]">
+                    District
                   </TableHead>
                   <TableHead className="w-[120px] cursor-pointer hover:bg-muted" onClick={() => handleSort('is_active')}>
                     <div className="flex items-center">Status {renderSortArrow('is_active')}</div>
@@ -364,3 +364,5 @@ export default function TripLocationsPage() {
     </div>
   );
 }
+
+    

@@ -27,7 +27,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useRouter } from "next/navigation";
 
-type SortableKeys = 'full_name' | 'email' | 'phone_number' | 'is_kv_customer' | 'status';
+type SortableKeys = 'full_name' | 'is_kv_customer' | 'status';
 
 export default function CustomersPage() {
   const { toast } = useToast();
@@ -240,11 +240,11 @@ export default function CustomersPage() {
                 <TableHead className="cursor-pointer hover:bg-muted" onClick={() => handleSort('full_name')}>
                   <div className="flex items-center">Customer {renderSortArrow('full_name')}</div>
                 </TableHead>
-                <TableHead className="hidden md:table-cell cursor-pointer hover:bg-muted" onClick={() => handleSort('email')}>
-                   <div className="flex items-center">Email {renderSortArrow('email')}</div>
+                <TableHead className="hidden md:table-cell">
+                   Email
                 </TableHead>
-                <TableHead className="hidden lg:table-cell cursor-pointer hover:bg-muted" onClick={() => handleSort('phone_number')}>
-                   <div className="flex items-center">Phone {renderSortArrow('phone_number')}</div>
+                <TableHead className="hidden lg:table-cell">
+                   Phone
                 </TableHead>
                 <TableHead className="cursor-pointer hover:bg-muted" onClick={() => handleSort('is_kv_customer')}>
                    <div className="flex items-center">KV Customer {renderSortArrow('is_kv_customer')}</div>
@@ -367,3 +367,5 @@ export default function CustomersPage() {
     </div>
   );
 }
+
+    

@@ -28,7 +28,7 @@ import {
 import { getTourPackages, deleteTourPackage } from "@/lib/supabase/queries";
 import { useToast } from "@/hooks/use-toast";
 
-type SortableKeys = 'name' | 'days' | 'base_price' | 'created_at' | 'package_type' | 'category' | 'is_active';
+type SortableKeys = 'name' | 'days' | 'base_price' | 'created_at' | 'is_active';
 
 export default function TourPackagesPage() {
   const router = useRouter();
@@ -254,11 +254,11 @@ export default function TourPackagesPage() {
                 <TableHead className="hidden md:table-cell cursor-pointer hover:bg-muted" onClick={() => handleSort('created_at')}>
                    <div className="flex items-center">Created Date {renderSortArrow('created_at')}</div>
                 </TableHead>
-                <TableHead className="hidden lg:table-cell cursor-pointer hover:bg-muted" onClick={() => handleSort('package_type')}>
-                   <div className="flex items-center">Type {renderSortArrow('package_type')}</div>
+                <TableHead className="hidden lg:table-cell">
+                   Type
                 </TableHead>
-                <TableHead className="hidden lg:table-cell cursor-pointer hover:bg-muted" onClick={() => handleSort('category')}>
-                   <div className="flex items-center">Category {renderSortArrow('category')}</div>
+                <TableHead className="hidden lg:table-cell">
+                   Category
                 </TableHead>
                 <TableHead className="cursor-pointer hover:bg-muted" onClick={() => handleSort('is_active')}>
                    <div className="flex items-center">Status {renderSortArrow('is_active')}</div>
@@ -374,3 +374,5 @@ export default function TourPackagesPage() {
     </div>
   );
 }
+
+    

@@ -27,7 +27,7 @@ import {
 import { getBookings } from "@/lib/supabase/queries";
 import { useToast } from "@/hooks/use-toast";
 
-type SortableKeys = 'order_id' | 'tour_package.name' | 'booking_date' | 'transaction_id' | 'payment_method' | 'total_amount' | 'referral_code' | 'booking_status';
+type SortableKeys = 'tour_package.name' | 'booking_date' | 'total_amount' | 'booking_status';
 
 export default function BookingsPage() {
   const router = useRouter();
@@ -234,8 +234,8 @@ export default function BookingsPage() {
           <Table className="hidden md:table">
             <TableHeader>
               <TableRow>
-                <TableHead className="cursor-pointer hover:bg-muted" onClick={() => handleSort('order_id')}>
-                  <div className="flex items-center">Order ID {renderSortArrow('order_id')}</div>
+                <TableHead>
+                  Order ID
                 </TableHead>
                 <TableHead className="cursor-pointer hover:bg-muted" onClick={() => handleSort('tour_package.name')}>
                   <div className="flex items-center">Tour Name {renderSortArrow('tour_package.name')}</div>
@@ -243,17 +243,17 @@ export default function BookingsPage() {
                 <TableHead className="cursor-pointer hover:bg-muted" onClick={() => handleSort('booking_date')}>
                   <div className="flex items-center">Reservation Date {renderSortArrow('booking_date')}</div>
                 </TableHead>
-                <TableHead className="hidden md:table-cell cursor-pointer hover:bg-muted" onClick={() => handleSort('transaction_id')}>
-                   <div className="flex items-center">Transaction ID {renderSortArrow('transaction_id')}</div>
+                <TableHead className="hidden md:table-cell">
+                   Transaction ID
                 </TableHead>
-                <TableHead className="hidden md:table-cell cursor-pointer hover:bg-muted" onClick={() => handleSort('payment_method')}>
-                   <div className="flex items-center">Payment {renderSortArrow('payment_method')}</div>
+                <TableHead className="hidden md:table-cell">
+                   Payment
                 </TableHead>
                 <TableHead className="hidden md:table-cell cursor-pointer hover:bg-muted" onClick={() => handleSort('total_amount')}>
                    <div className="flex items-center">Amount {renderSortArrow('total_amount')}</div>
                 </TableHead>
-                <TableHead className="hidden lg:table-cell cursor-pointer hover:bg-muted" onClick={() => handleSort('referral_code')}>
-                   <div className="flex items-center">Referral {renderSortArrow('referral_code')}</div>
+                <TableHead className="hidden lg:table-cell">
+                   Referral
                 </TableHead>
                 <TableHead className="cursor-pointer hover:bg-muted" onClick={() => handleSort('booking_status')}>
                    <div className="flex items-center">Status {renderSortArrow('booking_status')}</div>
@@ -363,3 +363,5 @@ export default function BookingsPage() {
     </div>
   );
 }
+
+    

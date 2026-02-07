@@ -28,7 +28,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useRouter } from "next/navigation";
 
-type SortableKeys = 'name' | 'referral_code' | 'code' | 'email' | 'phone' | 'status';
+type SortableKeys = 'name' | 'status';
 
 export default function OperatorsPage() {
   const { toast } = useToast();
@@ -274,17 +274,17 @@ export default function OperatorsPage() {
                 <TableHead className="cursor-pointer hover:bg-muted" onClick={() => handleSort('name')}>
                   <div className="flex items-center">Agent {renderSortArrow('name')}</div>
                 </TableHead>
-                <TableHead className="cursor-pointer hover:bg-muted" onClick={() => handleSort('referral_code')}>
-                  <div className="flex items-center">Referral Code {renderSortArrow('referral_code')}</div>
+                <TableHead>
+                  Referral Code
                 </TableHead>
-                <TableHead className="cursor-pointer hover:bg-muted" onClick={() => handleSort('code')}>
-                  <div className="flex items-center">Agent Code {renderSortArrow('code')}</div>
+                <TableHead>
+                  Agent Code
                 </TableHead>
-                <TableHead className="hidden md:table-cell cursor-pointer hover:bg-muted" onClick={() => handleSort('email')}>
-                  <div className="flex items-center">Email {renderSortArrow('email')}</div>
+                <TableHead className="hidden md:table-cell">
+                  Email
                 </TableHead>
-                <TableHead className="hidden lg:table-cell cursor-pointer hover:bg-muted" onClick={() => handleSort('phone')}>
-                  <div className="flex items-center">Phone {renderSortArrow('phone')}</div>
+                <TableHead className="hidden lg:table-cell">
+                  Phone
                 </TableHead>
                 <TableHead className="cursor-pointer hover:bg-muted" onClick={() => handleSort('status')}>
                   <div className="flex items-center">Status {renderSortArrow('status')}</div>
@@ -429,3 +429,5 @@ export default function OperatorsPage() {
     </div>
   );
 }
+
+    
