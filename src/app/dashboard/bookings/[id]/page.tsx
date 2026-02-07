@@ -161,15 +161,14 @@ export default function BookingDetailPage() {
     
     // Round to 2 decimal places to avoid floating point issues.
     const paidAmount = Math.round((booking.payments?.reduce((sum, p) => sum + p.amount, 0) ?? 0) * 100) / 100;
-    let cumulativePaid = 0;
+    let cumulativeRequired = 0;
 
     const schedule = booking.user_pip_schedules.map((part) => {
         const partAmount = Math.round(part.amount * 100) / 100;
-        // Use a small epsilon for comparison to be safe
-        const isPaid = (cumulativePaid + partAmount) <= (paidAmount + 0.01);
-        if(isPaid) {
-          cumulativePaid += partAmount;
-        }
+        cumulativeRequired += partAmount;
+        
+        // Check if the total amount paid so far covers the cumulative amount required for this installment.
+        const isPaid = paidAmount >= (cumulativeRequired - 0.01); // Use an epsilon for float comparison.
 
         const dueDate = parseISO(part.due_date);
         const paidDate = part.paid_date ? parseISO(part.paid_date) : null;
@@ -199,7 +198,7 @@ export default function BookingDetailPage() {
             dueDate: dueDate,
             paidOn: paidDate,
             is_paid: isPaid,
-            status: status, // initial status
+            status: status,
         };
     });
 
