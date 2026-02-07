@@ -27,9 +27,11 @@ const InvoiceDetail = ({ booking }: { booking: Booking }) => {
 
     const customer = booking.customer;
     const tourPackage = booking.tour_package;
+    
+    const totalPaid = booking.payments?.filter(p => p.payment_status === 'completed').reduce((sum, p) => sum + p.amount, 0) ?? 0;
 
     return (
-        <div className="max-w-4xl mx-auto p-8 bg-background text-foreground rounded-lg shadow-lg my-12 print:shadow-none print:my-0">
+        <div className="max-w-4xl mx-auto p-8 bg-background text-foreground rounded-lg shadow-lg my-12 print:shadow-none print:my-0 print:bg-white print:text-black">
             <header className="flex justify-between items-start mb-8">
                 <div>
                      {mounted && <Image src={logoUrl} alt="Yes To Go Logo" width={120} height={32} />}
@@ -96,7 +98,7 @@ const InvoiceDetail = ({ booking }: { booking: Booking }) => {
                         <Separator className="my-2"/>
                         <div className="flex justify-between font-bold text-lg"><span >Total Amount</span><span>{formatCurrency(booking.total_amount)}</span></div>
                          <Separator className="my-2"/>
-                         <div className="flex justify-between font-bold text-green-600"><span >Amount Paid</span><span>{formatCurrency(booking.payments?.reduce((sum, p) => sum + p.amount, 0) ?? 0)}</span></div>
+                         <div className="flex justify-between font-bold text-green-600"><span >Amount Paid</span><span>{formatCurrency(totalPaid)}</span></div>
                     </div>
                 </div>
             </div>
@@ -133,7 +135,7 @@ const InvoiceDetail = ({ booking }: { booking: Booking }) => {
             )}
 
 
-            <footer className="mt-12 text-center text-muted-foreground text-sm">
+            <footer className="mt-12 text-center text-muted-foreground text-sm print:break-before-page">
                 <p>Thank you for booking with Yes To Go!</p>
                 <p>This is a computer-generated invoice and does not require a signature.</p>
             </footer>

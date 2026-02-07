@@ -168,20 +168,16 @@ export default function BookingDetailPage() {
         if (part.is_paid) {
             const isFutureDueDate = isBefore(startOfDay(new Date()), startOfDay(dueDate));
             
-            // If it's paid and the due date is still in the future, it's 'paid-ahead'.
             if (isFutureDueDate) {
                 status = 'paid-ahead';
             } 
-            // If it was paid late (requires an accurate paid_date from the DB)
             else if (paidDate && isAfter(startOfDay(paidDate), startOfDay(dueDate))) {
                 status = 'overdue-paid';
             } 
-            // Otherwise, it's considered regularly 'paid'.
             else {
                 status = 'paid';
             }
         } 
-        // If not paid, check if it's overdue.
         else if (isAfter(startOfDay(new Date()), startOfDay(dueDate))) {
             status = 'overdue';
         }
@@ -190,13 +186,11 @@ export default function BookingDetailPage() {
             ...part,
             dueDate: dueDate,
             paidOn: paidDate,
-            // is_paid property from DB is kept for consistency in the returned object
             is_paid: part.is_paid, 
             status: status,
         };
     });
 
-    // Find the very first unpaid installment and mark it as 'next-pay' if it's not already overdue.
     const firstUnpaidIndex = schedule.findIndex(s => !s.is_paid);
     if (firstUnpaidIndex !== -1) {
         if (schedule[firstUnpaidIndex].status !== 'overdue') {
@@ -223,7 +217,7 @@ export default function BookingDetailPage() {
         };
     }
     
-    const paidAmount = booking.payments?.reduce((sum, p) => sum + p.amount, 0) ?? 0;
+    const paidAmount = booking.payments?.filter(p => p.payment_status === 'completed').reduce((sum, p) => sum + p.amount, 0) ?? 0;
 
     if (paymentTimeline.length === 0) {
         const totalAmount = booking.total_amount;
@@ -316,6 +310,56 @@ export default function BookingDetailPage() {
   return (
     <div className="space-y-6">
        <AlertDialog open={!!actionToConfirm} onOpenChange={(open) => !open && setActionToConfirm(null)}>
+        <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+              <AlertDialogDescription>
+                This action will confirm the booking with reference "{booking.order_id}".
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel onClick={() => setActionToConfirm(null)}>Cancel</AlertDialogCancel>
+              <AlertDialogAction onClick={handleActionConfirm}>
+                Accept
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+      </AlertDialog>
+
+       <Dialog open={isCancelDialogOpen} onOpenChange={setIsCancelDialogOpen}>
+        <DialogContent>
+            <DialogHeader>
+            <DialogTitle>Cancel Booking</DialogTitle>
+            <DialogDescription>
+                Select a reason for cancelling booking "{booking.order_id}". This action cannot be undone.
+            </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-4 py-4">
+                <RadioGroup value={cancellationReason} onValueChange={setCancellationReason}>
+                    {CANCELLATION_REASONS.map(reason => (
+                        <div key={reason} className="flex items-center space-x-2">
+                            <RadioGroupItem value={reason} id={`r-${reason}`} />
+                            <Label htmlFor={`r-${reason}`}>{reason}</Label>
+                        </div>
+                    ))}
+                </RadioGroup>
+                {cancellationReason === 'Other' && (
+                    <Textarea 
+                        placeholder="Please specify the reason for cancellation"
+                        value={otherReason}
+                        onChange={(e) => setOtherReason(e.target.value)}
+                    />
+                )}
+            </div>
+            <DialogFooter>
+            <Button variant="outline" onClick={() => setIsCancelDialogOpen(false)}>Cancel</Button>
+            <Button variant="destructive" onClick={handleCancelBooking}>
+                Confirm Cancellation
+            </Button>
+            </DialogFooter>
+        </DialogContent>
+    </Dialog>
+
         <div className="flex flex-col items-start gap-4 sm:flex-row sm:items-center">
             <Button variant="outline" size="icon" className="h-7 w-7 shrink-0" onClick={() => router.back()}>
                 <ArrowLeft className="h-4 w-4" />
@@ -748,57 +792,6 @@ export default function BookingDetailPage() {
                 </CardContent>
             </Card>
         </Tabs>
-        <AlertDialogContent>
-            <AlertDialogHeader>
-              <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-              <AlertDialogDescription>
-                This action will confirm the booking with reference "{booking.order_id}".
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogCancel onClick={() => setActionToConfirm(null)}>Cancel</AlertDialogCancel>
-              <AlertDialogAction onClick={handleActionConfirm}>
-                Accept
-              </AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-      </AlertDialog>
-
-       <Dialog open={isCancelDialogOpen} onOpenChange={setIsCancelDialogOpen}>
-        <DialogContent>
-            <DialogHeader>
-            <DialogTitle>Cancel Booking</DialogTitle>
-            <DialogDescription>
-                Select a reason for cancelling booking "{booking.order_id}". This action cannot be undone.
-            </DialogDescription>
-            </DialogHeader>
-            <div className="space-y-4 py-4">
-                <RadioGroup value={cancellationReason} onValueChange={setCancellationReason}>
-                    {CANCELLATION_REASONS.map(reason => (
-                        <div key={reason} className="flex items-center space-x-2">
-                            <RadioGroupItem value={reason} id={`r-${reason}`} />
-                            <Label htmlFor={`r-${reason}`}>{reason}</Label>
-                        </div>
-                    ))}
-                </RadioGroup>
-                {cancellationReason === 'Other' && (
-                    <Textarea 
-                        placeholder="Please specify the reason for cancellation"
-                        value={otherReason}
-                        onChange={(e) => setOtherReason(e.target.value)}
-                    />
-                )}
-            </div>
-            <DialogFooter>
-            <Button variant="outline" onClick={() => setIsCancelDialogOpen(false)}>Cancel</Button>
-            <Button variant="destructive" onClick={handleCancelBooking}>
-                Confirm Cancellation
-            </Button>
-            </DialogFooter>
-        </DialogContent>
-    </Dialog>
     </div>
   );
 }
-
-    
