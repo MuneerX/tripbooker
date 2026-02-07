@@ -3,7 +3,7 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { PlusCircle, MoreHorizontal, FilePenLine, Trash2, View, MapPin, CheckCircle, XCircle } from "lucide-react";
+import { PlusCircle, MoreHorizontal, FilePenLine, Trash2, View, MapPin, CheckCircle, XCircle, ArrowUp, ArrowDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -28,6 +28,8 @@ import { StatCard } from "@/components/dashboard/StatCard";
 import { getTripLocations, deleteTripLocation } from "@/lib/supabase/queries";
 import { useToast } from "@/hooks/use-toast";
 
+type SortableKeys = 'name' | 'place_type' | 'city' | 'state' | 'district' | 'is_active';
+
 export default function TripLocationsPage() {
   const router = useRouter();
   const { toast } = useToast();
@@ -36,6 +38,8 @@ export default function TripLocationsPage() {
   const [loading, setLoading] = React.useState(true);
   const [itemToDelete, setItemToDelete] = React.useState<TripLocation | null>(null);
   const [currentPage, setCurrentPage] = React.useState(1);
+  const [sortConfig, setSortConfig] = React.useState<{ key: SortableKeys; direction: 'asc' | 'desc' } | null>(null);
+  
   const rowsPerPage = 10;
 
   React.useEffect(() => {
@@ -82,9 +86,44 @@ export default function TripLocationsPage() {
   const filteredLocations = allLocations.filter((location) =>
     location.name && location.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
+  
+  const handleSort = (key: SortableKeys) => {
+    let direction: 'asc' | 'desc' = 'asc';
+    if (sortConfig && sortConfig.key === key && sortConfig.direction === 'asc') {
+      direction = 'desc';
+    }
+    setSortConfig({ key, direction });
+  };
+  
+  const renderSortArrow = (key: SortableKeys) => {
+    if (sortConfig?.key !== key) return null;
+    return sortConfig.direction === 'asc' ? <ArrowUp className="ml-2 h-4 w-4" /> : <ArrowDown className="ml-2 h-4 w-4" />;
+  };
 
-  const totalPages = Math.ceil(filteredLocations.length / rowsPerPage);
-  const paginatedLocations = filteredLocations.slice(
+  const sortedLocations = React.useMemo(() => {
+    let sortableItems = [...filteredLocations];
+    if (sortConfig) {
+      sortableItems.sort((a, b) => {
+        const aValue = a[sortConfig.key];
+        const bValue = b[sortConfig.key];
+
+        if (aValue === null || aValue === undefined) return 1;
+        if (bValue === null || bValue === undefined) return -1;
+        
+        if (typeof aValue === 'string' && typeof bValue === 'string') {
+          return aValue.localeCompare(bValue) * (sortConfig.direction === 'asc' ? 1 : -1);
+        }
+
+        if (aValue < bValue) return sortConfig.direction === 'asc' ? -1 : 1;
+        if (aValue > bValue) return sortConfig.direction === 'asc' ? 1 : -1;
+        return 0;
+      });
+    }
+    return sortableItems;
+  }, [filteredLocations, sortConfig]);
+
+  const totalPages = Math.ceil(sortedLocations.length / rowsPerPage);
+  const paginatedLocations = sortedLocations.slice(
     (currentPage - 1) * rowsPerPage,
     currentPage * rowsPerPage
   );
@@ -192,12 +231,24 @@ export default function TripLocationsPage() {
                   <TableHead className="hidden w-[100px] sm:table-cell">
                       <span className="sr-only">Image</span>
                   </TableHead>
-                  <TableHead>Location Name</TableHead>
-                  <TableHead className="w-[120px]">Type</TableHead>
-                  <TableHead className="hidden md:table-cell w-[120px]">City</TableHead>
-                  <TableHead className="hidden md:table-cell w-[120px]">State</TableHead>
-                  <TableHead className="hidden md:table-cell w-[120px]">District</TableHead>
-                  <TableHead className="w-[120px]">Status</TableHead>
+                  <TableHead className="cursor-pointer hover:bg-muted" onClick={() => handleSort('name')}>
+                    <div className="flex items-center">Location Name {renderSortArrow('name')}</div>
+                  </TableHead>
+                  <TableHead className="w-[120px] cursor-pointer hover:bg-muted" onClick={() => handleSort('place_type')}>
+                    <div className="flex items-center">Type {renderSortArrow('place_type')}</div>
+                  </TableHead>
+                  <TableHead className="hidden md:table-cell w-[120px] cursor-pointer hover:bg-muted" onClick={() => handleSort('city')}>
+                    <div className="flex items-center">City {renderSortArrow('city')}</div>
+                  </TableHead>
+                  <TableHead className="hidden md:table-cell w-[120px] cursor-pointer hover:bg-muted" onClick={() => handleSort('state')}>
+                    <div className="flex items-center">State {renderSortArrow('state')}</div>
+                  </TableHead>
+                  <TableHead className="hidden md:table-cell w-[120px] cursor-pointer hover:bg-muted" onClick={() => handleSort('district')}>
+                    <div className="flex items-center">District {renderSortArrow('district')}</div>
+                  </TableHead>
+                  <TableHead className="w-[120px] cursor-pointer hover:bg-muted" onClick={() => handleSort('is_active')}>
+                    <div className="flex items-center">Status {renderSortArrow('is_active')}</div>
+                  </TableHead>
                   <TableHead className="w-[80px]">
                       <span className="sr-only">Actions</span>
                   </TableHead>
@@ -269,7 +320,7 @@ export default function TripLocationsPage() {
         </CardContent>
         <CardFooter>
             <div className="text-xs text-muted-foreground">
-                Showing <strong>{(currentPage - 1) * rowsPerPage + 1}-{(currentPage - 1) * rowsPerPage + paginatedLocations.length}</strong> of <strong>{filteredLocations.length}</strong> locations
+                Showing <strong>{(currentPage - 1) * rowsPerPage + 1}-{(currentPage - 1) * rowsPerPage + paginatedLocations.length}</strong> of <strong>{sortedLocations.length}</strong> locations
             </div>
             <div className="ml-auto flex items-center gap-2">
               <Button

@@ -4,7 +4,7 @@
 import * as React from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { PlusCircle, MoreHorizontal, FilePenLine, Trash2, View } from "lucide-react";
+import { PlusCircle, MoreHorizontal, FilePenLine, Trash2, View, ArrowUp, ArrowDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -28,7 +28,11 @@ import { formatCurrency } from "@/lib/utils";
 type TripDayWithPackageAndActivities = TripDay & { 
   tour_package: { name: string } | null;
   activities: { additional_cost: number | null }[];
+  activityCount: number;
+  totalCost: number;
 };
+
+type SortableKeys = 'title' | 'tour_package.name' | 'totalCost' | 'day_number' | 'activityCount';
 
 export default function TripDaysPage() {
   const router = useRouter();
@@ -39,13 +43,20 @@ export default function TripDaysPage() {
   const [searchTerm, setSearchTerm] = React.useState("");
   const [itemToDelete, setItemToDelete] = React.useState<TripDayWithPackageAndActivities | null>(null);
   const [currentPage, setCurrentPage] = React.useState(1);
+  const [sortConfig, setSortConfig] = React.useState<{ key: SortableKeys; direction: 'asc' | 'desc' } | null>(null);
+
   const rowsPerPage = 10;
 
   React.useEffect(() => {
     async function fetchTripDays() {
       setLoading(true);
       const days = await getTripDays();
-      setAllTripDays(days as TripDayWithPackageAndActivities[]);
+      const processedDays = days.map(day => ({
+        ...day,
+        activityCount: day.activities?.length || 0,
+        totalCost: day.activities?.reduce((sum, act) => sum + (Number(act.additional_cost) || 0), 0) || 0
+      })) as TripDayWithPackageAndActivities[];
+      setAllTripDays(processedDays);
       setLoading(false);
     }
     fetchTripDays();
@@ -87,8 +98,45 @@ export default function TripDaysPage() {
     (day.tour_package?.name && day.tour_package.name.toLowerCase().includes(searchTerm.toLowerCase()))
   );
   
-  const totalPages = Math.ceil(filteredTripDays.length / rowsPerPage);
-  const paginatedTripDays = filteredTripDays.slice(
+  const handleSort = (key: SortableKeys) => {
+    let direction: 'asc' | 'desc' = 'asc';
+    if (sortConfig && sortConfig.key === key && sortConfig.direction === 'asc') {
+      direction = 'desc';
+    }
+    setSortConfig({ key, direction });
+  };
+
+  const renderSortArrow = (key: SortableKeys) => {
+    if (sortConfig?.key !== key) return null;
+    return sortConfig.direction === 'asc' ? <ArrowUp className="ml-2 h-4 w-4" /> : <ArrowDown className="ml-2 h-4 w-4" />;
+  };
+
+  const sortedTripDays = React.useMemo(() => {
+    let sortableItems = [...filteredTripDays];
+    if (sortConfig) {
+      sortableItems.sort((a, b) => {
+        const getNestedValue = (obj: any, path: string) => path.split('.').reduce((o, i) => o?.[i], obj);
+        
+        let aValue = getNestedValue(a, sortConfig.key);
+        let bValue = getNestedValue(b, sortConfig.key);
+
+        if (aValue === null || aValue === undefined) return 1;
+        if (bValue === null || bValue === undefined) return -1;
+        
+        if (typeof aValue === 'string' && typeof bValue === 'string') {
+          return aValue.localeCompare(bValue) * (sortConfig.direction === 'asc' ? 1 : -1);
+        }
+
+        if (aValue < bValue) return sortConfig.direction === 'asc' ? -1 : 1;
+        if (aValue > bValue) return sortConfig.direction === 'asc' ? 1 : -1;
+        return 0;
+      });
+    }
+    return sortableItems;
+  }, [filteredTripDays, sortConfig]);
+
+  const totalPages = Math.ceil(sortedTripDays.length / rowsPerPage);
+  const paginatedTripDays = sortedTripDays.slice(
     (currentPage - 1) * rowsPerPage,
     currentPage * rowsPerPage
   );
@@ -122,11 +170,21 @@ export default function TripDaysPage() {
             <Table>
             <TableHeader>
                 <TableRow>
-                <TableHead>Title</TableHead>
-                <TableHead className="hidden md:table-cell">Package Name</TableHead>
-                <TableHead className="hidden md:table-cell">Price</TableHead>
-                <TableHead className="hidden sm:table-cell w-[100px] text-center">Day</TableHead>
-                <TableHead className="hidden md:table-cell text-center">Activities</TableHead>
+                <TableHead className="cursor-pointer hover:bg-muted" onClick={() => handleSort('title')}>
+                    <div className="flex items-center">Title {renderSortArrow('title')}</div>
+                </TableHead>
+                <TableHead className="hidden md:table-cell cursor-pointer hover:bg-muted" onClick={() => handleSort('tour_package.name')}>
+                    <div className="flex items-center">Package Name {renderSortArrow('tour_package.name')}</div>
+                </TableHead>
+                <TableHead className="hidden md:table-cell cursor-pointer hover:bg-muted" onClick={() => handleSort('totalCost')}>
+                    <div className="flex items-center">Price {renderSortArrow('totalCost')}</div>
+                </TableHead>
+                <TableHead className="hidden sm:table-cell w-[100px] text-center cursor-pointer hover:bg-muted" onClick={() => handleSort('day_number')}>
+                    <div className="flex items-center justify-center">Day {renderSortArrow('day_number')}</div>
+                </TableHead>
+                <TableHead className="hidden md:table-cell text-center cursor-pointer hover:bg-muted" onClick={() => handleSort('activityCount')}>
+                    <div className="flex items-center justify-center">Activities {renderSortArrow('activityCount')}</div>
+                </TableHead>
                 <TableHead className="text-right">
                     <span className="sr-only">Actions</span>
                 </TableHead>
@@ -141,15 +199,13 @@ export default function TripDaysPage() {
                   </TableRow>
                 ) : paginatedTripDays.length > 0 ? (
                 paginatedTripDays.map((day) => {
-                    const activityCount = day.activities?.length || 0;
-                    const totalCost = day.activities?.reduce((sum, act) => sum + (Number(act.additional_cost) || 0), 0) || 0;
                     return (
                     <TableRow key={day.id} className="cursor-pointer" onClick={() => router.push(`/dashboard/trip-days/${day.id}`)}>
                         <TableCell className="font-medium">{day.title || day.day_name}</TableCell>
                         <TableCell className="hidden md:table-cell">{day.tour_package?.name || 'N/A'}</TableCell>
-                        <TableCell className="hidden md:table-cell">{formatCurrency(totalCost)}</TableCell>
+                        <TableCell className="hidden md:table-cell">{formatCurrency(day.totalCost)}</TableCell>
                         <TableCell className="hidden sm:table-cell text-center">{day.day_number}</TableCell>
-                        <TableCell className="hidden md:table-cell text-center">{activityCount}</TableCell>
+                        <TableCell className="hidden md:table-cell text-center">{day.activityCount}</TableCell>
                         <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
                           <DropdownMenu>
                               <DropdownMenuTrigger asChild>
@@ -190,7 +246,7 @@ export default function TripDaysPage() {
         </CardContent>
          <CardFooter>
             <div className="text-xs text-muted-foreground">
-                Showing <strong>{(currentPage - 1) * rowsPerPage + 1}-{(currentPage - 1) * rowsPerPage + paginatedTripDays.length}</strong> of <strong>{filteredTripDays.length}</strong> days
+                Showing <strong>{(currentPage - 1) * rowsPerPage + 1}-{(currentPage - 1) * rowsPerPage + paginatedTripDays.length}</strong> of <strong>{sortedTripDays.length}</strong> days
             </div>
             <div className="ml-auto flex items-center gap-2">
               <Button

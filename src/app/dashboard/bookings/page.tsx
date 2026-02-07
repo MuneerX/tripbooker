@@ -2,7 +2,7 @@
 "use client";
 
 import * as React from "react";
-import { Book, MoreHorizontal, FilePenLine, Trash2, View, BookCheck, BookX, Clock, CheckCircle } from "lucide-react";
+import { Book, MoreHorizontal, FilePenLine, Trash2, View, BookCheck, BookX, Clock, CheckCircle, ArrowUp, ArrowDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -27,6 +27,8 @@ import {
 import { getBookings } from "@/lib/supabase/queries";
 import { useToast } from "@/hooks/use-toast";
 
+type SortableKeys = 'order_id' | 'tour_package.name' | 'booking_date' | 'transaction_id' | 'payment_method' | 'total_amount' | 'referral_code' | 'booking_status';
+
 export default function BookingsPage() {
   const router = useRouter();
   const { toast } = useToast();
@@ -35,6 +37,7 @@ export default function BookingsPage() {
   const [allBookings, setAllBookings] = React.useState<Booking[]>([]);
   const [loading, setLoading] = React.useState(true);
   const [itemToDelete, setItemToDelete] = React.useState<Booking | null>(null);
+  const [sortConfig, setSortConfig] = React.useState<{ key: SortableKeys; direction: 'asc' | 'desc' } | null>(null);
 
   const rowsPerPage = 10;
 
@@ -42,7 +45,6 @@ export default function BookingsPage() {
     const fetchBookings = async () => {
       setLoading(true);
       const bookings = await getBookings();
-      console.log('Fetched Bookings:', bookings); // Console log for debugging
       setAllBookings(bookings);
       setLoading(false);
     };
@@ -51,7 +53,7 @@ export default function BookingsPage() {
   
   React.useEffect(() => {
     setCurrentPage(1);
-  }, [searchTerm]);
+  }, [searchTerm, sortConfig]);
 
   React.useEffect(() => {
     if (itemToDelete) {
@@ -83,9 +85,54 @@ export default function BookingsPage() {
     booking.order_id?.toLowerCase().includes(searchTerm.toLowerCase()) ||
     booking.tour_package?.name?.toLowerCase().includes(searchTerm.toLowerCase())
   );
+  
+  const handleSort = (key: SortableKeys) => {
+    let direction: 'asc' | 'desc' = 'asc';
+    if (sortConfig && sortConfig.key === key && sortConfig.direction === 'asc') {
+      direction = 'desc';
+    }
+    setSortConfig({ key, direction });
+  };
+  
+  const renderSortArrow = (key: SortableKeys) => {
+    if (sortConfig?.key !== key) return null;
+    return sortConfig.direction === 'asc' ? <ArrowUp className="ml-2 h-4 w-4" /> : <ArrowDown className="ml-2 h-4 w-4" />;
+  };
 
-  const totalPages = Math.ceil(filteredBookings.length / rowsPerPage);
-  const paginatedBookings = filteredBookings.slice(
+  const sortedBookings = React.useMemo(() => {
+    let sortableItems = [...filteredBookings];
+    if (sortConfig !== null) {
+      sortableItems.sort((a, b) => {
+        const getNestedValue = (obj: any, path: string) => path.split('.').reduce((o, i) => o?.[i], obj);
+        
+        let aValue = getNestedValue(a, sortConfig.key);
+        let bValue = getNestedValue(b, sortConfig.key);
+
+        if (aValue === null || aValue === undefined) return 1;
+        if (bValue === null || bValue === undefined) return -1;
+        
+        if (sortConfig.key === 'booking_date') {
+            const dateA = new Date(aValue as string).getTime();
+            const dateB = new Date(bValue as string).getTime();
+            if (dateA < dateB) return sortConfig.direction === 'asc' ? -1 : 1;
+            if (dateA > dateB) return sortConfig.direction === 'asc' ? 1 : -1;
+            return 0;
+        }
+
+        if (typeof aValue === 'string' && typeof bValue === 'string') {
+            return aValue.localeCompare(bValue) * (sortConfig.direction === 'asc' ? 1 : -1);
+        }
+
+        if (aValue < bValue) return sortConfig.direction === 'asc' ? -1 : 1;
+        if (aValue > bValue) return sortConfig.direction === 'asc' ? 1 : -1;
+        return 0;
+      });
+    }
+    return sortableItems;
+  }, [filteredBookings, sortConfig]);
+
+  const totalPages = Math.ceil(sortedBookings.length / rowsPerPage);
+  const paginatedBookings = sortedBookings.slice(
     (currentPage - 1) * rowsPerPage,
     currentPage * rowsPerPage
   );
@@ -187,14 +234,30 @@ export default function BookingsPage() {
           <Table className="hidden md:table">
             <TableHeader>
               <TableRow>
-                <TableHead>Order ID</TableHead>
-                <TableHead>Tour Name</TableHead>
-                <TableHead>Reservation Date</TableHead>
-                <TableHead className="hidden md:table-cell">Transaction ID</TableHead>
-                <TableHead className="hidden md:table-cell">Payment</TableHead>
-                <TableHead className="hidden md:table-cell">Amount</TableHead>
-                <TableHead className="hidden lg:table-cell">Referral</TableHead>
-                <TableHead>Status</TableHead>
+                <TableHead className="cursor-pointer hover:bg-muted" onClick={() => handleSort('order_id')}>
+                  <div className="flex items-center">Order ID {renderSortArrow('order_id')}</div>
+                </TableHead>
+                <TableHead className="cursor-pointer hover:bg-muted" onClick={() => handleSort('tour_package.name')}>
+                  <div className="flex items-center">Tour Name {renderSortArrow('tour_package.name')}</div>
+                </TableHead>
+                <TableHead className="cursor-pointer hover:bg-muted" onClick={() => handleSort('booking_date')}>
+                  <div className="flex items-center">Reservation Date {renderSortArrow('booking_date')}</div>
+                </TableHead>
+                <TableHead className="hidden md:table-cell cursor-pointer hover:bg-muted" onClick={() => handleSort('transaction_id')}>
+                   <div className="flex items-center">Transaction ID {renderSortArrow('transaction_id')}</div>
+                </TableHead>
+                <TableHead className="hidden md:table-cell cursor-pointer hover:bg-muted" onClick={() => handleSort('payment_method')}>
+                   <div className="flex items-center">Payment {renderSortArrow('payment_method')}</div>
+                </TableHead>
+                <TableHead className="hidden md:table-cell cursor-pointer hover:bg-muted" onClick={() => handleSort('total_amount')}>
+                   <div className="flex items-center">Amount {renderSortArrow('total_amount')}</div>
+                </TableHead>
+                <TableHead className="hidden lg:table-cell cursor-pointer hover:bg-muted" onClick={() => handleSort('referral_code')}>
+                   <div className="flex items-center">Referral {renderSortArrow('referral_code')}</div>
+                </TableHead>
+                <TableHead className="cursor-pointer hover:bg-muted" onClick={() => handleSort('booking_status')}>
+                   <div className="flex items-center">Status {renderSortArrow('booking_status')}</div>
+                </TableHead>
                  <TableHead>
                   <span className="sr-only">Actions</span>
                 </TableHead>
@@ -256,7 +319,7 @@ export default function BookingsPage() {
         </CardContent>
          <CardFooter>
             <div className="text-xs text-muted-foreground">
-                Showing <strong>{(currentPage - 1) * rowsPerPage + 1}-{(currentPage - 1) * rowsPerPage + paginatedBookings.length}</strong> of <strong>{filteredBookings.length}</strong> bookings
+                Showing <strong>{(currentPage - 1) * rowsPerPage + 1}-{(currentPage - 1) * rowsPerPage + paginatedBookings.length}</strong> of <strong>{sortedBookings.length}</strong> bookings
             </div>
             <div className="ml-auto flex items-center gap-2">
               <Button
@@ -300,5 +363,3 @@ export default function BookingsPage() {
     </div>
   );
 }
-
-    

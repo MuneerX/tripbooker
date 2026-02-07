@@ -2,7 +2,7 @@
 "use client";
 
 import * as React from "react";
-import { MoreHorizontal, UserCheck, UserX, Users, View } from "lucide-react";
+import { MoreHorizontal, UserCheck, UserX, Users, View, ArrowUp, ArrowDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -27,6 +27,8 @@ import { useToast } from "@/hooks/use-toast";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useRouter } from "next/navigation";
 
+type SortableKeys = 'full_name' | 'email' | 'phone_number' | 'is_kv_customer' | 'status';
+
 export default function CustomersPage() {
   const { toast } = useToast();
   const router = useRouter();
@@ -35,6 +37,7 @@ export default function CustomersPage() {
   const [allProfiles, setAllProfiles] = React.useState<Profile[]>([]);
   const [loading, setLoading] = React.useState(true);
   const [itemToToggle, setItemToToggle] = React.useState<Profile | null>(null);
+  const [sortConfig, setSortConfig] = React.useState<{ key: SortableKeys; direction: 'asc' | 'desc' } | null>(null);
 
   const rowsPerPage = 10;
 
@@ -58,7 +61,7 @@ export default function CustomersPage() {
   
   React.useEffect(() => {
     setCurrentPage(1);
-  }, [searchTerm]);
+  }, [searchTerm, sortConfig]);
 
   React.useEffect(() => {
     if (itemToToggle) {
@@ -98,9 +101,44 @@ export default function CustomersPage() {
     profile.full_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
     profile.email?.toLowerCase().includes(searchTerm.toLowerCase())
   );
+  
+  const handleSort = (key: SortableKeys) => {
+    let direction: 'asc' | 'desc' = 'asc';
+    if (sortConfig && sortConfig.key === key && sortConfig.direction === 'asc') {
+      direction = 'desc';
+    }
+    setSortConfig({ key, direction });
+  };
 
-  const totalPages = Math.ceil(filteredProfiles.length / rowsPerPage);
-  const paginatedProfiles = filteredProfiles.slice(
+  const renderSortArrow = (key: SortableKeys) => {
+    if (sortConfig?.key !== key) return null;
+    return sortConfig.direction === 'asc' ? <ArrowUp className="ml-2 h-4 w-4" /> : <ArrowDown className="ml-2 h-4 w-4" />;
+  };
+
+  const sortedProfiles = React.useMemo(() => {
+    let sortableItems = [...filteredProfiles];
+    if (sortConfig) {
+      sortableItems.sort((a, b) => {
+        const aValue = a[sortConfig.key];
+        const bValue = b[sortConfig.key];
+
+        if (aValue === null || aValue === undefined) return 1;
+        if (bValue === null || bValue === undefined) return -1;
+
+        if (typeof aValue === 'string' && typeof bValue === 'string') {
+          return aValue.localeCompare(bValue) * (sortConfig.direction === 'asc' ? 1 : -1);
+        }
+
+        if (aValue < bValue) return sortConfig.direction === 'asc' ? -1 : 1;
+        if (aValue > bValue) return sortConfig.direction === 'asc' ? 1 : -1;
+        return 0;
+      });
+    }
+    return sortableItems;
+  }, [filteredProfiles, sortConfig]);
+
+  const totalPages = Math.ceil(sortedProfiles.length / rowsPerPage);
+  const paginatedProfiles = sortedProfiles.slice(
     (currentPage - 1) * rowsPerPage,
     currentPage * rowsPerPage
   );
@@ -199,11 +237,21 @@ export default function CustomersPage() {
           <Table className="hidden md:table">
             <TableHeader>
               <TableRow>
-                <TableHead>Customer</TableHead>
-                <TableHead className="hidden md:table-cell">Email</TableHead>
-                <TableHead className="hidden lg:table-cell">Phone</TableHead>
-                <TableHead>KV Customer</TableHead>
-                <TableHead>Status</TableHead>
+                <TableHead className="cursor-pointer hover:bg-muted" onClick={() => handleSort('full_name')}>
+                  <div className="flex items-center">Customer {renderSortArrow('full_name')}</div>
+                </TableHead>
+                <TableHead className="hidden md:table-cell cursor-pointer hover:bg-muted" onClick={() => handleSort('email')}>
+                   <div className="flex items-center">Email {renderSortArrow('email')}</div>
+                </TableHead>
+                <TableHead className="hidden lg:table-cell cursor-pointer hover:bg-muted" onClick={() => handleSort('phone_number')}>
+                   <div className="flex items-center">Phone {renderSortArrow('phone_number')}</div>
+                </TableHead>
+                <TableHead className="cursor-pointer hover:bg-muted" onClick={() => handleSort('is_kv_customer')}>
+                   <div className="flex items-center">KV Customer {renderSortArrow('is_kv_customer')}</div>
+                </TableHead>
+                <TableHead className="cursor-pointer hover:bg-muted" onClick={() => handleSort('status')}>
+                   <div className="flex items-center">Status {renderSortArrow('status')}</div>
+                </TableHead>
                  <TableHead>
                   <span className="sr-only">Actions</span>
                 </TableHead>
@@ -275,7 +323,7 @@ export default function CustomersPage() {
         </CardContent>
          <CardFooter>
             <div className="text-xs text-muted-foreground">
-                Showing <strong>{(currentPage - 1) * rowsPerPage + 1}-{(currentPage - 1) * rowsPerPage + paginatedProfiles.length}</strong> of <strong>{filteredProfiles.length}</strong> customers
+                Showing <strong>{(currentPage - 1) * rowsPerPage + 1}-{(currentPage - 1) * rowsPerPage + paginatedProfiles.length}</strong> of <strong>{sortedProfiles.length}</strong> customers
             </div>
             <div className="ml-auto flex items-center gap-2">
               <Button

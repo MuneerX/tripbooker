@@ -3,7 +3,7 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { PlusCircle, Package, MoreHorizontal, FilePenLine, Trash2, View, CheckCircle, XCircle } from "lucide-react";
+import { PlusCircle, Package, MoreHorizontal, FilePenLine, Trash2, View, CheckCircle, XCircle, ArrowUp, ArrowDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -28,6 +28,8 @@ import {
 import { getTourPackages, deleteTourPackage } from "@/lib/supabase/queries";
 import { useToast } from "@/hooks/use-toast";
 
+type SortableKeys = 'name' | 'days' | 'base_price' | 'created_at' | 'package_type' | 'category' | 'is_active';
+
 export default function TourPackagesPage() {
   const router = useRouter();
   const { toast } = useToast();
@@ -36,6 +38,7 @@ export default function TourPackagesPage() {
   const [allPackages, setAllPackages] = React.useState<TourPackage[]>([]);
   const [loading, setLoading] = React.useState(true);
   const [itemToDelete, setItemToDelete] = React.useState<TourPackage | null>(null);
+  const [sortConfig, setSortConfig] = React.useState<{ key: SortableKeys; direction: 'asc' | 'desc' } | null>(null);
 
   const rowsPerPage = 10;
 
@@ -87,8 +90,51 @@ export default function TourPackagesPage() {
     pkg.name?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const totalPages = Math.ceil(filteredPackages.length / rowsPerPage);
-  const paginatedPackages = filteredPackages.slice(
+  const sortedPackages = React.useMemo(() => {
+    let sortableItems = [...filteredPackages];
+    if (sortConfig !== null) {
+      sortableItems.sort((a, b) => {
+        const aValue = a[sortConfig.key];
+        const bValue = b[sortConfig.key];
+
+        if (aValue === null || aValue === undefined) return 1;
+        if (bValue === null || bValue === undefined) return -1;
+        
+        if (sortConfig.key === 'created_at') {
+            const dateA = new Date(aValue as string).getTime();
+            const dateB = new Date(bValue as string).getTime();
+            if (dateA < dateB) return sortConfig.direction === 'asc' ? -1 : 1;
+            if (dateA > dateB) return sortConfig.direction === 'asc' ? 1 : -1;
+            return 0;
+        }
+
+        if (typeof aValue === 'string' && typeof bValue === 'string') {
+            return aValue.localeCompare(bValue) * (sortConfig.direction === 'asc' ? 1 : -1);
+        }
+
+        if (aValue < bValue) return sortConfig.direction === 'asc' ? -1 : 1;
+        if (aValue > bValue) return sortConfig.direction === 'asc' ? 1 : -1;
+        return 0;
+      });
+    }
+    return sortableItems;
+  }, [filteredPackages, sortConfig]);
+
+  const handleSort = (key: SortableKeys) => {
+    let direction: 'asc' | 'desc' = 'asc';
+    if (sortConfig && sortConfig.key === key && sortConfig.direction === 'asc') {
+      direction = 'desc';
+    }
+    setSortConfig({ key, direction });
+  };
+  
+  const renderSortArrow = (key: SortableKeys) => {
+    if (sortConfig?.key !== key) return null;
+    return sortConfig.direction === 'asc' ? <ArrowUp className="ml-2 h-4 w-4" /> : <ArrowDown className="ml-2 h-4 w-4" />;
+  };
+
+  const totalPages = Math.ceil(sortedPackages.length / rowsPerPage);
+  const paginatedPackages = sortedPackages.slice(
     (currentPage - 1) * rowsPerPage,
     currentPage * rowsPerPage
   );
@@ -196,13 +242,27 @@ export default function TourPackagesPage() {
           <Table className="hidden md:table">
             <TableHeader>
               <TableRow>
-                <TableHead>Tour Name</TableHead>
-                <TableHead className="hidden md:table-cell">Days</TableHead>
-                <TableHead className="hidden md:table-cell">Price</TableHead>
-                <TableHead className="hidden md:table-cell">Created Date</TableHead>
-                <TableHead className="hidden lg:table-cell">Type</TableHead>
-                <TableHead className="hidden lg:table-cell">Category</TableHead>
-                <TableHead>Status</TableHead>
+                <TableHead className="cursor-pointer hover:bg-muted" onClick={() => handleSort('name')}>
+                  <div className="flex items-center">Tour Name {renderSortArrow('name')}</div>
+                </TableHead>
+                <TableHead className="hidden md:table-cell cursor-pointer hover:bg-muted" onClick={() => handleSort('days')}>
+                   <div className="flex items-center">Days {renderSortArrow('days')}</div>
+                </TableHead>
+                <TableHead className="hidden md:table-cell cursor-pointer hover:bg-muted" onClick={() => handleSort('base_price')}>
+                   <div className="flex items-center">Price {renderSortArrow('base_price')}</div>
+                </TableHead>
+                <TableHead className="hidden md:table-cell cursor-pointer hover:bg-muted" onClick={() => handleSort('created_at')}>
+                   <div className="flex items-center">Created Date {renderSortArrow('created_at')}</div>
+                </TableHead>
+                <TableHead className="hidden lg:table-cell cursor-pointer hover:bg-muted" onClick={() => handleSort('package_type')}>
+                   <div className="flex items-center">Type {renderSortArrow('package_type')}</div>
+                </TableHead>
+                <TableHead className="hidden lg:table-cell cursor-pointer hover:bg-muted" onClick={() => handleSort('category')}>
+                   <div className="flex items-center">Category {renderSortArrow('category')}</div>
+                </TableHead>
+                <TableHead className="cursor-pointer hover:bg-muted" onClick={() => handleSort('is_active')}>
+                   <div className="flex items-center">Status {renderSortArrow('is_active')}</div>
+                </TableHead>
                 <TableHead>
                   <span className="sr-only">Actions</span>
                 </TableHead>
@@ -270,7 +330,7 @@ export default function TourPackagesPage() {
         </CardContent>
          <CardFooter>
             <div className="text-xs text-muted-foreground">
-                Showing <strong>{(currentPage - 1) * rowsPerPage + 1}-{(currentPage - 1) * rowsPerPage + paginatedPackages.length}</strong> of <strong>{filteredPackages.length}</strong> packages
+                Showing <strong>{(currentPage - 1) * rowsPerPage + 1}-{(currentPage - 1) * rowsPerPage + paginatedPackages.length}</strong> of <strong>{sortedPackages.length}</strong> packages
             </div>
             <div className="ml-auto flex items-center gap-2">
               <Button

@@ -3,7 +3,7 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { MoreHorizontal, UserCheck, UserX, Users, View, PlusCircle, FilePenLine, Trash2, UserCog } from "lucide-react";
+import { MoreHorizontal, UserCheck, UserX, Users, View, PlusCircle, FilePenLine, Trash2, UserCog, ArrowUp, ArrowDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -28,6 +28,8 @@ import { useToast } from "@/hooks/use-toast";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useRouter } from "next/navigation";
 
+type SortableKeys = 'name' | 'referral_code' | 'code' | 'email' | 'phone' | 'status';
+
 export default function OperatorsPage() {
   const { toast } = useToast();
   const router = useRouter();
@@ -37,6 +39,7 @@ export default function OperatorsPage() {
   const [loading, setLoading] = React.useState(true);
   const [itemToToggle, setItemToToggle] = React.useState<Operator | null>(null);
   const [itemToDelete, setItemToDelete] = React.useState<Operator | null>(null);
+  const [sortConfig, setSortConfig] = React.useState<{ key: SortableKeys; direction: 'asc' | 'desc' } | null>(null);
 
   const rowsPerPage = 10;
 
@@ -118,9 +121,44 @@ export default function OperatorsPage() {
     operator.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
     operator.code?.toLowerCase().includes(searchTerm.toLowerCase())
   );
+  
+  const handleSort = (key: SortableKeys) => {
+    let direction: 'asc' | 'desc' = 'asc';
+    if (sortConfig && sortConfig.key === key && sortConfig.direction === 'asc') {
+      direction = 'desc';
+    }
+    setSortConfig({ key, direction });
+  };
+  
+  const renderSortArrow = (key: SortableKeys) => {
+    if (sortConfig?.key !== key) return null;
+    return sortConfig.direction === 'asc' ? <ArrowUp className="ml-2 h-4 w-4" /> : <ArrowDown className="ml-2 h-4 w-4" />;
+  };
 
-  const totalPages = Math.ceil(filteredOperators.length / rowsPerPage);
-  const paginatedOperators = filteredOperators.slice(
+  const sortedOperators = React.useMemo(() => {
+    let sortableItems = [...filteredOperators];
+    if (sortConfig) {
+      sortableItems.sort((a, b) => {
+        const aValue = a[sortConfig.key];
+        const bValue = b[sortConfig.key];
+        
+        if (aValue === null || aValue === undefined) return 1;
+        if (bValue === null || bValue === undefined) return -1;
+
+        if (typeof aValue === 'string' && typeof bValue === 'string') {
+          return aValue.localeCompare(bValue) * (sortConfig.direction === 'asc' ? 1 : -1);
+        }
+
+        if (aValue < bValue) return sortConfig.direction === 'asc' ? -1 : 1;
+        if (aValue > bValue) return sortConfig.direction === 'asc' ? 1 : -1;
+        return 0;
+      });
+    }
+    return sortableItems;
+  }, [filteredOperators, sortConfig]);
+
+  const totalPages = Math.ceil(sortedOperators.length / rowsPerPage);
+  const paginatedOperators = sortedOperators.slice(
     (currentPage - 1) * rowsPerPage,
     currentPage * rowsPerPage
   );
@@ -233,12 +271,24 @@ export default function OperatorsPage() {
           <Table className="hidden md:table">
             <TableHeader>
               <TableRow>
-                <TableHead>Agent</TableHead>
-                <TableHead>Referral Code</TableHead>
-                <TableHead>Agent Code</TableHead>
-                <TableHead className="hidden md:table-cell">Email</TableHead>
-                <TableHead className="hidden lg:table-cell">Phone</TableHead>
-                <TableHead>Status</TableHead>
+                <TableHead className="cursor-pointer hover:bg-muted" onClick={() => handleSort('name')}>
+                  <div className="flex items-center">Agent {renderSortArrow('name')}</div>
+                </TableHead>
+                <TableHead className="cursor-pointer hover:bg-muted" onClick={() => handleSort('referral_code')}>
+                  <div className="flex items-center">Referral Code {renderSortArrow('referral_code')}</div>
+                </TableHead>
+                <TableHead className="cursor-pointer hover:bg-muted" onClick={() => handleSort('code')}>
+                  <div className="flex items-center">Agent Code {renderSortArrow('code')}</div>
+                </TableHead>
+                <TableHead className="hidden md:table-cell cursor-pointer hover:bg-muted" onClick={() => handleSort('email')}>
+                  <div className="flex items-center">Email {renderSortArrow('email')}</div>
+                </TableHead>
+                <TableHead className="hidden lg:table-cell cursor-pointer hover:bg-muted" onClick={() => handleSort('phone')}>
+                  <div className="flex items-center">Phone {renderSortArrow('phone')}</div>
+                </TableHead>
+                <TableHead className="cursor-pointer hover:bg-muted" onClick={() => handleSort('status')}>
+                  <div className="flex items-center">Status {renderSortArrow('status')}</div>
+                </TableHead>
                  <TableHead>
                   <span className="sr-only">Actions</span>
                 </TableHead>
@@ -316,7 +366,7 @@ export default function OperatorsPage() {
         </CardContent>
          <CardFooter>
             <div className="text-xs text-muted-foreground">
-                Showing <strong>{(currentPage - 1) * rowsPerPage + 1}-{(currentPage - 1) * rowsPerPage + paginatedOperators.length}</strong> of <strong>{filteredOperators.length}</strong> agents
+                Showing <strong>{(currentPage - 1) * rowsPerPage + 1}-{(currentPage - 1) * rowsPerPage + paginatedOperators.length}</strong> of <strong>{sortedOperators.length}</strong> agents
             </div>
             <div className="ml-auto flex items-center gap-2">
               <Button
