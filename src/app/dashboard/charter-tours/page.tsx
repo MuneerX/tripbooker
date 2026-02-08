@@ -33,7 +33,7 @@ import {
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -305,6 +305,7 @@ const CharterTourListItem = ({
       <div className="flex w-full items-center">
         <div className="flex items-center gap-3">
           <Avatar className="h-8 w-8">
+            <AvatarImage src={tour.avatar_url || ''} alt={tour.name || 'Avatar'} />
             <AvatarFallback>{tour.name?.charAt(0) || "U"}</AvatarFallback>
           </Avatar>
           <div className="font-semibold">{tour.name || "N/A"}</div>
@@ -352,10 +353,12 @@ export default function CharterToursPage() {
   }, [toast]);
   
   const handleUpdateTourInList = (updatedTour: CharterTour) => {
-    setTours(prevTours => 
-        prevTours.map(tour => tour.id === updatedTour.id ? updatedTour : tour)
+    setTours(prevTours =>
+      prevTours.map(tour =>
+        tour.id === updatedTour.id ? { ...tour, ...updatedTour } : tour
+      )
     );
-    setSelectedTour(updatedTour);
+    setSelectedTour(prev => (prev ? { ...prev, ...updatedTour } : updatedTour));
   };
 
   return (

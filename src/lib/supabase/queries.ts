@@ -1476,8 +1476,33 @@ export async function getCharterTours(): Promise<CharterTour[]> {
     console.error('Error fetching charter tours:', error);
     throw new Error(error.message);
   }
+  
+  const tours = data || [];
+  const emails = tours.map(tour => tour.email).filter(Boolean) as string[];
+  const profilesByEmail = new Map<string, { avatar_url: string | null }>();
 
-  return data as CharterTour[];
+  if (emails.length > 0) {
+    const { data: profiles, error: profileError } = await supabase
+      .from('profiles')
+      .select('email, avatar_url')
+      .in('email', emails);
+
+    if (profileError) {
+      console.error('Error fetching profiles for charter tours:', profileError);
+      // Don't throw, just proceed without avatars
+    } else if (profiles) {
+      profiles.forEach(p => {
+        if (p.email) {
+          profilesByEmail.set(p.email, { avatar_url: p.avatar_url });
+        }
+      });
+    }
+  }
+
+  return tours.map(tour => ({
+    ...tour,
+    avatar_url: tour.email ? profilesByEmail.get(tour.email)?.avatar_url : null,
+  })) as CharterTour[];
 }
 
 

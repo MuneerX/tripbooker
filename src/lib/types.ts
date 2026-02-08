@@ -268,6 +268,7 @@ export type CharterTour = {
   status: string | null;
   created_at: string;
   updated_at: string | null;
+  avatar_url?: string | null;
 };
 
 
