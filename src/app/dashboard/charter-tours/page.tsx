@@ -105,11 +105,12 @@ const CharterTourDetail = ({ tour, onUpdate }: { tour: CharterTour | null, onUpd
     if (!actionToConfirm || !tour) return;
 
     try {
-      const updatedTour = await updateCharterTourStatus(tour.id, actionToConfirm);
+      const newStatus = actionToConfirm === 'approve' ? 'approved' : 'cancelled';
+      const updatedTour = await updateCharterTourStatus(tour.id, newStatus);
       onUpdate(updatedTour);
       toast({
         title: "Success",
-        description: `Charter inquiry has been ${actionToConfirm}.`,
+        description: `Charter inquiry has been ${newStatus}.`,
       });
     } catch (error: any) {
       toast({
@@ -176,11 +177,11 @@ const CharterTourDetail = ({ tour, onUpdate }: { tour: CharterTour | null, onUpd
           <div className="flex-1">
             <h1 className="text-2xl font-bold">{tour.name || "Charter Inquiry"}</h1>
             <div className="flex items-center gap-2 mt-1">
-              <Badge className={cn("capitalize", getStatusBadgeColor(currentStatus))}>{currentStatus}</Badge>
+              <Badge className={cn("capitalize", getStatusBadgeColor(currentStatus as any))}>{currentStatus}</Badge>
               <span className="text-sm text-muted-foreground">{format(new Date(tour.created_at), "PPP p")}</span>
             </div>
           </div>
-          {currentStatus === 'new' && (
+          {(currentStatus === 'new' || currentStatus === 'pending') && (
             <div className="flex gap-2 shrink-0">
               <Button variant="destructive" onClick={() => setActionToConfirm('cancel')}><X className="mr-2 h-4 w-4" /> Cancel</Button>
               <Button onClick={() => setActionToConfirm('approve')}><Check className="mr-2 h-4 w-4" /> Approve</Button>
@@ -313,7 +314,7 @@ const CharterTourListItem = ({
       </div>
       <div className="line-clamp-1 text-xs">{tour.travel_purpose || "No purpose specified"}</div>
       <div className="flex w-full items-center gap-2">
-        <Badge className={cn("capitalize", getStatusBadgeColor(currentStatus))}>{currentStatus}</Badge>
+        <Badge className={cn("capitalize", getStatusBadgeColor(currentStatus as any))}>{currentStatus}</Badge>
         <p className="line-clamp-1 text-xs text-muted-foreground">{tour.interested_locations}</p>
       </div>
     </button>

@@ -2,9 +2,8 @@
 
 "use client";
 
-import { Bell, Menu, Search, User } from 'lucide-react';
+import { Bell, Menu, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { useSidebar } from '@/components/ui/sidebar';
 import Link from 'next/link';
@@ -17,6 +16,7 @@ import * as React from 'react';
 import { getPendingBookings } from '@/lib/supabase/queries';
 import type { Booking } from '@/lib/types';
 import { formatDistanceToNow } from 'date-fns';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
 export function AppHeader() {
   const { toggleSidebar } = useSidebar();
@@ -49,6 +49,7 @@ export function AppHeader() {
 
   const displayName = profile?.full_name || 'Admin';
   const displayEmail = user?.email;
+  const avatarUrl = profile?.avatar_url;
   
   const recentNotifications = notifications.slice(0, 3);
 
@@ -105,10 +106,12 @@ export function AppHeader() {
         
         <DropdownMenu>
             <DropdownMenuTrigger asChild>
-            <Button variant="outline" size="icon" className="h-9 w-9">
-                <User className="h-5 w-5" />
-                <span className="sr-only">Toggle user menu</span>
-            </Button>
+              <Button variant="ghost" className="relative h-9 w-9 rounded-full">
+                <Avatar className="h-9 w-9">
+                  <AvatarImage src={avatarUrl || ''} alt={displayName} />
+                  <AvatarFallback>{displayName.charAt(0)}</AvatarFallback>
+                </Avatar>
+              </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
             <DropdownMenuLabel>
@@ -129,5 +132,3 @@ export function AppHeader() {
     </header>
   );
 }
-
-    
