@@ -2,10 +2,10 @@
 "use client";
 
 import * as React from "react";
-import { getCharterTours, updateCharterTourStatus } from "@/lib/supabase/queries";
+import { getCharterTours } from "@/lib/supabase/queries";
 import type { CharterTour } from "@/lib/types";
 import { format } from "date-fns";
-import { cn, formatCurrency, getStatusBadgeColor } from "@/lib/utils";
+import { cn, formatCurrency } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
 import {
   Mail,
@@ -29,24 +29,15 @@ import {
   Baby,
   Accessibility,
   UserCog,
+  Menu,
 } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
-import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Skeleton } from "@/components/ui/skeleton";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
+import { useIsMobile } from "@/hooks/use-mobile";
+import { Sheet, SheetContent } from "@/components/ui/sheet";
+import { InquiryList } from "./_components/InquiryList";
 
 function DetailItem({
   icon: Icon,
@@ -229,49 +220,14 @@ const CharterTourDetail = ({ tour, onUpdate }: { tour: CharterTour | null, onUpd
   );
 };
 
-const CharterTourListItem = ({
-  tour,
-  isSelected,
-  onClick,
-}: {
-  tour: CharterTour;
-  isSelected: boolean;
-  onClick: () => void;
-}) => {
-  return (
-    <button
-      className={cn(
-        "flex w-full flex-col items-start gap-2 rounded-lg border p-3 text-left transition-all",
-        isSelected ? "bg-muted border-primary" : "hover:bg-accent"
-      )}
-      onClick={onClick}
-    >
-      <div className="flex w-full items-center">
-        <div className="flex items-center gap-3">
-          <Avatar className="h-8 w-8">
-            <AvatarImage src={tour.avatar_url || ''} alt={tour.name || 'Avatar'} />
-            <AvatarFallback>{tour.name?.charAt(0) || "U"}</AvatarFallback>
-          </Avatar>
-          <div className="font-semibold">{tour.name || "N/A"}</div>
-        </div>
-        <div className="ml-auto text-xs text-muted-foreground">
-          {format(new Date(tour.created_at), "dd MMM")}
-        </div>
-      </div>
-      <div className="line-clamp-1 text-xs">{tour.travel_purpose || "No purpose specified"}</div>
-      <div className="flex w-full items-center gap-2">
-        <p className="line-clamp-1 text-xs text-muted-foreground">{tour.interested_locations}</p>
-      </div>
-    </button>
-  );
-};
-
 
 export default function CharterToursPage() {
   const [tours, setTours] = React.useState<CharterTour[]>([]);
   const [selectedTour, setSelectedTour] = React.useState<CharterTour | null>(null);
   const [loading, setLoading] = React.useState(true);
   const { toast } = useToast();
+  const isMobile = useIsMobile();
+  const [isSidebarOpen, setIsSidebarOpen] = React.useState(false);
 
   React.useEffect(() => {
     const fetchTours = async () => {
@@ -279,7 +235,7 @@ export default function CharterToursPage() {
       try {
         const data = await getCharterTours();
         setTours(data);
-        if (data.length > 0) {
+        if (data.length > 0 && !isMobile) {
           setSelectedTour(data[0]);
         }
       } catch (error: any) {
@@ -293,7 +249,7 @@ export default function CharterToursPage() {
       }
     };
     fetchTours();
-  }, [toast]);
+  }, [toast, isMobile]);
   
   const handleUpdateTourInList = (updatedTour: CharterTour) => {
     setTours(prevTours =>
@@ -303,42 +259,67 @@ export default function CharterToursPage() {
     );
     setSelectedTour(prev => (prev ? { ...prev, ...updatedTour } : updatedTour));
   };
+  
+  const handleSelectTour = (tour: CharterTour) => {
+    setSelectedTour(tour);
+    if (isMobile) {
+      setIsSidebarOpen(false);
+    }
+  };
+
+  if (isMobile) {
+    return (
+      <div className="h-full w-full relative">
+        <div className="absolute top-4 left-4 z-10">
+            <Button size="icon" variant="outline" onClick={() => setIsSidebarOpen(true)}>
+                <Menu className="h-5 w-5" />
+                <span className="sr-only">Open inquiries list</span>
+            </Button>
+        </div>
+        <Sheet open={isSidebarOpen} onOpenChange={setIsSidebarOpen}>
+            <SheetContent side="left" className="p-0">
+                <div className="flex h-14 shrink-0 items-center border-b px-4 lg:h-[60px] lg:px-6">
+                    <h2 className="text-lg font-semibold">Charter Inquiries</h2>
+                </div>
+                <ScrollArea className="h-[calc(100%-3.5rem)]">
+                    <InquiryList
+                        tours={tours}
+                        selectedTour={selectedTour}
+                        onSelect={handleSelectTour}
+                        loading={loading}
+                    />
+                </ScrollArea>
+            </SheetContent>
+        </Sheet>
+        <div className="h-full overflow-y-auto">
+          <CharterTourDetail tour={selectedTour} onUpdate={handleUpdateTourInList} />
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="h-full w-full flex border-t">
+    <div className="h-full w-full border-t grid grid-cols-[320px_1fr]">
       {/* Left panel */}
-      <div className="w-[320px] flex-shrink-0 border-r bg-muted/40 flex flex-col">
+      <div className="border-r bg-muted/40 flex flex-col h-full">
         <div className="flex h-14 shrink-0 items-center border-b px-4 lg:h-[60px] lg:px-6">
           <h2 className="text-lg font-semibold">Charter Inquiries</h2>
         </div>
         <ScrollArea className="flex-grow">
-          <div className="space-y-4 p-4">
-            {loading ? (
-                <div className="space-y-3">
-                    {[...Array(8)].map((_, i) => <Skeleton key={i} className="h-[76px] w-full" />)}
-                </div>
-            ) : tours.length > 0 ? (
-                tours.map((tour) => (
-                    <CharterTourListItem
-                        key={tour.id}
-                        tour={tour}
-                        isSelected={selectedTour?.id === tour.id}
-                        onClick={() => setSelectedTour(tour)}
-                    />
-                ))
-            ) : (
-                <div className="p-8 text-center text-muted-foreground">
-                    No inquiries yet.
-                </div>
-            )}
-           </div>
+          <InquiryList
+            tours={tours}
+            selectedTour={selectedTour}
+            onSelect={handleSelectTour}
+            loading={loading}
+          />
         </ScrollArea>
       </div>
 
       {/* Right panel */}
-      <div className="flex-1 overflow-y-auto">
+      <div className="overflow-y-auto">
         <CharterTourDetail tour={selectedTour} onUpdate={handleUpdateTourInList} />
       </div>
     </div>
   );
 }
+
