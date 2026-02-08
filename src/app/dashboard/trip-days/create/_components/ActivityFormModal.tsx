@@ -108,7 +108,15 @@ export function ActivityFormModal({ children, activity, onSave }: ActivityFormMo
     return (
          <Dialog open={isOpen} onOpenChange={setIsOpen}>
             <DialogTrigger asChild>{children}</DialogTrigger>
-            <DialogContent className="sm:max-w-[600px] grid-rows-[auto_minmax(0,1fr)_auto] p-0 max-h-[90vh]">
+            <DialogContent 
+              onInteractOutside={(e) => {
+                // Prevent dialog from closing when interacting with the combobox popover
+                if (e.target instanceof Element && e.target.closest('.cmdk-list')) {
+                  e.preventDefault();
+                }
+              }}
+              className="sm:max-w-[600px] grid-rows-[auto_minmax(0,1fr)_auto] p-0 max-h-[90vh]"
+            >
                  <Form {...activityForm}>
                     <form onSubmit={(e) => e.preventDefault()} className="contents">
                         <DialogHeader className="p-6 pb-0">
