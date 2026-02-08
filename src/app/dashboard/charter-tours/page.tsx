@@ -298,7 +298,7 @@ const CharterTourListItem = ({
     <button
       className={cn(
         "flex w-full flex-col items-start gap-2 rounded-lg border p-3 text-left transition-all",
-        isSelected ? "bg-muted" : "hover:bg-accent"
+        isSelected ? "bg-muted border-primary" : "hover:bg-accent"
       )}
       onClick={onClick}
     >
