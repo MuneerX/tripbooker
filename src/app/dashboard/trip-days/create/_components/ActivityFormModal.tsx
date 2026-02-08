@@ -1,4 +1,3 @@
-
 "use client";
 
 import * as React from "react";
@@ -22,7 +21,6 @@ import {
 } from "@/components/ui/dialog";
 import type { Activity, TripLocation } from "@/lib/types";
 import { getTripLocations } from "@/lib/supabase/queries";
-import { Combobox } from "@/components/ui/combobox";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
 
@@ -109,14 +107,7 @@ export function ActivityFormModal({ children, activity, onSave }: ActivityFormMo
     return (
          <Dialog open={isOpen} onOpenChange={setIsOpen}>
             <DialogTrigger asChild>{children}</DialogTrigger>
-            <DialogContent 
-              onInteractOutside={(e) => {
-                if (e.target instanceof Element && e.target.closest('[data-radix-popper-content-wrapper]')) {
-                  e.preventDefault();
-                }
-              }}
-              className="sm:max-w-[600px] grid-rows-[auto_minmax(0,1fr)_auto] p-0 max-h-[90vh]"
-            >
+            <DialogContent className="sm:max-w-[600px] grid-rows-[auto_minmax(0,1fr)_auto] p-0 max-h-[90vh]">
                  <Form {...activityForm}>
                     <form onSubmit={(e) => e.preventDefault()} className="contents">
                         <DialogHeader className="p-6 pb-0">
@@ -139,25 +130,29 @@ export function ActivityFormModal({ children, activity, onSave }: ActivityFormMo
                             </div>
 
                             {activityType === 'explore' ? (
-                                <FormField
+                               <FormField
                                     control={activityForm.control}
                                     name="place_id"
                                     render={({ field }) => (
-                                        <FormItem className="flex flex-col">
-                                            <FormLabel>Location</FormLabel>
+                                    <FormItem>
+                                        <FormLabel>Location</FormLabel>
+                                        <Select onValueChange={field.onChange} defaultValue={field.value ?? undefined}>
                                             <FormControl>
-                                                <Combobox
-                                                    options={locations.map(loc => ({ value: loc.id, label: loc.name }))}
-                                                    value={field.value ?? undefined}
-                                                    onChange={(value) => field.onChange(value || null)}
-                                                    placeholder="Select a location"
-                                                    searchPlaceholder="Search locations..."
-                                                    emptyText="No location found."
-                                                />
+                                                <SelectTrigger>
+                                                    <SelectValue placeholder="Select a location" />
+                                                </SelectTrigger>
                                             </FormControl>
-                                            <FormDescription>Select a location from your list of Trip Locations.</FormDescription>
-                                            <FormMessage />
-                                        </FormItem>
+                                            <SelectContent>
+                                                {locations.map(loc => (
+                                                    <SelectItem key={loc.id} value={loc.id}>
+                                                        {loc.name}
+                                                    </SelectItem>
+                                                ))}
+                                            </SelectContent>
+                                        </Select>
+                                        <FormDescription>Select a location from your list of Trip Locations.</FormDescription>
+                                        <FormMessage />
+                                    </FormItem>
                                     )}
                                 />
                             ) : (
@@ -207,5 +202,3 @@ export function ActivityFormModal({ children, activity, onSave }: ActivityFormMo
         </Dialog>
     )
 }
-
-    
