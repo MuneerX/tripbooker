@@ -152,6 +152,7 @@ const CharterTourDetail = ({ tour, onUpdate }: { tour: CharterTour | null, onUpd
   }
   
   const currentStatus = tour.status || 'new';
+  const isActionable = !['approved', 'cancelled'].includes(currentStatus);
 
   return (
     <ScrollArea className="h-full">
@@ -181,7 +182,7 @@ const CharterTourDetail = ({ tour, onUpdate }: { tour: CharterTour | null, onUpd
               <span className="text-sm text-muted-foreground">{format(new Date(tour.created_at), "PPP p")}</span>
             </div>
           </div>
-          {(currentStatus === 'new' || currentStatus === 'pending') && (
+          {isActionable && (
             <div className="flex gap-2 shrink-0">
               <Button variant="destructive" onClick={() => setActionToConfirm('cancel')}><X className="mr-2 h-4 w-4" /> Cancel</Button>
               <Button onClick={() => setActionToConfirm('approve')}><Check className="mr-2 h-4 w-4" /> Approve</Button>
