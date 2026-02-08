@@ -134,7 +134,6 @@ const CharterTourDetail = ({ tour, onUpdate }: { tour: CharterTour | null, onUpd
           <div className="flex-1">
             <h1 className="text-2xl font-bold">{tour.name || "Charter Inquiry"}</h1>
             <div className="flex items-center gap-2 mt-1">
-              <Badge className={cn("capitalize", getStatusBadgeColor(currentStatus as any))}>{currentStatus}</Badge>
               <span className="text-sm text-muted-foreground">{format(new Date(tour.created_at), "PPP p")}</span>
             </div>
           </div>
@@ -243,7 +242,6 @@ const CharterTourListItem = ({
   isSelected: boolean;
   onClick: () => void;
 }) => {
-  const currentStatus = tour.status || 'new';
   return (
     <button
       className={cn(
@@ -266,7 +264,6 @@ const CharterTourListItem = ({
       </div>
       <div className="line-clamp-1 text-xs">{tour.travel_purpose || "No purpose specified"}</div>
       <div className="flex w-full items-center gap-2">
-        <Badge className={cn("capitalize", getStatusBadgeColor(currentStatus as any))}>{currentStatus}</Badge>
         <p className="line-clamp-1 text-xs text-muted-foreground">{tour.interested_locations}</p>
       </div>
     </button>
@@ -312,7 +309,7 @@ export default function CharterToursPage() {
   };
 
   return (
-    <div className="grid w-full flex-1 md:grid-cols-[320px_1fr] border-t overflow-hidden">
+    <div className="h-full grid w-full md:grid-cols-[320px_1fr] border-t">
       <div className="flex flex-col border-r bg-muted/40">
         <div className="flex h-14 items-center border-b px-4 lg:h-[60px] lg:px-6">
           <h2 className="text-lg font-semibold">Charter Inquiries</h2>

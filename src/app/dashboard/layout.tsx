@@ -34,12 +34,14 @@ export default function DashboardLayout({
           <div className="flex flex-1 flex-col overflow-hidden">
             <AppHeader />
             <main className={cn(
-              "flex flex-1 flex-col bg-muted/40",
+              "flex-1 bg-muted/40 grid grid-rows-[1fr_auto]",
               !isCharterPage && "gap-4 p-4 md:gap-8 md:p-8"
             )}>
-              {children}
+              <div className={cn(isCharterPage ? "overflow-hidden" : "")}>
+                {children}
+              </div>
                <footer className={cn(
-                 "mt-auto text-center text-xs text-muted-foreground",
+                 "text-center text-xs text-muted-foreground",
                  isCharterPage ? "py-4" : "pt-8"
                )}>
                 &copy; {new Date().getFullYear()} Matrimore Technologies. All rights reserved.
