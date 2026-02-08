@@ -305,13 +305,14 @@ export default function CharterToursPage() {
   };
 
   return (
-    <div className="grid h-full w-full border-t md:grid-cols-[320px_1fr]">
-      <div className="flex flex-col border-r bg-muted/40">
+    <div className="h-full w-full flex border-t">
+      {/* Left panel */}
+      <div className="w-[320px] flex-shrink-0 border-r bg-muted/40 flex flex-col">
         <div className="flex h-14 shrink-0 items-center border-b px-4 lg:h-[60px] lg:px-6">
           <h2 className="text-lg font-semibold">Charter Inquiries</h2>
         </div>
         <ScrollArea className="flex-grow">
-          <div className="space-y-4 p-6">
+          <div className="space-y-4 p-4">
             {loading ? (
                 <div className="space-y-3">
                     {[...Array(8)].map((_, i) => <Skeleton key={i} className="h-[76px] w-full" />)}
@@ -333,7 +334,9 @@ export default function CharterToursPage() {
            </div>
         </ScrollArea>
       </div>
-      <div className="overflow-y-auto">
+
+      {/* Right panel */}
+      <div className="flex-1 overflow-y-auto">
         <CharterTourDetail tour={selectedTour} onUpdate={handleUpdateTourInList} />
       </div>
     </div>

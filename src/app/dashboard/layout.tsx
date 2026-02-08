@@ -37,7 +37,7 @@ export default function DashboardLayout({
               "flex-1 bg-muted/40 grid grid-rows-[1fr_auto]",
               !isCharterPage && "gap-4 p-4 md:gap-8 md:p-8"
             )}>
-              <div className={cn(isCharterPage ? "overflow-y-hidden h-full" : "")}>
+              <div className={cn(isCharterPage ? "h-full" : "")}>
                 {children}
               </div>
                <footer className={cn(
