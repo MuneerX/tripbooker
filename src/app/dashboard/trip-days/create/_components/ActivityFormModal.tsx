@@ -111,7 +111,7 @@ export function ActivityFormModal({ children, activity, onSave }: ActivityFormMo
             <DialogContent 
               onInteractOutside={(e) => {
                 // Prevent dialog from closing when interacting with the combobox popover
-                if (e.target instanceof Element && e.target.closest('.cmdk-list')) {
+                if (e.target instanceof Element && e.target.closest('[cmdk-list]')) {
                   e.preventDefault();
                 }
               }}
