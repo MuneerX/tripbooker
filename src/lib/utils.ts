@@ -21,16 +21,18 @@ export function formatCurrency(amount: number) {
   }).format(amount);
 }
 
-export function getStatusBadgeColor(status: 'active' | 'inactive' | 'pending' | 'confirmed' | 'cancelled' | 'completed') {
+export function getStatusBadgeColor(status: 'active' | 'inactive' | 'pending' | 'confirmed' | 'cancelled' | 'completed' | 'new' | 'approved') {
   switch (status) {
     case 'active':
     case 'completed':
     case 'confirmed':
+    case 'approved':
       return 'text-green-600 border-green-600/20 bg-green-500/10 hover:bg-green-500/20';
     case 'inactive':
     case 'cancelled':
       return 'text-red-600 border-red-600/20 bg-red-500/10 hover:bg-red-500/20';
     case 'pending':
+    case 'new':
       return 'text-yellow-500 border-yellow-500/20 bg-yellow-500/10 hover:bg-yellow-500/20';
     default:
       return 'text-gray-600 border-gray-600/20 bg-gray-500/10 hover:bg-gray-500/20';

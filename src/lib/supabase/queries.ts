@@ -1479,3 +1479,21 @@ export async function getCharterTours(): Promise<CharterTour[]> {
 
   return data as CharterTour[];
 }
+
+
+export async function updateCharterTourStatus(id: string, status: 'approved' | 'cancelled'): Promise<CharterTour> {
+  const supabase = createAdminClient();
+  const { data, error } = await supabase
+    .from('charter_tour')
+    .update({ status, updated_at: new Date().toISOString() })
+    .eq('id', id)
+    .select()
+    .single();
+
+  if (error) {
+    console.error(`Error updating charter tour status for ${id}:`, error);
+    throw new Error(error.message);
+  }
+
+  return data as CharterTour;
+}
