@@ -308,8 +308,8 @@ export default function CharterToursPage() {
 
   return (
     <div className="h-full grid w-full md:grid-cols-[320px_1fr] border-t">
-      <div className="flex flex-col border-r bg-muted/40">
-        <div className="flex h-14 items-center border-b px-4 lg:h-[60px] lg:px-6">
+      <div className="border-r bg-muted/40 flex flex-col overflow-y-hidden">
+        <div className="flex h-14 shrink-0 items-center border-b px-4 lg:h-[60px] lg:px-6">
           <h2 className="text-lg font-semibold">Charter Inquiries</h2>
         </div>
         <ScrollArea className="flex-1">
