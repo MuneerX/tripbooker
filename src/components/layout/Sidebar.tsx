@@ -17,6 +17,7 @@ import {
   Users,
   UserCog,
   Bell,
+  Plane,
 } from 'lucide-react';
 import {
   Sidebar,
@@ -50,6 +51,12 @@ const navItems: NavItem[] = [
     title: 'Bookings',
     href: '/dashboard/bookings',
     icon: Book,
+    subItems: [],
+  },
+  {
+    title: 'Charter Tours',
+    href: '/dashboard/charter-tours',
+    icon: Plane,
     subItems: [],
   },
    {

@@ -49,7 +49,7 @@ export type Activity = {
   activity_time?: string | null; // time without time zone
   title: string;
   description?: string | null;
-  activity_type?: 'food' | 'explore' | 'stay' | null;
+  activity_type?: 'food' | 'explore' | 'stay' | 'activity' | null;
   place_id?: string | null;
   duration_minutes?: number | null;
   travel_duration_minutes?: number | null;
@@ -227,6 +227,49 @@ export type Operator = {
   commission_type: 'percentage' | 'amount';
   commission_value: number;
 };
+
+export type CharterTour = {
+  id: string;
+  name: string | null;
+  mobile_number: string | null;
+  email: string | null;
+  whatsapp_number: string | null;
+  time_to_call: string | null;
+  travel_style: string | null;
+  travel_pace: string | null;
+  travel_purpose: string | null;
+  number_of_adults: number | null;
+  number_of_children: number | null;
+  infant_travelling: boolean;
+  senior_citizen_travelling: boolean;
+  mobility_assistance: boolean;
+  number_of_days: number | null;
+  number_of_nights: number | null;
+  date_flexible: boolean;
+  interested_locations: string | null;
+  vehicle_requirements: string | null;
+  vehicle_brand_preference: string | null;
+  driver_language_preference: string | null;
+  hotel_category: string | null;
+  room_type: string | null;
+  number_of_rooms: number | null;
+  meal_plan: string | null;
+  need_tour_guide: boolean;
+  need_pickup: boolean;
+  need_food: boolean;
+  need_photographer: boolean;
+  need_vip: boolean;
+  interested_activities: string | null;
+  budget: number | null;
+  payment_preference: string | null;
+  things_to_include: string | null;
+  things_to_exclude: string | null;
+  additional_notes: string | null;
+  status: string | null;
+  created_at: string;
+  updated_at: string | null;
+};
+
 
 // For stats cards
 export type StatCard = {

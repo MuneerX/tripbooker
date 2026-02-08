@@ -5,7 +5,7 @@
 import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
 
-import type { TourPackage, TripDay, Activity, TripLocation, PayInPart, Booking, Review, BookingGuest, Payment, Profile, Operator, UserPipSchedule } from '@/lib/types'
+import type { TourPackage, TripDay, Activity, TripLocation, PayInPart, Booking, Review, BookingGuest, Payment, Profile, Operator, UserPipSchedule, CharterTour } from '@/lib/types'
 import { createClient } from '@supabase/supabase-js'
 
 // Correctly create a Supabase client with admin privileges (service_role)
@@ -1461,4 +1461,21 @@ export async function cancelBooking(bookingId: string, reason: string) {
     throw new Error(error.message);
   }
   return data;
+}
+
+// --- Charter Tour Functions ---
+
+export async function getCharterTours(): Promise<CharterTour[]> {
+  const supabase = createAdminClient();
+  const { data, error } = await supabase
+    .from('charter_tour')
+    .select('*')
+    .order('created_at', { ascending: false });
+
+  if (error) {
+    console.error('Error fetching charter tours:', error);
+    throw new Error(error.message);
+  }
+
+  return data as CharterTour[];
 }
