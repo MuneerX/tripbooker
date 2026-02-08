@@ -37,7 +37,7 @@ export default function DashboardLayout({
               "flex flex-1 flex-col bg-muted/40",
               !isCharterPage && "gap-4 p-4 md:gap-8 md:p-8"
             )}>
-              <div className={cn("flex-1", isCharterPage ? "overflow-hidden" : "")}>
+              <div className={cn("flex-1", isCharterPage ? "" : "")}>
                 {children}
               </div>
                <footer className={cn(
@@ -53,3 +53,5 @@ export default function DashboardLayout({
     </BreadcrumbContext.Provider>
   );
 }
+
+    

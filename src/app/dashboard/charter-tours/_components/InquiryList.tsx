@@ -11,11 +11,11 @@ import { Skeleton } from "@/components/ui/skeleton";
 const CharterTourListItem = ({
   tour,
   isSelected,
-  onClick,
+  onSelect,
 }: {
   tour: CharterTour;
   isSelected: boolean;
-  onClick: () => void;
+  onSelect: () => void;
 }) => {
   return (
     <button
@@ -23,7 +23,7 @@ const CharterTourListItem = ({
         "flex w-full flex-col items-start gap-2 rounded-lg border p-3 text-left transition-all",
         isSelected ? "bg-muted border-primary" : "hover:bg-accent"
       )}
-      onClick={onClick}
+      onClick={onSelect}
     >
       <div className="flex w-full items-center">
         <div className="flex items-center gap-3">
@@ -65,7 +65,7 @@ export function InquiryList({ tours, selectedTour, onSelect, loading }: InquiryL
             key={tour.id}
             tour={tour}
             isSelected={selectedTour?.id === tour.id}
-            onClick={() => onSelect(tour)}
+            onSelect={() => onSelect(tour)}
           />
         ))
       ) : (
@@ -76,3 +76,5 @@ export function InquiryList({ tours, selectedTour, onSelect, loading }: InquiryL
     </div>
   );
 }
+
+    

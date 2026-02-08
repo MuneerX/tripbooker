@@ -88,7 +88,7 @@ function BooleanDetailItem({
   );
 }
 
-const CharterTourDetail = ({ tour, onUpdate }: { tour: CharterTour | null, onUpdate: (updatedTour: CharterTour) => void }) => {
+const CharterTourDetail = ({ tour }: { tour: CharterTour | null }) => {
   if (!tour) {
     return (
       <div className="flex h-full flex-col items-center justify-center bg-muted/50 p-8 text-center">
@@ -251,15 +251,6 @@ export default function CharterToursPage() {
     fetchTours();
   }, [toast, isMobile]);
   
-  const handleUpdateTourInList = (updatedTour: CharterTour) => {
-    setTours(prevTours =>
-      prevTours.map(tour =>
-        tour.id === updatedTour.id ? { ...tour, ...updatedTour } : tour
-      )
-    );
-    setSelectedTour(prev => (prev ? { ...prev, ...updatedTour } : updatedTour));
-  };
-  
   const handleSelectTour = (tour: CharterTour) => {
     setSelectedTour(tour);
     if (isMobile) {
@@ -292,7 +283,7 @@ export default function CharterToursPage() {
             </SheetContent>
         </Sheet>
         <ScrollArea className="h-full">
-            <CharterTourDetail tour={selectedTour} onUpdate={handleUpdateTourInList} />
+            <CharterTourDetail tour={selectedTour} />
         </ScrollArea>
       </div>
     );
@@ -317,8 +308,10 @@ export default function CharterToursPage() {
 
       {/* Right panel */}
       <ScrollArea className="h-full flex-1">
-        <CharterTourDetail tour={selectedTour} onUpdate={handleUpdateTourInList} />
+        <CharterTourDetail tour={selectedTour} />
       </ScrollArea>
     </div>
   );
 }
+
+    
