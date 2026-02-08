@@ -26,9 +26,6 @@ import { getProfiles, updateProfileStatus } from "@/lib/supabase/queries";
 import { useToast } from "@/hooks/use-toast";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useRouter } from "next/navigation";
-import { isWithinInterval } from "date-fns";
-import type { DateRange } from "react-day-picker";
-import { DateRangePicker } from "@/components/ui/date-range-picker";
 
 
 type SortableKeys = 'full_name' | 'is_kv_customer' | 'status' | 'created_at';
@@ -42,7 +39,8 @@ export default function CustomersPage() {
   const [loading, setLoading] = React.useState(true);
   const [itemToToggle, setItemToToggle] = React.useState<Profile | null>(null);
   const [sortConfig, setSortConfig] = React.useState<{ key: SortableKeys; direction: 'asc' | 'desc' } | null>(null);
-  const [dateRange, setDateRange] = React.useState<DateRange | undefined>(undefined);
+  const [startDate, setStartDate] = React.useState<string>("");
+  const [endDate, setEndDate] = React.useState<string>("");
 
   const rowsPerPage = 10;
 
@@ -66,7 +64,7 @@ export default function CustomersPage() {
   
   React.useEffect(() => {
     setCurrentPage(1);
-  }, [searchTerm, sortConfig, dateRange]);
+  }, [searchTerm, sortConfig, startDate, endDate]);
 
   React.useEffect(() => {
     if (itemToToggle) {
@@ -108,12 +106,21 @@ export default function CustomersPage() {
         profile.email?.toLowerCase().includes(searchTerm.toLowerCase())
     )
     .filter((profile) => {
-        if (!dateRange?.from || !profile.created_at) return true;
+        if (!profile.created_at) return true;
+        if (!startDate && !endDate) return true;
         const creationDate = new Date(profile.created_at);
-        const toDate = dateRange.to ? new Date(dateRange.to) : new Date(dateRange.from);
-        // Set time to end of day for 'to' date
-        toDate.setHours(23, 59, 59, 999);
-        return isWithinInterval(creationDate, { start: dateRange.from, end: toDate });
+
+        if (startDate && creationDate < new Date(startDate)) {
+            return false;
+        }
+        if (endDate) {
+            const to = new Date(endDate);
+            to.setHours(23, 59, 59, 999);
+            if (creationDate > to) {
+                return false;
+            }
+        }
+        return true;
     });
   
   const handleSort = (key: SortableKeys) => {
@@ -190,7 +197,24 @@ export default function CustomersPage() {
               <CardDescription>Manage all registered customers.</CardDescription>
             </div>
             <div className="flex w-full flex-col sm:flex-row items-center gap-2 sm:w-auto">
-               <DateRangePicker date={dateRange} onDateChange={setDateRange} />
+                <div className="flex w-full sm:w-auto items-center gap-2">
+                    <Input
+                        type="date"
+                        placeholder="From"
+                        value={startDate}
+                        onChange={(e) => setStartDate(e.target.value)}
+                        className="w-full"
+                    />
+                    <span className="text-muted-foreground">-</span>
+                    <Input
+                        type="date"
+                        placeholder="To"
+                        value={endDate}
+                        onChange={(e) => setEndDate(e.target.value)}
+                        min={startDate}
+                        className="w-full"
+                    />
+                </div>
               <Input
                 placeholder="Search by name or email..."
                 value={searchTerm}

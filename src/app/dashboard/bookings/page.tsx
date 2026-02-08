@@ -13,8 +13,7 @@ import type { Booking, Operator } from "@/lib/types";
 import { formatCurrency, getStatusBadgeColor, cn } from "@/lib/utils";
 import { StatCard } from "@/components/dashboard/StatCard";
 import { useRouter } from 'next/navigation';
-import { format, isWithinInterval } from 'date-fns';
-import { DateRangePicker } from "@/components/ui/date-range-picker";
+import { format } from 'date-fns';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -27,7 +26,6 @@ import {
 } from "@/components/ui/alert-dialog";
 import { getBookings, getOperators } from "@/lib/supabase/queries";
 import { useToast } from "@/hooks/use-toast";
-import type { DateRange } from "react-day-picker";
 
 type SortableKeys = 'tour_package.name' | 'booking_date' | 'total_amount' | 'booking_status';
 
@@ -41,7 +39,8 @@ export default function BookingsPage() {
   const [loading, setLoading] = React.useState(true);
   const [itemToDelete, setItemToDelete] = React.useState<Booking | null>(null);
   const [sortConfig, setSortConfig] = React.useState<{ key: SortableKeys; direction: 'asc' | 'desc' } | null>(null);
-  const [dateRange, setDateRange] = React.useState<DateRange | undefined>(undefined);
+  const [startDate, setStartDate] = React.useState<string>("");
+  const [endDate, setEndDate] = React.useState<string>("");
 
   const rowsPerPage = 10;
 
@@ -61,7 +60,7 @@ export default function BookingsPage() {
   
   React.useEffect(() => {
     setCurrentPage(1);
-  }, [searchTerm, sortConfig, dateRange]);
+  }, [searchTerm, sortConfig, startDate, endDate]);
 
   React.useEffect(() => {
     if (itemToDelete) {
@@ -156,12 +155,19 @@ export default function BookingsPage() {
       booking.tour_package?.name?.toLowerCase().includes(searchTerm.toLowerCase())
     )
     .filter((booking) => {
-        if (!dateRange?.from) return true;
+        if (!startDate && !endDate) return true;
         const bookingDate = new Date(booking.booking_date);
-        const toDate = dateRange.to ? new Date(dateRange.to) : new Date(dateRange.from);
-        // Set time to end of day for 'to' date
-        toDate.setHours(23, 59, 59, 999);
-        return isWithinInterval(bookingDate, { start: dateRange.from, end: toDate });
+        if (startDate && bookingDate < new Date(startDate)) {
+            return false;
+        }
+        if (endDate) {
+            const to = new Date(endDate);
+            to.setHours(23, 59, 59, 999);
+            if (bookingDate > to) {
+                return false;
+            }
+        }
+        return true;
     });
   
   const handleSort = (key: SortableKeys) => {
@@ -240,7 +246,24 @@ export default function BookingsPage() {
               <CardDescription>Manage all customer bookings from here.</CardDescription>
             </div>
             <div className="flex w-full flex-col sm:flex-row items-center gap-2 sm:w-auto">
-               <DateRangePicker date={dateRange} onDateChange={setDateRange} />
+                <div className="flex w-full sm:w-auto items-center gap-2">
+                    <Input
+                        type="date"
+                        placeholder="From"
+                        value={startDate}
+                        onChange={(e) => setStartDate(e.target.value)}
+                        className="w-full"
+                    />
+                    <span className="text-muted-foreground">-</span>
+                    <Input
+                        type="date"
+                        placeholder="To"
+                        value={endDate}
+                        onChange={(e) => setEndDate(e.target.value)}
+                        min={startDate}
+                        className="w-full"
+                    />
+                </div>
               <Input
                 placeholder="Search by ID or Tour..."
                 value={searchTerm}
