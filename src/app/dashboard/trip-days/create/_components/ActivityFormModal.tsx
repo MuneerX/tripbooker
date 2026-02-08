@@ -1,3 +1,4 @@
+
 "use client";
 
 import * as React from "react";
@@ -110,8 +111,7 @@ export function ActivityFormModal({ children, activity, onSave }: ActivityFormMo
             <DialogTrigger asChild>{children}</DialogTrigger>
             <DialogContent 
               onInteractOutside={(e) => {
-                // Prevent dialog from closing when interacting with the combobox popover
-                if (e.target instanceof Element && e.target.closest('[cmdk-list]')) {
+                if (e.target instanceof Element && e.target.closest('[data-radix-popper-content-wrapper]')) {
                   e.preventDefault();
                 }
               }}
@@ -207,3 +207,5 @@ export function ActivityFormModal({ children, activity, onSave }: ActivityFormMo
         </Dialog>
     )
 }
+
+    
