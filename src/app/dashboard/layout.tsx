@@ -31,7 +31,7 @@ export default function DashboardLayout({
       <SidebarProvider>
         <div className="flex min-h-screen w-full">
           <AppSidebar />
-          <div className="flex flex-1 flex-col overflow-hidden">
+          <div className="flex flex-1 flex-col">
             <AppHeader />
             <main className={cn(
               "flex-1 bg-muted/40 grid grid-rows-[1fr_auto]",
