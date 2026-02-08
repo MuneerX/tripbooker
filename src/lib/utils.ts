@@ -33,7 +33,7 @@ export function getStatusBadgeColor(status: 'active' | 'inactive' | 'pending' | 
       return 'text-red-600 border-red-600/20 bg-red-500/10 hover:bg-red-500/20';
     case 'pending':
     case 'new':
-      return 'text-yellow-800 dark:text-yellow-400 border-yellow-600/20 bg-yellow-500/10 hover:bg-yellow-500/20';
+      return 'text-yellow-600 border-yellow-600/20 bg-yellow-500/10 hover:bg-yellow-500/20';
     default:
       return 'text-gray-600 border-gray-600/20 bg-gray-500/10 hover:bg-gray-500/20';
   }

@@ -340,7 +340,7 @@ export default function CharterToursPage() {
            </div>
         </ScrollArea>
       </div>
-      <div className="flex flex-col">
+      <div className="flex flex-col overflow-hidden">
         <CharterTourDetail tour={selectedTour} onUpdate={handleUpdateTourInList} />
       </div>
     </div>

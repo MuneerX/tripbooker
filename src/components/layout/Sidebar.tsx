@@ -110,7 +110,7 @@ function NavMenu({ items }: { items: NavItem[] }) {
         {items.map((item) => (
           item.subItems && item.subItems.length > 0 ? (
             <AccordionItem value={item.title} key={item.title} className="border-none">
-              <AccordionTrigger className="p-0 hover:no-underline rounded-md hover:bg-sidebar-accent [&>svg]:hidden" asChild>
+              <AccordionTrigger className="p-0 hover:no-underline rounded-md hover:bg-sidebar-accent" asChild>
                 <div className="group/menu-item relative flex w-full items-center">
                   <SidebarMenuButton className="w-full justify-start pr-8" isActive={pathname.startsWith(item.href)}>
                     <item.icon className="h-4 w-4" />
@@ -169,17 +169,17 @@ export function AppSidebar() {
       <Sidebar>
         <SidebarHeader>
           <Link href="/dashboard" className="flex items-center justify-center gap-2 py-2">
-            {mounted && <Image src={logoUrl} alt="Yes To Go Logo" width={150} height={150} />}
+            {mounted && <Image src={logoUrl} alt="Yes To Go Logo" width={120} height={32} />}
           </Link>
         </SidebarHeader>
-        <SidebarContent className="p-2">
+        <SidebarContent className="p-2 overflow-y-auto overflow-x-hidden">
           <NavMenu items={navItems} />
         </SidebarContent>
         <SidebarFooter>
           <SidebarMenuItem>
                 <div className="flex items-center justify-center p-4 opacity-75 group-data-[collapsible=icon]:hidden">
                     <a href="https://matrimore.com/" target="_blank" rel="noopener noreferrer">
-                    <Image src="https://i.ibb.co/PvP7hVCn/photo-2026-02-08-19-05-02-Edited.png" alt="Matrimore Logo" width={150} height={38} />
+                    <Image src="https://i.ibb.co/PvP7hVCn/photo-2026-02-08-19-05-02-Edited.png" alt="Matrimore Logo" width={120} height={30} />
                     </a>
                 </div>
             </SidebarMenuItem>
