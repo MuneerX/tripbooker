@@ -1,3 +1,4 @@
+
 "use client";
 
 import * as React from "react";
@@ -26,7 +27,8 @@ import {
   UserCheck,
   Plane,
   Baby,
-  Wheelchair,
+  Accessibility,
+  UserCog,
 } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
@@ -158,7 +160,7 @@ const CharterTourDetail = ({ tour }: { tour: CharterTour | null }) => {
             <DetailItem icon={Users} label="Children" value={tour.number_of_children} />
             <BooleanDetailItem icon={Baby} label="Infant Travelling" value={tour.infant_travelling} />
             <BooleanDetailItem icon={UserCheck} label="Senior Citizen Travelling" value={tour.senior_citizen_travelling} />
-            <BooleanDetailItem icon={Wheelchair} label="Mobility Assistance" value={tour.mobility_assistance} />
+            <BooleanDetailItem icon={Accessibility} label="Mobility Assistance" value={tour.mobility_assistance} />
           </div>
         </div>
 
