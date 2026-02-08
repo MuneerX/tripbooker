@@ -128,108 +128,106 @@ const CharterTourDetail = ({ tour, onUpdate }: { tour: CharterTour | null, onUpd
   const currentStatus = tour.status || 'new';
 
   return (
-    <ScrollArea className="h-full">
-      <div className="p-6 space-y-6">
-        <header className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
-          <div className="flex-1">
-            <h1 className="text-2xl font-bold">{tour.name || "Charter Inquiry"}</h1>
-            <div className="flex items-center gap-2 mt-1">
-              <span className="text-sm text-muted-foreground">{format(new Date(tour.created_at), "PPP p")}</span>
-            </div>
+    <div className="p-6 space-y-6">
+      <header className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+        <div className="flex-1">
+          <h1 className="text-2xl font-bold">{tour.name || "Charter Inquiry"}</h1>
+          <div className="flex items-center gap-2 mt-1">
+            <span className="text-sm text-muted-foreground">{format(new Date(tour.created_at), "PPP p")}</span>
           </div>
-        </header>
-        
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-           <div className="lg:col-span-2 space-y-6">
-              <Card>
-                <CardHeader><CardTitle>Travel Preferences</CardTitle></CardHeader>
-                <CardContent className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    <DetailItem icon={Plane} label="Travel Style" value={tour.travel_style} />
-                    <DetailItem icon={Clock} label="Travel Pace" value={tour.travel_pace} />
-                    <DetailItem icon={Briefcase} label="Purpose of Travel" value={tour.travel_purpose} />
-                    <DetailItem icon={Calendar} label="Duration" value={`${tour.number_of_days} Days / ${tour.number_of_nights} Nights`} />
-                    <BooleanDetailItem icon={Calendar} label="Date Flexible" value={tour.date_flexible} />
-                </CardContent>
-              </Card>
-
-               <Card>
-                <CardHeader><CardTitle>Guest Information</CardTitle></CardHeader>
-                 <CardContent className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    <DetailItem icon={Users} label="Adults" value={tour.number_of_adults} />
-                    <DetailItem icon={Users} label="Children" value={tour.number_of_children} />
-                    <BooleanDetailItem icon={Baby} label="Infant Travelling" value={tour.infant_travelling} />
-                    <BooleanDetailItem icon={UserCheck} label="Senior Citizen Travelling" value={tour.senior_citizen_travelling} />
-                    <BooleanDetailItem icon={Accessibility} label="Mobility Assistance" value={tour.mobility_assistance} />
-                 </CardContent>
-              </Card>
-              
-               <Card>
-                <CardHeader><CardTitle>Accommodation & Transport</CardTitle></CardHeader>
-                 <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <DetailItem icon={Car} label="Vehicle Requirements" value={tour.vehicle_requirements} />
-                    <DetailItem icon={Car} label="Vehicle Brand Preference" value={tour.vehicle_brand_preference} />
-                    <DetailItem icon={UserCog} label="Driver Language" value={tour.driver_language_preference} />
-                    <DetailItem icon={Hotel} label="Hotel Category" value={tour.hotel_category} />
-                    <DetailItem icon={Hotel} label="Room Type" value={tour.room_type} />
-                    <DetailItem icon={Hotel} label="Number of Rooms" value={tour.number_of_rooms} />
-                    <DetailItem icon={Utensils} label="Meal Plan" value={tour.meal_plan} />
-                 </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader><CardTitle>Additional Services</CardTitle></CardHeader>
-                <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <BooleanDetailItem icon={UserCog} label="Tour Guide Needed" value={tour.need_tour_guide} />
-                  <BooleanDetailItem icon={Car} label="Pickup/Drop Needed" value={tour.need_pickup} />
-                  <BooleanDetailItem icon={Utensils} label="Food Arrangements" value={tour.need_food} />
-                  <BooleanDetailItem icon={Camera} label="Photographer Needed" value={tour.need_photographer} />
-                  <BooleanDetailItem icon={Star} label="VIP Services" value={tour.need_vip} />
-                </CardContent>
-              </Card>
-           </div>
-           
-           <div className="lg:col-span-1 space-y-6">
-              <Card>
-                <CardHeader><CardTitle>Contact Information</CardTitle></CardHeader>
-                <CardContent className="space-y-4">
-                  <DetailItem icon={UserCheck} label="Full Name" value={tour.name} />
-                  <DetailItem icon={Mail} label="Email" value={tour.email} />
-                  <DetailItem icon={Phone} label="Mobile Number" value={tour.mobile_number} />
-                  <DetailItem icon={Phone} label="WhatsApp" value={tour.whatsapp_number} />
-                  <DetailItem icon={Clock} label="Best time to call" value={tour.time_to_call} />
-                </CardContent>
-              </Card>
-              
-               <Card>
-                <CardHeader><CardTitle>Budget & Payment</CardTitle></CardHeader>
-                <CardContent className="space-y-4">
-                  <DetailItem icon={Wallet} label="Budget" value={tour.budget ? formatCurrency(tour.budget as number) : 'N/A'} />
-                  <DetailItem icon={BookText} label="Payment Preference" value={tour.payment_preference} />
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader><CardTitle>Interests & Notes</CardTitle></CardHeader>
-                <CardContent className="space-y-4">
-                    {renderTextList(tour.interested_locations, 'Interested Locations')}
-                    {renderTextList(tour.interested_activities, 'Interested Activities')}
-                    <Separator/>
-                    {renderTextList(tour.things_to_include, 'Things to Include')}
-                    <Separator/>
-                    {renderTextList(tour.things_to_exclude, 'Things to Exclude')}
-                    {tour.additional_notes && (
-                         <div className="space-y-2">
-                            <h3 className="font-semibold">Additional Notes</h3>
-                            <p className="text-sm text-muted-foreground p-4 bg-muted/50 rounded-lg">{tour.additional_notes}</p>
-                         </div>
-                    )}
-                </CardContent>
-              </Card>
-           </div>
         </div>
+      </header>
+      
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+         <div className="lg:col-span-2 space-y-6">
+            <Card>
+              <CardHeader><CardTitle>Travel Preferences</CardTitle></CardHeader>
+              <CardContent className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  <DetailItem icon={Plane} label="Travel Style" value={tour.travel_style} />
+                  <DetailItem icon={Clock} label="Travel Pace" value={tour.travel_pace} />
+                  <DetailItem icon={Briefcase} label="Purpose of Travel" value={tour.travel_purpose} />
+                  <DetailItem icon={Calendar} label="Duration" value={`${tour.number_of_days} Days / ${tour.number_of_nights} Nights`} />
+                  <BooleanDetailItem icon={Calendar} label="Date Flexible" value={tour.date_flexible} />
+              </CardContent>
+            </Card>
 
+             <Card>
+              <CardHeader><CardTitle>Guest Information</CardTitle></CardHeader>
+               <CardContent className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  <DetailItem icon={Users} label="Adults" value={tour.number_of_adults} />
+                  <DetailItem icon={Users} label="Children" value={tour.number_of_children} />
+                  <BooleanDetailItem icon={Baby} label="Infant Travelling" value={tour.infant_travelling} />
+                  <BooleanDetailItem icon={UserCheck} label="Senior Citizen Travelling" value={tour.senior_citizen_travelling} />
+                  <BooleanDetailItem icon={Accessibility} label="Mobility Assistance" value={tour.mobility_assistance} />
+               </CardContent>
+            </Card>
+            
+             <Card>
+              <CardHeader><CardTitle>Accommodation & Transport</CardTitle></CardHeader>
+               <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <DetailItem icon={Car} label="Vehicle Requirements" value={tour.vehicle_requirements} />
+                  <DetailItem icon={Car} label="Vehicle Brand Preference" value={tour.vehicle_brand_preference} />
+                  <DetailItem icon={UserCog} label="Driver Language" value={tour.driver_language_preference} />
+                  <DetailItem icon={Hotel} label="Hotel Category" value={tour.hotel_category} />
+                  <DetailItem icon={Hotel} label="Room Type" value={tour.room_type} />
+                  <DetailItem icon={Hotel} label="Number of Rooms" value={tour.number_of_rooms} />
+                  <DetailItem icon={Utensils} label="Meal Plan" value={tour.meal_plan} />
+               </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader><CardTitle>Additional Services</CardTitle></CardHeader>
+              <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <BooleanDetailItem icon={UserCog} label="Tour Guide Needed" value={tour.need_tour_guide} />
+                <BooleanDetailItem icon={Car} label="Pickup/Drop Needed" value={tour.need_pickup} />
+                <BooleanDetailItem icon={Utensils} label="Food Arrangements" value={tour.need_food} />
+                <BooleanDetailItem icon={Camera} label="Photographer Needed" value={tour.need_photographer} />
+                <BooleanDetailItem icon={Star} label="VIP Services" value={tour.need_vip} />
+              </CardContent>
+            </Card>
+         </div>
+         
+         <div className="lg:col-span-1 space-y-6">
+            <Card>
+              <CardHeader><CardTitle>Contact Information</CardTitle></CardHeader>
+              <CardContent className="space-y-4">
+                <DetailItem icon={UserCheck} label="Full Name" value={tour.name} />
+                <DetailItem icon={Mail} label="Email" value={tour.email} />
+                <DetailItem icon={Phone} label="Mobile Number" value={tour.mobile_number} />
+                <DetailItem icon={Phone} label="WhatsApp" value={tour.whatsapp_number} />
+                <DetailItem icon={Clock} label="Best time to call" value={tour.time_to_call} />
+              </CardContent>
+            </Card>
+            
+             <Card>
+              <CardHeader><CardTitle>Budget & Payment</CardTitle></CardHeader>
+              <CardContent className="space-y-4">
+                <DetailItem icon={Wallet} label="Budget" value={tour.budget ? formatCurrency(tour.budget as number) : 'N/A'} />
+                <DetailItem icon={BookText} label="Payment Preference" value={tour.payment_preference} />
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader><CardTitle>Interests & Notes</CardTitle></CardHeader>
+              <CardContent className="space-y-4">
+                  {renderTextList(tour.interested_locations, 'Interested Locations')}
+                  {renderTextList(tour.interested_activities, 'Interested Activities')}
+                  <Separator/>
+                  {renderTextList(tour.things_to_include, 'Things to Include')}
+                  <Separator/>
+                  {renderTextList(tour.things_to_exclude, 'Things to Exclude')}
+                  {tour.additional_notes && (
+                       <div className="space-y-2">
+                          <h3 className="font-semibold">Additional Notes</h3>
+                          <p className="text-sm text-muted-foreground p-4 bg-muted/50 rounded-lg">{tour.additional_notes}</p>
+                       </div>
+                  )}
+              </CardContent>
+            </Card>
+         </div>
       </div>
-    </ScrollArea>
+
+    </div>
   );
 };
 
@@ -337,7 +335,7 @@ export default function CharterToursPage() {
            </div>
         </ScrollArea>
       </div>
-      <div className="flex flex-col overflow-hidden">
+      <div className="overflow-y-auto">
         <CharterTourDetail tour={selectedTour} onUpdate={handleUpdateTourInList} />
       </div>
     </div>
