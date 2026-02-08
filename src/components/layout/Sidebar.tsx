@@ -1,3 +1,4 @@
+
 "use client";
 
 import Link from 'next/link';
@@ -22,16 +23,11 @@ import {
   Sidebar,
   SidebarHeader,
   SidebarContent,
-  SidebarMenu,
   SidebarMenuItem,
   SidebarMenuButton,
   SidebarFooter,
 } from '@/components/ui/sidebar';
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/ui/collapsible"
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import type { NavItem } from '@/lib/types';
 import { cn } from '@/lib/utils';
 import { useRouter } from 'next/navigation';
@@ -106,49 +102,48 @@ const logoutNav: NavItem = { title: 'Logout', href: '/login', icon: LogOut, subI
 
 function NavMenu({ items }: { items: NavItem[] }) {
   const pathname = usePathname();
+  const activeItemValue = items.find(item => item.subItems && item.subItems.length > 0 && pathname.startsWith(item.href))?.title;
 
   return (
-    <SidebarMenu>
-      {items.map((item) =>
-        item.subItems && item.subItems.length > 0 ? (
-          <Collapsible asChild key={item.title} defaultOpen={pathname.startsWith(item.href)}>
-            <SidebarMenuItem>
-              <CollapsibleTrigger asChild>
-                  <div className="group/menu-item relative flex w-full items-center">
-                      <SidebarMenuButton className="w-full justify-start pr-8" isActive={pathname.startsWith(item.href)}>
-                          <item.icon className="h-4 w-4" />
-                          <span>{item.title}</span>
-                      </SidebarMenuButton>
-                      <ChevronDown className="absolute right-2 top-1.5 h-4 w-4 shrink-0 transition-transform duration-200 group-data-[state=open]:rotate-180 text-sidebar-foreground group-hover/menu-item:text-sidebar-accent-foreground group-data-[collapsible=icon]:hidden" />
-                  </div>
-              </CollapsibleTrigger>
-              <CollapsibleContent asChild>
-                <SidebarMenu className="mx-3.5 my-1 flex-col items-stretch border-l border-sidebar-border/30 px-2.5 py-1">
+    <div className="flex flex-col gap-1 w-full">
+      <Accordion type="single" collapsible className="w-full" defaultValue={activeItemValue}>
+        {items.map((item) => (
+          item.subItems && item.subItems.length > 0 ? (
+            <AccordionItem value={item.title} key={item.title} className="border-none">
+              <AccordionTrigger className="p-0 hover:no-underline rounded-md hover:bg-sidebar-accent [&>svg]:hidden" asChild>
+                <div className="group/menu-item relative flex w-full items-center">
+                  <SidebarMenuButton className="w-full justify-start pr-8" isActive={pathname.startsWith(item.href)}>
+                    <item.icon className="h-4 w-4" />
+                    <span>{item.title}</span>
+                  </SidebarMenuButton>
+                  <ChevronDown className="absolute right-2 top-2.5 h-4 w-4 shrink-0 transition-transform duration-200 group-data-[state=open]:rotate-180" />
+                </div>
+              </AccordionTrigger>
+              <AccordionContent className="pt-0 pb-1">
+                <ul className="mx-3.5 my-1 list-none space-y-1 border-l border-sidebar-border/30 px-2.5 py-1">
                   {item.subItems.map((subItem) => (
-                    <SidebarMenuItem key={subItem.title}>
-                      <SidebarMenuButton asChild isActive={pathname === subItem.href} className="h-8 justify-start text-sm">
+                    <li key={subItem.title}>
+                      <SidebarMenuButton asChild isActive={pathname === subItem.href} className="h-8 justify-start text-sm w-full">
                         <Link href={subItem.href}>
                           <span>{subItem.title}</span>
                         </Link>
                       </SidebarMenuButton>
-                    </SidebarMenuItem>
+                    </li>
                   ))}
-                </SidebarMenu>
-              </CollapsibleContent>
-            </SidebarMenuItem>
-          </Collapsible>
-        ) : (
-          <SidebarMenuItem key={item.title}>
-            <SidebarMenuButton asChild isActive={pathname === item.href}>
+                </ul>
+              </AccordionContent>
+            </AccordionItem>
+          ) : (
+            <SidebarMenuButton asChild isActive={pathname === item.href} key={item.title} className="w-full">
               <Link href={item.href}>
                 <item.icon className="h-4 w-4" />
                 <span>{item.title}</span>
               </Link>
             </SidebarMenuButton>
-          </SidebarMenuItem>
-        )
-      )}
-    </SidebarMenu>
+          )
+        ))}
+      </Accordion>
+    </div>
   );
 }
 
@@ -181,11 +176,10 @@ export function AppSidebar() {
           <NavMenu items={navItems} />
         </SidebarContent>
         <SidebarFooter>
-          <SidebarMenu>
-             <SidebarMenuItem>
+          <SidebarMenuItem>
                 <div className="flex items-center justify-center p-4 opacity-75 group-data-[collapsible=icon]:hidden">
                     <a href="https://matrimore.com/" target="_blank" rel="noopener noreferrer">
-                    <Image src="https://i.ibb.co/PvP7hVCn/photo-2026-02-08-19-05-02-Edited.png" alt="Matrimore Logo" width={240} height={60} />
+                    <Image src="https://i.ibb.co/PvP7hVCn/photo-2026-02-08-19-05-02-Edited.png" alt="Matrimore Logo" width={150} height={38} />
                     </a>
                 </div>
             </SidebarMenuItem>
@@ -195,7 +189,6 @@ export function AppSidebar() {
                   <span>{logoutNav.title}</span>
                 </SidebarMenuButton>
             </SidebarMenuItem>
-          </SidebarMenu>
         </SidebarFooter>
       </Sidebar>
   );

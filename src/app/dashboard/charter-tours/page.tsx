@@ -98,32 +98,6 @@ function BooleanDetailItem({
 }
 
 const CharterTourDetail = ({ tour, onUpdate }: { tour: CharterTour | null, onUpdate: (updatedTour: CharterTour) => void }) => {
-  const { toast } = useToast();
-  const [actionToConfirm, setActionToConfirm] = React.useState<'approve' | 'cancel' | null>(null);
-
-  const handleUpdateStatus = async () => {
-    if (!actionToConfirm || !tour) return;
-
-    try {
-      const newStatus = actionToConfirm === 'approve' ? 'approved' : 'cancelled';
-      const updatedTour = await updateCharterTourStatus(tour.id, newStatus);
-      onUpdate(updatedTour);
-      toast({
-        title: "Success",
-        description: `Charter inquiry has been ${newStatus}.`,
-      });
-    } catch (error: any) {
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: error.message || `Failed to ${actionToConfirm} inquiry.`,
-      });
-    } finally {
-      setActionToConfirm(null);
-    }
-  };
-
-
   if (!tour) {
     return (
       <div className="flex h-full flex-col items-center justify-center bg-muted/50 p-8 text-center">
@@ -152,27 +126,9 @@ const CharterTourDetail = ({ tour, onUpdate }: { tour: CharterTour | null, onUpd
   }
   
   const currentStatus = tour.status || 'new';
-  const isActionable = !['approved', 'cancelled'].includes(currentStatus);
 
   return (
     <ScrollArea className="h-full">
-      <AlertDialog open={!!actionToConfirm} onOpenChange={(open) => !open && setActionToConfirm(null)}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-            <AlertDialogDescription>
-              This will {actionToConfirm} the charter inquiry from "{tour.name}".
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel onClick={() => setActionToConfirm(null)}>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={handleUpdateStatus} className={cn(actionToConfirm === 'cancel' && "bg-destructive hover:bg-destructive/90")}>
-              {actionToConfirm === 'approve' ? 'Approve' : 'Cancel Inquiry'}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-
       <div className="p-6 space-y-6">
         <header className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
           <div className="flex-1">
@@ -182,12 +138,6 @@ const CharterTourDetail = ({ tour, onUpdate }: { tour: CharterTour | null, onUpd
               <span className="text-sm text-muted-foreground">{format(new Date(tour.created_at), "PPP p")}</span>
             </div>
           </div>
-          {isActionable && (
-            <div className="flex gap-2 shrink-0">
-              <Button variant="destructive" onClick={() => setActionToConfirm('cancel')}><X className="mr-2 h-4 w-4" /> Cancel</Button>
-              <Button onClick={() => setActionToConfirm('approve')}><Check className="mr-2 h-4 w-4" /> Approve</Button>
-            </div>
-          )}
         </header>
         
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -362,7 +312,7 @@ export default function CharterToursPage() {
   };
 
   return (
-    <div className="grid w-full flex-1 md:grid-cols-[320px_1fr] border-t">
+    <div className="grid w-full flex-1 md:grid-cols-[320px_1fr] border-t overflow-hidden">
       <div className="flex flex-col border-r bg-muted/40">
         <div className="flex h-14 items-center border-b px-4 lg:h-[60px] lg:px-6">
           <h2 className="text-lg font-semibold">Charter Inquiries</h2>

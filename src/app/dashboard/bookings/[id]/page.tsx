@@ -386,6 +386,12 @@ export default function BookingDetailPage() {
                     {booking.booking_status}
                   </Badge>
                 </div>
+                 {booking.booking_status === 'cancelled' && booking.cancellation_reason && (
+                    <div className="mt-2 flex items-center gap-2 text-sm text-destructive">
+                        <Info className="h-4 w-4" />
+                        <span>Cancellation Reason: {booking.cancellation_reason}</span>
+                    </div>
+                )}
             </div>
             <div className="flex w-full flex-col items-stretch gap-2 sm:ml-auto sm:w-auto sm:flex-row sm:items-center">
                  {booking.booking_status === 'pending' && (
