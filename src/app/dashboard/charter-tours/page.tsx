@@ -358,15 +358,15 @@ export default function CharterToursPage() {
   };
 
   return (
-    <div className="grid h-[calc(100vh_-_theme(spacing.16))] w-full md:grid-cols-[320px_1fr]">
+    <div className="grid w-full flex-1 md:grid-cols-[320px_1fr] border-t">
       <div className="flex flex-col border-r bg-muted/40">
         <div className="flex h-14 items-center border-b px-4 lg:h-[60px] lg:px-6">
           <h2 className="text-lg font-semibold">Charter Inquiries</h2>
         </div>
         <ScrollArea className="flex-1">
-          <div className="p-2 space-y-1">
+          <div className="space-y-4 p-6">
             {loading ? (
-                <div className="p-2 space-y-3">
+                <div className="space-y-3">
                     {[...Array(8)].map((_, i) => <Skeleton key={i} className="h-20 w-full" />)}
                 </div>
             ) : tours.length > 0 ? (
