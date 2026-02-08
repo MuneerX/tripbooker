@@ -34,10 +34,10 @@ export default function DashboardLayout({
           <div className="flex flex-1 flex-col">
             <AppHeader />
             <main className={cn(
-              "flex-1 bg-muted/40 grid grid-rows-[1fr_auto]",
+              "flex flex-1 flex-col bg-muted/40",
               !isCharterPage && "gap-4 p-4 md:gap-8 md:p-8"
             )}>
-              <div className={cn(isCharterPage ? "h-full" : "")}>
+              <div className={cn("flex-1", isCharterPage ? "overflow-hidden" : "")}>
                 {children}
               </div>
                <footer className={cn(

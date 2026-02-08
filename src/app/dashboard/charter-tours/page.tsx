@@ -291,21 +291,21 @@ export default function CharterToursPage() {
                 </ScrollArea>
             </SheetContent>
         </Sheet>
-        <div className="h-full overflow-y-auto">
-          <CharterTourDetail tour={selectedTour} onUpdate={handleUpdateTourInList} />
-        </div>
+        <ScrollArea className="h-full">
+            <CharterTourDetail tour={selectedTour} onUpdate={handleUpdateTourInList} />
+        </ScrollArea>
       </div>
     );
   }
 
   return (
-    <div className="h-full w-full border-t grid grid-cols-[320px_1fr]">
+    <div className="flex h-full w-full border-t">
       {/* Left panel */}
-      <div className="border-r bg-muted/40 flex flex-col h-full">
+      <div className="flex h-full w-[320px] flex-col border-r bg-muted/40">
         <div className="flex h-14 shrink-0 items-center border-b px-4 lg:h-[60px] lg:px-6">
           <h2 className="text-lg font-semibold">Charter Inquiries</h2>
         </div>
-        <ScrollArea className="flex-grow">
+        <ScrollArea className="flex-1">
           <InquiryList
             tours={tours}
             selectedTour={selectedTour}
@@ -316,10 +316,9 @@ export default function CharterToursPage() {
       </div>
 
       {/* Right panel */}
-      <div className="overflow-y-auto">
+      <ScrollArea className="h-full flex-1">
         <CharterTourDetail tour={selectedTour} onUpdate={handleUpdateTourInList} />
-      </div>
+      </ScrollArea>
     </div>
   );
 }
-
