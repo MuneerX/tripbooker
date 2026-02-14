@@ -166,6 +166,10 @@ export function AppSidebar() {
     ? "https://i.ibb.co/7xpjJbKh/logoy2go-white.png" 
     : "https://i.ibb.co/VpQvKQ2X/logoy2go.png";
 
+  const matrimoreLogoUrl = theme === 'dark'
+    ? "https://i.ibb.co/V0Cmj4jw/matrimore.png"
+    : "https://i.ibb.co/PvP7hVCn/photo-2026-02-08-19-05-02-Edited.png";
+
   return (
       <Sidebar>
         <SidebarHeader>
@@ -180,7 +184,7 @@ export function AppSidebar() {
           <SidebarMenuItem>
                 <div className="flex items-center justify-center p-1 opacity-75 group-data-[collapsible=icon]:hidden">
                     <a href="https://matrimore.com/" target="_blank" rel="noopener noreferrer">
-                    <Image src="https://i.ibb.co/PvP7hVCn/photo-2026-02-08-19-05-02-Edited.png" alt="Matrimore Logo" width={140} height={35} />
+                    {mounted && <Image src={matrimoreLogoUrl} alt="Matrimore Logo" width={160} height={40} />}
                     </a>
                 </div>
             </SidebarMenuItem>
