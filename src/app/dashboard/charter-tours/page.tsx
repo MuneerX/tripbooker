@@ -367,7 +367,7 @@ export default function CharterToursPage() {
                 </div>
 
                 {/* Left Column (Desktop) */}
-                <div className="hidden lg:block lg:w-[320px] lg:sticky lg:top-8 flex-shrink-0">
+                <div className="hidden lg:block lg:w-[320px] lg:sticky lg:top-8 flex-shrink-0 bg-card rounded-lg border">
                     <InquiryList
                         tours={tours}
                         selectedTour={selectedTour}
