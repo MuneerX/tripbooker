@@ -1,3 +1,4 @@
+
 "use client";
 
 import * as React from "react";
@@ -24,6 +25,7 @@ import {
   Accessibility,
   UserCog,
   Bell,
+  Menu,
 } from "lucide-react";
 import { format } from "date-fns";
 import { formatCurrency, cn } from "@/lib/utils";
@@ -37,6 +39,9 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Separator } from "@/components/ui/separator";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { ScrollArea } from "@/components/ui/scroll-area";
+
 
 // --- Detail Item Components ---
 function DetailItem({
@@ -218,6 +223,7 @@ export default function CharterToursPage() {
   const [tours, setTours] = React.useState<CharterTour[]>([]);
   const [selectedTour, setSelectedTour] = React.useState<CharterTour | null>(null);
   const [loading, setLoading] = React.useState(true);
+  const [isListOpen, setIsListOpen] = React.useState(false);
 
   React.useEffect(() => {
     const fetchTours = async () => {
@@ -241,19 +247,19 @@ export default function CharterToursPage() {
   }, [toast]);
   
   const renderSkeleton = () => (
-    <div className="grid h-full grid-cols-1 gap-8 lg:grid-cols-4">
-        <div className="hidden h-full flex-col lg:col-span-1 lg:flex">
-             <Card className="flex h-full flex-col">
+    <div className="lg:grid lg:grid-cols-4 gap-8">
+        <div className="hidden lg:block lg:col-span-1">
+             <Card>
                 <CardHeader>
                     <Skeleton className="h-6 w-3/4" />
                     <Skeleton className="h-4 w-1/2" />
                 </CardHeader>
-                <CardContent className="flex-1 space-y-3 overflow-y-auto">
+                <CardContent className="space-y-3">
                     {[...Array(5)].map((_, i) => <Skeleton key={i} className="h-16 w-full" />)}
                 </CardContent>
             </Card>
         </div>
-        <div className="h-full overflow-y-auto lg:col-span-3">
+        <div className="lg:col-span-3">
             <Card>
                 <CardHeader>
                     <div className="flex items-center gap-4">
@@ -275,62 +281,97 @@ export default function CharterToursPage() {
         </div>
     </div>
   );
+  
+  const InquiryList = ({ onTourSelect }: { onTourSelect: (tour: CharterTour) => void }) => (
+    <Card>
+        <CardHeader>
+            <CardTitle>Charter Inquiries</CardTitle>
+            <CardDescription>Select an inquiry to view details.</CardDescription>
+        </CardHeader>
+        <CardContent className="p-3">
+            <ScrollArea className="h-full">
+                <div className="space-y-3">
+                    {tours.map((tour) => (
+                        <button
+                            key={tour.id}
+                            className={cn(
+                                "w-full text-left p-3 rounded-lg border transition-colors",
+                                selectedTour?.id === tour.id
+                                ? "bg-muted border-primary"
+                                : "hover:bg-muted/50"
+                            )}
+                            onClick={() => onTourSelect(tour)}
+                        >
+                            <div className="flex items-start gap-3">
+                                <Avatar className="h-10 w-10 border">
+                                    <AvatarImage src={tour.avatar_url || ''} alt={tour.name || 'U'} />
+                                    <AvatarFallback>{tour.name?.charAt(0) || 'U'}</AvatarFallback>
+                                </Avatar>
+                                <div className="grid gap-0.5">
+                                    <p className="font-semibold text-sm line-clamp-1">{tour.name}</p>
+                                    <p className="text-xs text-muted-foreground">{tour.travel_purpose}</p>
+                                    <p className="text-xs text-muted-foreground mt-1">
+                                        {format(new Date(tour.created_at), "PPP")}
+                                    </p>
+                                </div>
+                            </div>
+                        </button>
+                    ))}
+                </div>
+            </ScrollArea>
+        </CardContent>
+    </Card>
+  );
+
 
   return (
      <div className="h-full">
         {loading ? (
             renderSkeleton()
         ) : tours.length > 0 ? (
-            <div className="grid h-full grid-cols-1 lg:grid-cols-4 gap-8">
-                {/* Left Column: Inquiry List */}
-                <div className="hidden h-full flex-col lg:col-span-1 lg:flex">
-                     <Card className="flex h-full flex-col">
-                        <CardHeader>
-                            <CardTitle>Charter Inquiries</CardTitle>
-                            <CardDescription>Select an inquiry to view details.</CardDescription>
-                        </CardHeader>
-                        <CardContent className="flex-1 space-y-3 overflow-y-auto p-3">
-                            {tours.map((tour) => (
-                                <button
-                                    key={tour.id}
-                                    className={cn(
-                                        "w-full text-left p-3 rounded-lg border transition-colors",
-                                        selectedTour?.id === tour.id
-                                        ? "bg-muted border-primary"
-                                        : "hover:bg-muted/50"
-                                    )}
-                                    onClick={() => setSelectedTour(tour)}
-                                >
-                                    <div className="flex items-start gap-3">
-                                        <Avatar className="h-10 w-10 border">
-                                            <AvatarImage src={tour.avatar_url || ''} alt={tour.name || 'U'} />
-                                            <AvatarFallback>{tour.name?.charAt(0) || 'U'}</AvatarFallback>
-                                        </Avatar>
-                                        <div className="grid gap-0.5">
-                                            <p className="font-semibold text-sm line-clamp-1">{tour.name}</p>
-                                            <p className="text-xs text-muted-foreground">{tour.travel_purpose}</p>
-                                            <p className="text-xs text-muted-foreground mt-1">
-                                                {format(new Date(tour.created_at), "PPP")}
-                                            </p>
-                                        </div>
-                                    </div>
-                                </button>
-                            ))}
-                        </CardContent>
-                    </Card>
+            <div className="flex flex-col lg:flex-row gap-8 items-start">
+                
+                {/* Mobile Header */}
+                <div className="lg:hidden w-full flex items-center gap-4">
+                     <Sheet open={isListOpen} onOpenChange={setIsListOpen}>
+                        <SheetTrigger asChild>
+                             <Button variant="outline" size="icon">
+                                <Menu className="h-5 w-5" />
+                                <span className="sr-only">Open Inquiries List</span>
+                            </Button>
+                        </SheetTrigger>
+                        <SheetContent side="left" className="p-0 w-full max-w-sm">
+                           <InquiryList
+                             onTourSelect={(tour) => {
+                               setSelectedTour(tour);
+                               setIsListOpen(false);
+                             }}
+                           />
+                        </SheetContent>
+                    </Sheet>
+                    <h1 className="text-xl font-semibold">Charter Inquiry</h1>
                 </div>
-                {/* Right Column: Detailed View */}
-                <div className="h-full overflow-y-auto lg:col-span-3">
+
+                {/* Left Column (Desktop) */}
+                <div className="hidden lg:block lg:w-[320px] lg:sticky lg:top-24 flex-shrink-0">
+                    <div className="max-h-[calc(100vh-7rem)]">
+                        <InquiryList onTourSelect={setSelectedTour} />
+                    </div>
+                </div>
+                
+                {/* Right Column (Details) */}
+                <div className="flex-1 w-full min-w-0">
                     {selectedTour ? (
                         <CharterTourDetail tour={selectedTour} />
                     ) : (
-                         <div className="text-center py-24 text-muted-foreground h-full flex flex-col items-center justify-center rounded-lg border-2 border-dashed">
+                         <div className="hidden lg:flex text-center py-24 text-muted-foreground h-full flex-col items-center justify-center rounded-lg border-2 border-dashed">
                             <Bell className="mx-auto h-12 w-12" />
                             <h3 className="mt-4 text-lg font-semibold">Select an Inquiry</h3>
                             <p className="mt-2 text-sm">Choose an inquiry from the left to see its details.</p>
                         </div>
                     )}
                 </div>
+
             </div>
         ) : (
             <div className="text-center py-24 text-muted-foreground">
@@ -342,3 +383,4 @@ export default function CharterToursPage() {
     </div>
   );
 }
+
