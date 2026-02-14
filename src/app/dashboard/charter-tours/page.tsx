@@ -241,19 +241,19 @@ export default function CharterToursPage() {
   }, [toast]);
   
   const renderSkeleton = () => (
-    <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
-        <div className="lg:col-span-1">
-             <Card>
+    <div className="grid h-full grid-cols-1 gap-8 lg:grid-cols-4">
+        <div className="hidden h-full flex-col lg:col-span-1 lg:flex">
+             <Card className="flex h-full flex-col">
                 <CardHeader>
                     <Skeleton className="h-6 w-3/4" />
                     <Skeleton className="h-4 w-1/2" />
                 </CardHeader>
-                <CardContent className="space-y-3">
+                <CardContent className="flex-1 space-y-3 overflow-y-auto">
                     {[...Array(5)].map((_, i) => <Skeleton key={i} className="h-16 w-full" />)}
                 </CardContent>
             </Card>
         </div>
-        <div className="lg:col-span-2">
+        <div className="h-full overflow-y-auto lg:col-span-3">
             <Card>
                 <CardHeader>
                     <div className="flex items-center gap-4">
@@ -277,19 +277,19 @@ export default function CharterToursPage() {
   );
 
   return (
-    <div className="space-y-6">
+     <div className="h-full">
         {loading ? (
             renderSkeleton()
         ) : tours.length > 0 ? (
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
+            <div className="grid h-full grid-cols-1 lg:grid-cols-4 gap-8">
                 {/* Left Column: Inquiry List */}
-                <div className="lg:col-span-1 space-y-4">
-                     <Card className="h-full">
+                <div className="hidden h-full flex-col lg:col-span-1 lg:flex">
+                     <Card className="flex h-full flex-col">
                         <CardHeader>
                             <CardTitle>Charter Inquiries</CardTitle>
                             <CardDescription>Select an inquiry to view details.</CardDescription>
                         </CardHeader>
-                        <CardContent className="space-y-3 max-h-[75vh] overflow-y-auto">
+                        <CardContent className="flex-1 space-y-3 overflow-y-auto p-3">
                             {tours.map((tour) => (
                                 <button
                                     key={tour.id}
@@ -320,7 +320,7 @@ export default function CharterToursPage() {
                     </Card>
                 </div>
                 {/* Right Column: Detailed View */}
-                <div className="lg:col-span-2">
+                <div className="h-full overflow-y-auto lg:col-span-3">
                     {selectedTour ? (
                         <CharterTourDetail tour={selectedTour} />
                     ) : (
