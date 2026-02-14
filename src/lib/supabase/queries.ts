@@ -1505,6 +1505,38 @@ export async function getCharterTours(): Promise<CharterTour[]> {
   })) as CharterTour[];
 }
 
+export async function getCharterTourById(id: string): Promise<CharterTour | null> {
+  const supabase = createAdminClient();
+  const { data, error } = await supabase
+    .from('charter_tour')
+    .select('*')
+    .eq('id', id)
+    .single();
+
+  if (error) {
+    console.error(`Error fetching charter tour ${id}:`, error);
+    throw new Error(error.message);
+  }
+  
+  if (!data) return null;
+
+  const tour = data as CharterTour;
+  
+  // Fetch profile to get avatar
+  if (tour.email) {
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('avatar_url')
+      .eq('email', tour.email)
+      .single();
+    if (profile) {
+      tour.avatar_url = profile.avatar_url;
+    }
+  }
+
+  return tour;
+}
+
 
 export async function updateCharterTourStatus(id: string, status: 'approved' | 'cancelled'): Promise<CharterTour> {
   const supabase = createAdminClient();
