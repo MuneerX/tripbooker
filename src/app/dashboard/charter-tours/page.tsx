@@ -1,39 +1,233 @@
 "use client";
 
 import * as React from "react";
-import { MoreHorizontal, Users, View, User, Phone, Calendar, ArrowUp, ArrowDown } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { Input } from "@/components/ui/input";
+import {
+  Mail,
+  Phone,
+  Clock,
+  Users,
+  Calendar,
+  Check,
+  X,
+  MapPin,
+  Car,
+  Hotel,
+  Utensils,
+  Camera,
+  Briefcase,
+  Star,
+  Wallet,
+  BookText,
+  UserCheck,
+  Plane,
+  Baby,
+  Accessibility,
+  UserCog,
+  Bell,
+} from "lucide-react";
+import { format } from "date-fns";
+import { formatCurrency, cn } from "@/lib/utils";
 import type { CharterTour } from "@/lib/types";
-import { StatCard } from "@/components/dashboard/StatCard";
+
 import { getCharterTours } from "@/lib/supabase/queries";
 import { useToast } from "@/hooks/use-toast";
+
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { useRouter } from "next/navigation";
-import { format } from 'date-fns';
+import { Skeleton } from "@/components/ui/skeleton";
+import { Separator } from "@/components/ui/separator";
 
-type SortableKeys = 'name' | 'email' | 'created_at' | 'travel_purpose';
+// --- Detail Item Components ---
+function DetailItem({
+  icon: Icon,
+  label,
+  value,
+}: {
+  icon: React.ElementType;
+  label: string;
+  value: React.ReactNode;
+}) {
+  if (value === null || value === undefined || value === "") return null;
+  return (
+    <div className="flex items-start gap-3">
+      <Icon className="h-5 w-5 text-muted-foreground mt-1" />
+      <div>
+        <p className="text-sm text-muted-foreground">{label}</p>
+        <p className="font-medium">{value}</p>
+      </div>
+    </div>
+  );
+}
 
+function BooleanDetailItem({
+  icon: Icon,
+  label,
+  value,
+}: {
+  icon: React.ElementType;
+  label: string;
+  value: boolean;
+}) {
+  return (
+    <div className="flex items-start gap-3">
+      <Icon className="h-5 w-5 text-muted-foreground mt-1" />
+      <div>
+        <p className="text-sm text-muted-foreground">{label}</p>
+        {value ? (
+          <span className="flex items-center gap-1.5 text-sm font-medium text-green-600">
+            <Check className="h-4 w-4" /> Yes
+          </span>
+        ) : (
+          <span className="flex items-center gap-1.5 text-sm font-medium text-red-600">
+            <X className="h-4 w-4" /> No
+          </span>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// --- Charter Tour Detail View Component ---
+const CharterTourDetail = ({ tour }: { tour: CharterTour }) => {
+  
+  const renderTextList = (text: string | null | undefined, title: string) => {
+    if (!text) return null;
+    const items = text.split(/[\n,]+/).map(p => p.trim()).filter(p => p);
+    return (
+      <div>
+        <h3 className="font-semibold mb-2">{title}</h3>
+        <ul className="list-disc list-inside space-y-1 text-sm text-muted-foreground">
+          {items.map((item, index) => (
+            <li key={index}>{item}</li>
+          ))}
+        </ul>
+      </div>
+    );
+  }
+
+  return (
+    <Card>
+        <CardHeader>
+             <div className="flex items-start justify-between">
+                <div className="grid gap-2">
+                    <CardTitle className="text-xl flex items-center gap-3">
+                       <Avatar className="h-10 w-10">
+                            <AvatarImage src={tour.avatar_url || ''} alt={tour.name || 'Avatar'} />
+                            <AvatarFallback>{tour.name?.charAt(0) || "U"}</AvatarFallback>
+                        </Avatar>
+                        {tour.name || "Charter Inquiry"}
+                    </CardTitle>
+                    <CardDescription>
+                        Inquiry received on {format(new Date(tour.created_at), "PPP p")}
+                    </CardDescription>
+                </div>
+            </div>
+        </CardHeader>
+        <CardContent className="space-y-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div className="space-y-6">
+                    <Card className="bg-muted/30">
+                        <CardHeader><CardTitle className="text-base">Contact Information</CardTitle></CardHeader>
+                        <CardContent className="space-y-4">
+                            <DetailItem icon={UserCheck} label="Full Name" value={tour.name} />
+                            <DetailItem icon={Mail} label="Email" value={tour.email} />
+                            <DetailItem icon={Phone} label="Mobile Number" value={tour.mobile_number} />
+                            <DetailItem icon={Phone} label="WhatsApp" value={tour.whatsapp_number} />
+                            <DetailItem icon={Clock} label="Best time to call" value={tour.time_to_call} />
+                        </CardContent>
+                    </Card>
+                    <Card className="bg-muted/30">
+                        <CardHeader><CardTitle className="text-base">Travel Preferences</CardTitle></CardHeader>
+                        <CardContent className="grid grid-cols-2 gap-6">
+                            <DetailItem icon={Plane} label="Travel Style" value={tour.travel_style} />
+                            <DetailItem icon={Clock} label="Travel Pace" value={tour.travel_pace} />
+                            <DetailItem icon={Briefcase} label="Purpose" value={tour.travel_purpose} />
+                            <DetailItem icon={Calendar} label="Duration" value={`${tour.number_of_days}D / ${tour.number_of_nights}N`} />
+                            <BooleanDetailItem icon={Calendar} label="Date Flexible" value={!!tour.date_flexible} />
+                        </CardContent>
+                    </Card>
+                     <Card className="bg-muted/30">
+                        <CardHeader><CardTitle className="text-base">Accommodation & Transport</CardTitle></CardHeader>
+                        <CardContent className="grid grid-cols-2 gap-6">
+                            <DetailItem icon={Car} label="Vehicle" value={tour.vehicle_requirements} />
+                            <DetailItem icon={Car} label="Brand Preference" value={tour.vehicle_brand_preference} />
+                            <DetailItem icon={UserCog} label="Driver Language" value={tour.driver_language_preference} />
+                            <DetailItem icon={Hotel} label="Hotel Category" value={tour.hotel_category} />
+                            <DetailItem icon={Hotel} label="Room Type" value={tour.room_type} />
+                            <DetailItem icon={Hotel} label="Number of Rooms" value={tour.number_of_rooms} />
+                            <DetailItem icon={Utensils} label="Meal Plan" value={tour.meal_plan} />
+                        </CardContent>
+                    </Card>
+                </div>
+                <div className="space-y-6">
+                    <Card className="bg-muted/30">
+                        <CardHeader><CardTitle className="text-base">Guest Information</CardTitle></CardHeader>
+                        <CardContent className="grid grid-cols-2 gap-6">
+                            <DetailItem icon={Users} label="Adults" value={tour.number_of_adults} />
+                            <DetailItem icon={Users} label="Children" value={tour.number_of_children} />
+                            <BooleanDetailItem icon={Baby} label="Infant" value={!!tour.infant_travelling} />
+                            <BooleanDetailItem icon={UserCheck} label="Senior Citizen" value={!!tour.senior_citizen_travelling} />
+                            <BooleanDetailItem icon={Accessibility} label="Mobility Needs" value={!!tour.mobility_assistance} />
+                        </CardContent>
+                    </Card>
+                     <Card className="bg-muted/30">
+                        <CardHeader><CardTitle className="text-base">Budget & Payment</CardTitle></CardHeader>
+                        <CardContent className="grid grid-cols-2 gap-6">
+                            <DetailItem icon={Wallet} label="Budget" value={tour.budget ? formatCurrency(tour.budget as number) : 'N/A'} />
+                            <DetailItem icon={BookText} label="Payment Method" value={tour.payment_preference} />
+                        </CardContent>
+                    </Card>
+                     <Card className="bg-muted/30">
+                        <CardHeader><CardTitle className="text-base">Additional Services</CardTitle></CardHeader>
+                        <CardContent className="grid grid-cols-2 gap-6">
+                            <BooleanDetailItem icon={UserCog} label="Tour Guide" value={!!tour.need_tour_guide} />
+                            <BooleanDetailItem icon={Car} label="Pickup/Drop" value={!!tour.need_pickup} />
+                            <BooleanDetailItem icon={Utensils} label="Food" value={!!tour.need_food} />
+                            <BooleanDetailItem icon={Camera} label="Photographer" value={!!tour.need_photographer} />
+                            <BooleanDetailItem icon={Star} label="VIP Services" value={!!tour.need_vip} />
+                        </CardContent>
+                    </Card>
+                </div>
+            </div>
+             <Separator className="my-6" />
+             <div className="space-y-4">
+                <CardTitle className="text-lg">Interests & Notes</CardTitle>
+                <div className="grid md:grid-cols-2 gap-6">
+                    {renderTextList(tour.interested_locations, 'Interested Locations')}
+                    {renderTextList(tour.interested_activities, 'Interested Activities')}
+                    {renderTextList(tour.things_to_include, 'Things to Include')}
+                    {renderTextList(tour.things_to_exclude, 'Things to Exclude')}
+                </div>
+                {tour.additional_notes && (
+                    <div className="space-y-2 pt-4">
+                        <h3 className="font-semibold">Additional Notes</h3>
+                        <p className="text-sm text-muted-foreground p-4 bg-muted/50 rounded-lg">{tour.additional_notes}</p>
+                    </div>
+                )}
+            </div>
+        </CardContent>
+    </Card>
+  );
+};
+
+
+// --- Main Page Component ---
 export default function CharterToursPage() {
   const { toast } = useToast();
-  const router = useRouter();
-  const [searchTerm, setSearchTerm] = React.useState("");
-  const [currentPage, setCurrentPage] = React.useState(1);
-  const [allTours, setAllTours] = React.useState<CharterTour[]>([]);
+  const [tours, setTours] = React.useState<CharterTour[]>([]);
+  const [selectedTour, setSelectedTour] = React.useState<CharterTour | null>(null);
   const [loading, setLoading] = React.useState(true);
-  const [sortConfig, setSortConfig] = React.useState<{ key: SortableKeys; direction: 'asc' | 'desc' } | null>(null);
-
-  const rowsPerPage = 10;
 
   React.useEffect(() => {
     const fetchTours = async () => {
       setLoading(true);
       try {
-        const tours = await getCharterTours();
-        setAllTours(tours);
+        const data = await getCharterTours();
+        setTours(data);
+        if (data.length > 0) {
+          setSelectedTour(data[0]);
+        }
       } catch (error: any) {
         toast({
           variant: "destructive",
@@ -46,187 +240,105 @@ export default function CharterToursPage() {
     fetchTours();
   }, [toast]);
   
-  const filteredTours = allTours.filter((tour) =>
-      (tour.name?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
-      (tour.email?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
-      (tour.travel_purpose?.toLowerCase() || '').includes(searchTerm.toLowerCase())
+  const renderSkeleton = () => (
+    <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
+        <div className="lg:col-span-1">
+             <Card>
+                <CardHeader>
+                    <Skeleton className="h-6 w-3/4" />
+                    <Skeleton className="h-4 w-1/2" />
+                </CardHeader>
+                <CardContent className="space-y-3">
+                    {[...Array(5)].map((_, i) => <Skeleton key={i} className="h-16 w-full" />)}
+                </CardContent>
+            </Card>
+        </div>
+        <div className="lg:col-span-2">
+            <Card>
+                <CardHeader>
+                    <div className="flex items-center gap-4">
+                        <Skeleton className="h-12 w-12 rounded-full" />
+                        <div className="space-y-2">
+                            <Skeleton className="h-6 w-48" />
+                            <Skeleton className="h-4 w-32" />
+                        </div>
+                    </div>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <Skeleton className="h-64 w-full" />
+                        <Skeleton className="h-64 w-full" />
+                    </div>
+                     <Skeleton className="h-40 w-full" />
+                </CardContent>
+            </Card>
+        </div>
+    </div>
   );
-  
-  const handleSort = (key: SortableKeys) => {
-    let direction: 'asc' | 'desc' = 'asc';
-    if (sortConfig && sortConfig.key === key && sortConfig.direction === 'asc') {
-      direction = 'desc';
-    }
-    setSortConfig({ key, direction });
-  };
-
-  const renderSortArrow = (key: SortableKeys) => {
-    if (sortConfig?.key !== key) return null;
-    return sortConfig.direction === 'asc' ? <ArrowUp className="ml-2 h-4 w-4" /> : <ArrowDown className="ml-2 h-4 w-4" />;
-  };
-
-  const sortedTours = React.useMemo(() => {
-    let sortableItems = [...filteredTours];
-    if (sortConfig) {
-      sortableItems.sort((a, b) => {
-        const aValue = a[sortConfig.key as keyof CharterTour] as any;
-        const bValue = b[sortConfig.key as keyof CharterTour] as any;
-
-        if (aValue === null || aValue === undefined) return 1;
-        if (bValue === null || bValue === undefined) return -1;
-        
-        if (sortConfig.key === 'created_at') {
-            const dateA = new Date(aValue as string).getTime();
-            const dateB = new Date(bValue as string).getTime();
-            if (dateA < dateB) return sortConfig.direction === 'asc' ? -1 : 1;
-            if (dateA > dateB) return sortConfig.direction === 'asc' ? 1 : -1;
-            return 0;
-        }
-
-        if (typeof aValue === 'string' && typeof bValue === 'string') {
-          return aValue.localeCompare(bValue) * (sortConfig.direction === 'asc' ? 1 : -1);
-        }
-
-        if (aValue < bValue) return sortConfig.direction === 'asc' ? -1 : 1;
-        if (aValue > bValue) return sortConfig.direction === 'asc' ? 1 : -1;
-        return 0;
-      });
-    }
-    return sortableItems;
-  }, [filteredTours, sortConfig]);
-
-  const totalPages = Math.ceil(sortedTours.length / rowsPerPage);
-  const paginatedTours = sortedTours.slice(
-    (currentPage - 1) * rowsPerPage,
-    currentPage * rowsPerPage
-  );
-  
-  const stats = [
-    { label: "Total Inquiries", value: allTours.length, icon: <Users className="h-4 w-4" /> },
-  ];
 
   return (
-    <div className="flex flex-col gap-6">
-      
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3">
-        {stats.map(stat => <StatCard key={stat.label} card={stat} />)}
-      </div>
-
-      <Card>
-        <CardHeader>
-          <div className="flex flex-col items-start gap-4 sm:flex-row sm:items-center sm:justify-between">
-            <div>
-              <CardTitle>Charter Tour Inquiries</CardTitle>
-              <CardDescription>Manage all charter tour inquiries from customers.</CardDescription>
-            </div>
-            <div className="flex w-full items-center gap-2 sm:w-auto">
-              <Input
-                placeholder="Search inquiries..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full sm:w-64"
-              />
-            </div>
-          </div>
-        </CardHeader>
-        <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead className="cursor-pointer hover:bg-muted" onClick={() => handleSort('name')}>
-                  <div className="flex items-center">Customer {renderSortArrow('name')}</div>
-                </TableHead>
-                <TableHead className="hidden md:table-cell cursor-pointer hover:bg-muted" onClick={() => handleSort('travel_purpose')}>
-                   <div className="flex items-center">Purpose {renderSortArrow('travel_purpose')}</div>
-                </TableHead>
-                <TableHead className="hidden lg:table-cell">
-                   Guests
-                </TableHead>
-                <TableHead className="hidden lg:table-cell cursor-pointer hover:bg-muted" onClick={() => handleSort('created_at')}>
-                   <div className="flex items-center">Inquiry Date {renderSortArrow('created_at')}</div>
-                </TableHead>
-                 <TableHead>
-                  <span className="sr-only">Actions</span>
-                </TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {loading ? (
-                <TableRow>
-                  <TableCell colSpan={5} className="h-24 text-center">
-                    Loading inquiries...
-                  </TableCell>
-                </TableRow>
-              ) : paginatedTours.length > 0 ? (
-                paginatedTours.map((tour: CharterTour) => (
-                  <TableRow key={tour.id} className="cursor-pointer" onClick={() => router.push(`/dashboard/charter-tours/${tour.id}`)}>
-                    <TableCell>
-                      <div className="flex items-center gap-3">
-                        <Avatar className="h-9 w-9">
-                          <AvatarImage src={tour.avatar_url || ''} alt={tour.name || ''} />
-                          <AvatarFallback>{tour.name?.charAt(0) || 'U'}</AvatarFallback>
-                        </Avatar>
-                        <div>
-                            <p className="font-medium">{tour.name || 'N/A'}</p>
-                            <p className="text-sm text-muted-foreground">{tour.email || 'N/A'}</p>
+    <div className="space-y-6">
+        {loading ? (
+            renderSkeleton()
+        ) : tours.length > 0 ? (
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
+                {/* Left Column: Inquiry List */}
+                <div className="lg:col-span-1 space-y-4">
+                     <Card className="h-full">
+                        <CardHeader>
+                            <CardTitle>Charter Inquiries</CardTitle>
+                            <CardDescription>Select an inquiry to view details.</CardDescription>
+                        </CardHeader>
+                        <CardContent className="space-y-3 max-h-[75vh] overflow-y-auto">
+                            {tours.map((tour) => (
+                                <button
+                                    key={tour.id}
+                                    className={cn(
+                                        "w-full text-left p-3 rounded-lg border transition-colors",
+                                        selectedTour?.id === tour.id
+                                        ? "bg-muted border-primary"
+                                        : "hover:bg-muted/50"
+                                    )}
+                                    onClick={() => setSelectedTour(tour)}
+                                >
+                                    <div className="flex items-start gap-3">
+                                        <Avatar className="h-10 w-10 border">
+                                            <AvatarImage src={tour.avatar_url || ''} alt={tour.name || 'U'} />
+                                            <AvatarFallback>{tour.name?.charAt(0) || 'U'}</AvatarFallback>
+                                        </Avatar>
+                                        <div className="grid gap-0.5">
+                                            <p className="font-semibold text-sm line-clamp-1">{tour.name}</p>
+                                            <p className="text-xs text-muted-foreground">{tour.travel_purpose}</p>
+                                            <p className="text-xs text-muted-foreground mt-1">
+                                                {format(new Date(tour.created_at), "PPP")}
+                                            </p>
+                                        </div>
+                                    </div>
+                                </button>
+                            ))}
+                        </CardContent>
+                    </Card>
+                </div>
+                {/* Right Column: Detailed View */}
+                <div className="lg:col-span-2">
+                    {selectedTour ? (
+                        <CharterTourDetail tour={selectedTour} />
+                    ) : (
+                         <div className="text-center py-24 text-muted-foreground h-full flex flex-col items-center justify-center rounded-lg border-2 border-dashed">
+                            <Bell className="mx-auto h-12 w-12" />
+                            <h3 className="mt-4 text-lg font-semibold">Select an Inquiry</h3>
+                            <p className="mt-2 text-sm">Choose an inquiry from the left to see its details.</p>
                         </div>
-                      </div>
-                    </TableCell>
-                    <TableCell className="hidden md:table-cell">{tour.travel_purpose || 'N/A'}</TableCell>
-                    <TableCell className="hidden lg:table-cell">{ (tour.number_of_adults || 0) + (tour.number_of_children || 0) }</TableCell>
-                    <TableCell className="hidden lg:table-cell">{tour.created_at ? format(new Date(tour.created_at), "PPP") : 'N/A'}</TableCell>
-                    <TableCell onClick={(e) => e.stopPropagation()}>
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button aria-haspopup="true" size="icon" variant="ghost">
-                            <MoreHorizontal className="h-4 w-4" />
-                            <span className="sr-only">Toggle menu</span>
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                          <DropdownMenuItem onSelect={() => router.push(`/dashboard/charter-tours/${tour.id}`)}>
-                            <View className="mr-2 h-4 w-4" /> View
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </TableCell>
-                  </TableRow>
-                ))
-              ) : (
-                <TableRow>
-                  <TableCell colSpan={5} className="h-24 text-center">
-                    No inquiries found.
-                  </TableCell>
-                </TableRow>
-              )}
-            </TableBody>
-          </Table>
-        </CardContent>
-         <CardFooter>
-            <div className="text-xs text-muted-foreground">
-                Showing <strong>{(currentPage - 1) * rowsPerPage + 1}-{(currentPage - 1) * rowsPerPage + paginatedTours.length}</strong> of <strong>{sortedTours.length}</strong> inquiries
+                    )}
+                </div>
             </div>
-            <div className="ml-auto flex items-center gap-2">
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
-                disabled={currentPage === 1}
-              >
-                Previous
-              </Button>
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={() => setCurrentPage((prev) => Math.min(totalPages, prev + 1))}
-                disabled={currentPage === totalPages}
-              >
-                Next
-              </Button>
+        ) : (
+            <div className="text-center py-24 text-muted-foreground">
+              <Plane className="mx-auto h-12 w-12" />
+              <h3 className="mt-4 text-lg font-semibold">No Charter Inquiries</h3>
+              <p className="mt-2 text-sm">There are no new charter tour inquiries at this time.</p>
             </div>
-        </CardFooter>
-      </Card>
+        )}
     </div>
   );
 }
