@@ -226,48 +226,46 @@ const InquiryList = ({
   selectedTour: CharterTour | null;
   onTourSelect: (tour: CharterTour) => void;
 }) => (
-  <Card>
-    <CardHeader>
-      <CardTitle>Charter Inquiries</CardTitle>
-      <CardDescription>Select an inquiry to view details.</CardDescription>
-    </CardHeader>
-    <CardContent className="p-0">
-      <ScrollArea className="h-full max-h-[calc(100vh-10rem)]">
-        <div className="divide-y divide-border">
-          {tours.map((tour) => (
-            <button
-              key={tour.id}
-              className={cn(
-                "w-full text-left p-4 transition-colors",
-                selectedTour?.id === tour.id
-                  ? "bg-muted"
-                  : "hover:bg-muted/50"
-              )}
-              onClick={() => onTourSelect(tour)}
-            >
-              <div className="flex items-start gap-3">
-                <Avatar className="h-10 w-10 border">
-                  <AvatarImage src={tour.avatar_url || ""} alt={tour.name || "U"} />
-                  <AvatarFallback>{tour.name?.charAt(0) || "U"}</AvatarFallback>
-                </Avatar>
-                <div className="grid gap-0.5">
-                  <p className="font-semibold text-sm line-clamp-1">
-                    {tour.name}
-                  </p>
-                  <p className="text-xs text-muted-foreground">
-                    {tour.travel_purpose}
-                  </p>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    {format(new Date(tour.created_at), "PPP")}
-                  </p>
-                </div>
-              </div>
-            </button>
-          ))}
+    <div className="space-y-4">
+        <div className="px-4 py-2">
+            <CardTitle>Charter Inquiries</CardTitle>
+            <CardDescription>Select an inquiry to view details.</CardDescription>
         </div>
-      </ScrollArea>
-    </CardContent>
-  </Card>
+        <ScrollArea className="h-full max-h-[calc(100vh-12rem)]">
+            <div className="space-y-3 px-4">
+                {tours.map((tour) => (
+                    <button
+                    key={tour.id}
+                    className={cn(
+                        "w-full text-left p-3 rounded-lg border transition-colors",
+                        selectedTour?.id === tour.id
+                        ? "bg-muted border-primary shadow-sm"
+                        : "hover:bg-muted/50"
+                    )}
+                    onClick={() => onTourSelect(tour)}
+                    >
+                        <div className="flex items-start gap-3">
+                            <Avatar className="h-10 w-10 border">
+                                <AvatarImage src={tour.avatar_url || ""} alt={tour.name || "U"} />
+                                <AvatarFallback>{tour.name?.charAt(0) || "U"}</AvatarFallback>
+                            </Avatar>
+                            <div className="grid gap-0.5 flex-1 min-w-0">
+                                <p className="font-semibold text-sm line-clamp-1">
+                                    {tour.name}
+                                </p>
+                                <p className="text-xs text-muted-foreground truncate">
+                                    {tour.travel_purpose}
+                                </p>
+                                <p className="text-xs text-muted-foreground mt-1">
+                                    {format(new Date(tour.created_at), "PPP")}
+                                </p>
+                            </div>
+                        </div>
+                    </button>
+                ))}
+            </div>
+        </ScrollArea>
+    </div>
 );
 
 
@@ -401,3 +399,5 @@ export default function CharterToursPage() {
     </div>
   );
 }
+
+    
