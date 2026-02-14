@@ -217,6 +217,61 @@ const CharterTourDetail = ({ tour }: { tour: CharterTour }) => {
 };
 
 
+const InquiryList = ({
+  tours,
+  selectedTour,
+  onTourSelect,
+}: {
+  tours: CharterTour[];
+  selectedTour: CharterTour | null;
+  onTourSelect: (tour: CharterTour) => void;
+}) => (
+  <Card>
+    <CardHeader>
+      <CardTitle>Charter Inquiries</CardTitle>
+      <CardDescription>Select an inquiry to view details.</CardDescription>
+    </CardHeader>
+    <CardContent className="p-0">
+      <ScrollArea className="h-full max-h-[calc(100vh-10rem)]">
+        <div className="divide-y divide-border">
+          {tours.map((tour) => (
+            <button
+              key={tour.id}
+              className={cn(
+                "w-full text-left p-4 transition-colors",
+                selectedTour?.id === tour.id
+                  ? "bg-muted"
+                  : "hover:bg-muted/50"
+              )}
+              onClick={() => onTourSelect(tour)}
+            >
+              <div className="flex items-start gap-3">
+                <Avatar className="h-10 w-10 border">
+                  <AvatarImage src={tour.avatar_url || ""} alt={tour.name || "U"} />
+                  <AvatarFallback>{tour.name?.charAt(0) || "U"}</AvatarFallback>
+                </Avatar>
+                <div className="grid gap-0.5">
+                  <p className="font-semibold text-sm line-clamp-1">
+                    {tour.name}
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    {tour.travel_purpose}
+                  </p>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    {format(new Date(tour.created_at), "PPP")}
+                  </p>
+                </div>
+              </div>
+            </button>
+          ))}
+        </div>
+      </ScrollArea>
+    </CardContent>
+  </Card>
+);
+
+
+
 // --- Main Page Component ---
 export default function CharterToursPage() {
   const { toast } = useToast();
@@ -281,47 +336,6 @@ export default function CharterToursPage() {
         </div>
     </div>
   );
-  
-  const InquiryList = ({ onTourSelect }: { onTourSelect: (tour: CharterTour) => void }) => (
-    <Card>
-        <CardHeader>
-            <CardTitle>Charter Inquiries</CardTitle>
-            <CardDescription>Select an inquiry to view details.</CardDescription>
-        </CardHeader>
-        <CardContent className="p-3">
-            <ScrollArea className="h-full">
-                <div className="space-y-3">
-                    {tours.map((tour) => (
-                        <button
-                            key={tour.id}
-                            className={cn(
-                                "w-full text-left p-3 rounded-lg border transition-colors",
-                                selectedTour?.id === tour.id
-                                ? "bg-muted border-primary"
-                                : "hover:bg-muted/50"
-                            )}
-                            onClick={() => onTourSelect(tour)}
-                        >
-                            <div className="flex items-start gap-3">
-                                <Avatar className="h-10 w-10 border">
-                                    <AvatarImage src={tour.avatar_url || ''} alt={tour.name || 'U'} />
-                                    <AvatarFallback>{tour.name?.charAt(0) || 'U'}</AvatarFallback>
-                                </Avatar>
-                                <div className="grid gap-0.5">
-                                    <p className="font-semibold text-sm line-clamp-1">{tour.name}</p>
-                                    <p className="text-xs text-muted-foreground">{tour.travel_purpose}</p>
-                                    <p className="text-xs text-muted-foreground mt-1">
-                                        {format(new Date(tour.created_at), "PPP")}
-                                    </p>
-                                </div>
-                            </div>
-                        </button>
-                    ))}
-                </div>
-            </ScrollArea>
-        </CardContent>
-    </Card>
-  );
 
 
   return (
@@ -342,6 +356,8 @@ export default function CharterToursPage() {
                         </SheetTrigger>
                         <SheetContent side="left" className="p-0 w-full max-w-sm">
                            <InquiryList
+                             tours={tours}
+                             selectedTour={selectedTour}
                              onTourSelect={(tour) => {
                                setSelectedTour(tour);
                                setIsListOpen(false);
@@ -353,10 +369,12 @@ export default function CharterToursPage() {
                 </div>
 
                 {/* Left Column (Desktop) */}
-                <div className="hidden lg:block lg:w-[320px] lg:sticky lg:top-24 flex-shrink-0">
-                    <div className="max-h-[calc(100vh-7rem)]">
-                        <InquiryList onTourSelect={setSelectedTour} />
-                    </div>
+                <div className="hidden lg:block lg:w-[320px] lg:sticky lg:top-8 flex-shrink-0">
+                    <InquiryList
+                        tours={tours}
+                        selectedTour={selectedTour}
+                        onTourSelect={setSelectedTour}
+                    />
                 </div>
                 
                 {/* Right Column (Details) */}
@@ -383,4 +401,3 @@ export default function CharterToursPage() {
     </div>
   );
 }
-
