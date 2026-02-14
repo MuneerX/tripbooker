@@ -1,4 +1,3 @@
-
 "use client";
 
 import * as React from "react";
@@ -35,14 +34,14 @@ export default function DashboardLayout({
             <AppHeader />
             <main className={cn(
               "flex flex-1 flex-col bg-muted/40",
-              !isCharterPage && "gap-4 p-4 md:gap-8 md:p-8"
+              isCharterPage ? "overflow-hidden" : "gap-4 p-4 md:gap-8 md:p-8"
             )}>
               <div className={cn("flex-1", isCharterPage ? "" : "")}>
                 {children}
               </div>
                <footer className={cn(
-                 "text-center text-xs text-muted-foreground",
-                 isCharterPage ? "py-4" : "pt-8"
+                 "text-center text-xs text-muted-foreground shrink-0",
+                 isCharterPage ? "py-4 border-t" : "pt-8"
                )}>
                 &copy; {new Date().getFullYear()} Matrimore Technologies. All rights reserved.
               </footer>
@@ -53,5 +52,3 @@ export default function DashboardLayout({
     </BreadcrumbContext.Provider>
   );
 }
-
-    

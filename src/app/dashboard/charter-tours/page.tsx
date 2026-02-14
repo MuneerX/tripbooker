@@ -1,4 +1,3 @@
-
 "use client";
 
 import * as React from "react";
@@ -215,7 +214,6 @@ const CharterTourDetail = ({ tour }: { tour: CharterTour | null }) => {
             </Card>
          </div>
       </div>
-
     </div>
   );
 };
@@ -258,60 +256,58 @@ export default function CharterToursPage() {
     }
   };
 
-  if (isMobile) {
-    return (
-      <div className="h-full w-full relative">
-        <div className="absolute top-4 left-4 z-10">
-            <Button size="icon" variant="outline" onClick={() => setIsSidebarOpen(true)}>
-                <Menu className="h-5 w-5" />
-                <span className="sr-only">Open inquiries list</span>
-            </Button>
-        </div>
-        <Sheet open={isSidebarOpen} onOpenChange={setIsSidebarOpen}>
-            <SheetContent side="left" className="p-0">
-                <div className="flex h-14 shrink-0 items-center border-b px-4 lg:h-[60px] lg:px-6">
-                    <h2 className="text-lg font-semibold">Charter Inquiries</h2>
-                </div>
-                <ScrollArea className="h-[calc(100%-3.5rem)]">
-                    <InquiryList
-                        tours={tours}
-                        selectedTour={selectedTour}
-                        onSelect={handleSelectTour}
-                        loading={loading}
-                    />
-                </ScrollArea>
-            </SheetContent>
-        </Sheet>
-        <ScrollArea className="h-full">
-            <CharterTourDetail tour={selectedTour} />
-        </ScrollArea>
-      </div>
-    );
-  }
-
   return (
-    <div className="flex h-full w-full border-t">
-      {/* Left panel */}
-      <div className="flex h-full w-[320px] flex-col border-r bg-muted/40">
-        <div className="flex h-14 shrink-0 items-center border-b px-4 lg:h-[60px] lg:px-6">
-          <h2 className="text-lg font-semibold">Charter Inquiries</h2>
-        </div>
-        <ScrollArea className="flex-1">
-          <InquiryList
-            tours={tours}
-            selectedTour={selectedTour}
-            onSelect={handleSelectTour}
-            loading={loading}
-          />
-        </ScrollArea>
-      </div>
+    <div className="h-full w-full flex flex-col">
+      {isMobile ? (
+        <>
+          <div className="absolute top-4 left-4 z-10 md:hidden">
+              <Button size="icon" variant="outline" onClick={() => setIsSidebarOpen(true)}>
+                  <Menu className="h-5 w-5" />
+                  <span className="sr-only">Open inquiries list</span>
+              </Button>
+          </div>
+          <Sheet open={isSidebarOpen} onOpenChange={setIsSidebarOpen}>
+              <SheetContent side="left" className="p-0 flex flex-col">
+                  <div className="flex h-14 shrink-0 items-center border-b px-4 lg:h-[60px] lg:px-6">
+                      <h2 className="text-lg font-semibold">Charter Inquiries</h2>
+                  </div>
+                  <ScrollArea className="flex-1">
+                      <InquiryList
+                          tours={tours}
+                          selectedTour={selectedTour}
+                          onSelect={handleSelectTour}
+                          loading={loading}
+                      />
+                  </ScrollArea>
+              </SheetContent>
+          </Sheet>
+          <ScrollArea className="h-full">
+              <CharterTourDetail tour={selectedTour} />
+          </ScrollArea>
+        </>
+      ) : (
+        <div className="flex h-full w-full border-t">
+          {/* Left panel (Desktop) */}
+          <div className="flex h-full w-[320px] flex-col border-r bg-muted/40">
+            <div className="flex h-14 shrink-0 items-center border-b px-4 lg:h-[60px] lg:px-6">
+              <h2 className="text-lg font-semibold">Charter Inquiries</h2>
+            </div>
+            <ScrollArea className="flex-1">
+              <InquiryList
+                tours={tours}
+                selectedTour={selectedTour}
+                onSelect={handleSelectTour}
+                loading={loading}
+              />
+            </ScrollArea>
+          </div>
 
-      {/* Right panel */}
-      <ScrollArea className="h-full flex-1">
-        <CharterTourDetail tour={selectedTour} />
-      </ScrollArea>
+          {/* Right panel (Desktop) */}
+          <ScrollArea className="h-full flex-1">
+            <CharterTourDetail tour={selectedTour} />
+          </ScrollArea>
+        </div>
+      )}
     </div>
   );
 }
-
-    
