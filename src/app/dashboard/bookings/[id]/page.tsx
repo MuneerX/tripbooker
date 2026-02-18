@@ -9,14 +9,14 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Check, X, Calendar, Users, Clock, Info, Star, CheckCircle, XCircle, ArrowUpRight, Sun, Moon, CreditCard, User, Phone, MapPinIcon, Hash, FileDown, Plus, ChevronDown } from "lucide-react";
+import { ArrowLeft, Check, X, Calendar, Users, Clock, Info, Star, CheckCircle, XCircle, ArrowUpRight, Sun, Moon, CreditCard, User, Phone, MapPinIcon, Hash, FileDown, Plus, ChevronDown, UserCog, DollarSign } from "lucide-react";
 import { formatCurrency, getStatusBadgeColor, cn } from "@/lib/utils";
 import { Separator } from "@/components/ui/separator";
 import { addMonths, format, isBefore, isAfter, parseISO, startOfDay } from "date-fns";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { getBookingById, acceptBooking, cancelBooking } from "@/lib/supabase/queries";
-import type { Booking, BookingGuest, TripDay, Payment, UserPipSchedule } from "@/lib/types";
+import { getBookingById, acceptBooking, cancelBooking, getOperators } from "@/lib/supabase/queries";
+import type { Booking, BookingGuest, TripDay, Payment, UserPipSchedule, Operator } from "@/lib/types";
 import { useBreadcrumb } from "../../layout";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import {
@@ -59,6 +59,7 @@ export default function BookingDetailPage() {
   const { toast } = useToast();
 
   const [booking, setBooking] = React.useState<Booking | null>(null);
+  const [operators, setOperators] = React.useState<Operator[]>([]);
   const [openDays, setOpenDays] = React.useState<Record<string, boolean>>({});
   const [actionToConfirm, setActionToConfirm] = React.useState<'accept' | null>(null);
   const [isCancelDialogOpen, setIsCancelDialogOpen] = React.useState(false);
@@ -86,6 +87,7 @@ export default function BookingDetailPage() {
 
   React.useEffect(() => {
     fetchBooking();
+    getOperators().then(setOperators);
     return () => setBreadcrumbName('');
   }, [fetchBooking, setBreadcrumbName]);
 
@@ -280,6 +282,23 @@ export default function BookingDetailPage() {
     }
   }, [paymentTimeline, booking]);
 
+  const agent = React.useMemo(() => {
+    if (!booking?.referral_code || operators.length === 0) return null;
+    return operators.find(op => op.referral_code === booking.referral_code);
+  }, [booking, operators]);
+
+  const commission = React.useMemo(() => {
+    if (!agent || !booking?.tour_package?.commission_status) return null;
+    
+    const { commission_type, commission_value } = booking.tour_package;
+    const totalAmount = booking.total_amount;
+
+    if (commission_type === 'percentage') {
+      return (totalAmount * (commission_value || 0)) / 100;
+    }
+    return commission_value || 0;
+  }, [agent, booking]);
+
 
   if (!booking || !booking.tour_package) {
     return (
@@ -449,6 +468,29 @@ export default function BookingDetailPage() {
                                     <div className="flex items-start gap-3"><Hash className="h-5 w-5 text-muted-foreground mt-1" /><div><p className="text-sm text-muted-foreground">Pincode</p><p className="font-medium">{booking.customer.address?.pincode || 'N/A'}</p></div></div>
                                 </CardContent>
                             </Card>
+                             {agent && commission !== null && (
+                                <Card>
+                                    <CardHeader>
+                                        <CardTitle>Agent & Commission</CardTitle>
+                                    </CardHeader>
+                                    <CardContent className="grid grid-cols-2 gap-x-6 gap-y-4">
+                                        <div className="flex items-start gap-3">
+                                            <UserCog className="h-5 w-5 text-muted-foreground mt-1" />
+                                            <div>
+                                                <p className="text-sm text-muted-foreground">Agent Name</p>
+                                                <p className="font-medium">{agent.name}</p>
+                                            </div>
+                                        </div>
+                                        <div className="flex items-start gap-3">
+                                            <DollarSign className="h-5 w-5 text-muted-foreground mt-1" />
+                                            <div>
+                                                <p className="text-sm text-muted-foreground">Commission Earned</p>
+                                                <p className="font-medium text-green-600">{formatCurrency(commission)}</p>
+                                            </div>
+                                        </div>
+                                    </CardContent>
+                                </Card>
+                            )}
                         </div>
                          {/* Payment Overview */}
                         <Card>
@@ -805,5 +847,7 @@ export default function BookingDetailPage() {
   );
 }
 
+
+    
 
     

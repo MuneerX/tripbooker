@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import * as React from "react";
@@ -180,6 +181,28 @@ export default function OperatorDetailPage() {
                        </div>
                     </CardContent>
                 </Card>
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Commission Details</CardTitle>
+                        <CardDescription>Summary of commissions earned by this agent.</CardDescription>
+                    </CardHeader>
+                    <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-8">
+                        <div className="flex items-start gap-3">
+                            <DollarSign className="h-5 w-5 text-muted-foreground mt-1" />
+                            <div>
+                                <p className="text-sm text-muted-foreground">Total Commission Earned</p>
+                                <p className="font-medium">{formatCurrency(0)}</p>
+                            </div>
+                        </div>
+                        <div className="flex items-start gap-3">
+                            <Percent className="h-5 w-5 text-muted-foreground mt-1" />
+                            <div>
+                                <p className="text-sm text-muted-foreground">Total Referred Bookings</p>
+                                <p className="font-medium">0</p>
+                            </div>
+                        </div>
+                    </CardContent>
+                </Card>
             </div>
         </div>
 
@@ -201,3 +224,5 @@ export default function OperatorDetailPage() {
     </div>
   );
 }
+
+    

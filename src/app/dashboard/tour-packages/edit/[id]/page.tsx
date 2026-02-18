@@ -345,6 +345,70 @@ export default function EditTourPackagePage() {
                             </CardContent>
                         )}
                     </Card>
+                    <Card>
+                        <CardHeader>
+                             <FormField
+                                control={form.control}
+                                name="commission_status"
+                                render={({ field }) => (
+                                <FormItem className="flex flex-row items-center justify-between">
+                                    <div className="space-y-0.5">
+                                        <CardTitle>Agent Commission</CardTitle>
+                                        <CardDescription>Enable commissions for this package.</CardDescription>
+                                    </div>
+                                    <FormControl><Switch checked={field.value} onCheckedChange={field.onChange} /></FormControl>
+                                </FormItem>
+                                )}
+                            />
+                        </CardHeader>
+                        {commissionStatus && (
+                            <CardContent className="space-y-4">
+                                <FormField
+                                    control={form.control}
+                                    name="commission_type"
+                                    render={({ field }) => (
+                                    <FormItem className="space-y-3">
+                                        <FormLabel>Commission Type</FormLabel>
+                                        <FormControl>
+                                        <RadioGroup
+                                            onValueChange={field.onChange}
+                                            value={field.value}
+                                            className="flex space-x-4"
+                                        >
+                                            <FormItem className="flex items-center space-x-3 space-y-0">
+                                            <FormControl>
+                                                <RadioGroupItem value="percentage" />
+                                            </FormControl>
+                                            <FormLabel className="font-normal">Percentage</FormLabel>
+                                            </FormItem>
+                                            <FormItem className="flex items-center space-x-3 space-y-0">
+                                            <FormControl>
+                                                <RadioGroupItem value="amount" />
+                                            </FormControl>
+                                            <FormLabel className="font-normal">Amount</FormLabel>
+                                            </FormItem>
+                                        </RadioGroup>
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                    )}
+                                />
+                                <FormField
+                                    control={form.control}
+                                    name="commission_value"
+                                    render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>Commission Value</FormLabel>
+                                        <FormControl>
+                                            <Input type="number" {...field} />
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                    )}
+                                />
+                            </CardContent>
+                        )}
+                    </Card>
                 </div>
 
                 {/* Right Column */}
@@ -413,70 +477,6 @@ export default function EditTourPackagePage() {
                              <FormField control={form.control} name="is_active" render={({ field }) => ( <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4"><div className="space-y-0.5"><FormLabel className="text-base">Active Package</FormLabel><FormDescription>Make this package available for booking.</FormDescription></div><FormControl><Switch checked={field.value} onCheckedChange={field.onChange} /></FormControl></FormItem>)} />
                         </CardContent>
                     </Card>
-                     <Card>
-                        <CardHeader>
-                             <FormField
-                                control={form.control}
-                                name="commission_status"
-                                render={({ field }) => (
-                                <FormItem className="flex flex-row items-center justify-between">
-                                    <div className="space-y-0.5">
-                                        <CardTitle>Agent Commission</CardTitle>
-                                        <CardDescription>Enable commissions for this package.</CardDescription>
-                                    </div>
-                                    <FormControl><Switch checked={field.value} onCheckedChange={field.onChange} /></FormControl>
-                                </FormItem>
-                                )}
-                            />
-                        </CardHeader>
-                        {commissionStatus && (
-                            <CardContent className="space-y-4">
-                                <FormField
-                                    control={form.control}
-                                    name="commission_type"
-                                    render={({ field }) => (
-                                    <FormItem className="space-y-3">
-                                        <FormLabel>Commission Type</FormLabel>
-                                        <FormControl>
-                                        <RadioGroup
-                                            onValueChange={field.onChange}
-                                            value={field.value}
-                                            className="flex space-x-4"
-                                        >
-                                            <FormItem className="flex items-center space-x-3 space-y-0">
-                                            <FormControl>
-                                                <RadioGroupItem value="percentage" />
-                                            </FormControl>
-                                            <FormLabel className="font-normal">Percentage</FormLabel>
-                                            </FormItem>
-                                            <FormItem className="flex items-center space-x-3 space-y-0">
-                                            <FormControl>
-                                                <RadioGroupItem value="amount" />
-                                            </FormControl>
-                                            <FormLabel className="font-normal">Amount</FormLabel>
-                                            </FormItem>
-                                        </RadioGroup>
-                                        </FormControl>
-                                        <FormMessage />
-                                    </FormItem>
-                                    )}
-                                />
-                                <FormField
-                                    control={form.control}
-                                    name="commission_value"
-                                    render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel>Commission Value</FormLabel>
-                                        <FormControl>
-                                            <Input type="number" {...field} />
-                                        </FormControl>
-                                        <FormMessage />
-                                    </FormItem>
-                                    )}
-                                />
-                            </CardContent>
-                        )}
-                    </Card>
                 </div>
                 </div>
                 
@@ -491,3 +491,5 @@ export default function EditTourPackagePage() {
     </div>
   )
 }
+
+    

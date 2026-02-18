@@ -274,66 +274,6 @@ export default function CreateTourPackagePage() {
                             </CardContent>
                         )}
                     </Card>
-                </div>
-
-                {/* Right Column */}
-                <div className="space-y-6">
-                    <Card>
-                        <CardHeader><CardTitle>Tour Information</CardTitle></CardHeader>
-                        <CardContent className="space-y-6">
-                            <FormField control={form.control} name="description" render={({ field }) => ( <FormItem><FormLabel>Tour Description <span className="text-destructive">*</span></FormLabel><FormControl><MarkdownEditor value={field.value} onChange={field.onChange} /></FormControl><FormMessage /></FormItem> )} />
-                            <FormField control={form.control} name="highlights" render={({ field }) => ( <FormItem><FormLabel>Highlights <span className="text-destructive">*</span></FormLabel><FormControl><MarkdownEditor value={field.value} onChange={field.onChange} /></FormControl><FormMessage /></FormItem> )} />
-                            <FormField control={form.control} name="inclusion" render={({ field }) => ( <FormItem><FormLabel>Inclusions <span className="text-destructive">*</span></FormLabel><FormControl><MarkdownEditor value={field.value} onChange={field.onChange} /></FormControl><FormMessage /></FormItem> )} />
-                            <FormField control={form.control} name="exclusion" render={({ field }) => ( <FormItem><FormLabel>Exclusions <span className="text-destructive">*</span></FormLabel><FormControl><MarkdownEditor value={field.value} onChange={field.onChange} /></FormControl><FormMessage /></FormItem> )} />
-                            <FormField control={form.control} name="booking_policy" render={({ field }) => ( <FormItem><FormLabel>Booking Policies</FormLabel><FormControl><MarkdownEditor value={field.value ?? ''} onChange={field.onChange} /></FormControl><FormMessage /></FormItem> )} />
-                            <FormField control={form.control} name="cancellation_policy" render={({ field }) => ( <FormItem><FormLabel>Cancellation Policies</FormLabel><FormControl><MarkdownEditor value={field.value ?? ''} onChange={field.onChange} /></FormControl><FormMessage /></FormItem> )} />
-                            <FormField control={form.control} name="terms_and_conditions" render={({ field }) => ( <FormItem><FormLabel>Terms and Conditions</FormLabel><FormControl><MarkdownEditor value={field.value ?? ''} onChange={field.onChange} /></FormControl><FormMessage /></FormItem> )} />
-                        </CardContent>
-                    </Card>
-                    <Card>
-                        <CardHeader><CardTitle>Status & Visibility</CardTitle></CardHeader>
-                        <CardContent className="space-y-6">
-                            <FormField control={form.control} name="is_featured" render={({ field }) => ( <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4"><div className="space-y-0.5"><FormLabel className="text-base">Featured Package</FormLabel><FormDescription>Display this package prominently.</FormDescription></div><FormControl><Switch checked={field.value} onCheckedChange={field.onChange} /></FormControl></FormItem>)} />
-                            {form.watch('is_featured') && (
-                                 <FormField
-                                    control={form.control}
-                                    name="featured_image_file"
-                                    render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel>Featured Image</FormLabel>
-                                        <FormControl>
-                                            <div className="flex items-center gap-4">
-                                                <label htmlFor="featured-image-file" className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-10 px-4 py-2 cursor-pointer shadow-sm">
-                                                    Choose File
-                                                </label>
-                                                <Input 
-                                                    id="featured-image-file"
-                                                    type="file" 
-                                                    accept="image/*"
-                                                    className="hidden"
-                                                    onChange={(e) => field.onChange(e.target.files)}
-                                                />
-                                                {featuredImageFile && featuredImageFile.length > 0 ? (
-                                                    <div className="flex items-center justify-between p-2 bg-muted rounded-md flex-1">
-                                                        <div className="flex items-center gap-2">
-                                                            <FileIcon className="h-4 w-4 text-muted-foreground" />
-                                                            <span className="font-medium truncate max-w-xs">{featuredImageFile[0].name}</span>
-                                                        </div>
-                                                        <Button type="button" variant="ghost" size="icon" className="h-6 w-6 text-destructive" onClick={() => form.setValue("featured_image_file", null, { shouldValidate: true })}>
-                                                            <X className="h-4 w-4" />
-                                                        </Button>
-                                                    </div>
-                                                ) : <span className="text-sm text-muted-foreground">No file selected.</span>}
-                                            </div>
-                                        </FormControl>
-                                        <FormMessage />
-                                    </FormItem>
-                                    )}
-                                />
-                            )}
-                             <FormField control={form.control} name="is_active" render={({ field }) => ( <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4"><div className="space-y-0.5"><FormLabel className="text-base">Active Package</FormLabel><FormDescription>Make this package available for booking.</FormDescription></div><FormControl><Switch checked={field.value} onCheckedChange={field.onChange} /></FormControl></FormItem>)} />
-                        </CardContent>
-                    </Card>
                     <Card>
                         <CardHeader>
                              <FormField
@@ -399,6 +339,66 @@ export default function CreateTourPackagePage() {
                         )}
                     </Card>
                 </div>
+
+                {/* Right Column */}
+                <div className="space-y-6">
+                    <Card>
+                        <CardHeader><CardTitle>Tour Information</CardTitle></CardHeader>
+                        <CardContent className="space-y-6">
+                            <FormField control={form.control} name="description" render={({ field }) => ( <FormItem><FormLabel>Tour Description <span className="text-destructive">*</span></FormLabel><FormControl><MarkdownEditor value={field.value} onChange={field.onChange} /></FormControl><FormMessage /></FormItem> )} />
+                            <FormField control={form.control} name="highlights" render={({ field }) => ( <FormItem><FormLabel>Highlights <span className="text-destructive">*</span></FormLabel><FormControl><MarkdownEditor value={field.value} onChange={field.onChange} /></FormControl><FormMessage /></FormItem> )} />
+                            <FormField control={form.control} name="inclusion" render={({ field }) => ( <FormItem><FormLabel>Inclusions <span className="text-destructive">*</span></FormLabel><FormControl><MarkdownEditor value={field.value} onChange={field.onChange} /></FormControl><FormMessage /></FormItem> )} />
+                            <FormField control={form.control} name="exclusion" render={({ field }) => ( <FormItem><FormLabel>Exclusions <span className="text-destructive">*</span></FormLabel><FormControl><MarkdownEditor value={field.value} onChange={field.onChange} /></FormControl><FormMessage /></FormItem> )} />
+                            <FormField control={form.control} name="booking_policy" render={({ field }) => ( <FormItem><FormLabel>Booking Policies</FormLabel><FormControl><MarkdownEditor value={field.value ?? ''} onChange={field.onChange} /></FormControl><FormMessage /></FormItem> )} />
+                            <FormField control={form.control} name="cancellation_policy" render={({ field }) => ( <FormItem><FormLabel>Cancellation Policies</FormLabel><FormControl><MarkdownEditor value={field.value ?? ''} onChange={field.onChange} /></FormControl><FormMessage /></FormItem> )} />
+                            <FormField control={form.control} name="terms_and_conditions" render={({ field }) => ( <FormItem><FormLabel>Terms and Conditions</FormLabel><FormControl><MarkdownEditor value={field.value ?? ''} onChange={field.onChange} /></FormControl><FormMessage /></FormItem> )} />
+                        </CardContent>
+                    </Card>
+                    <Card>
+                        <CardHeader><CardTitle>Status & Visibility</CardTitle></CardHeader>
+                        <CardContent className="space-y-6">
+                            <FormField control={form.control} name="is_featured" render={({ field }) => ( <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4"><div className="space-y-0.5"><FormLabel className="text-base">Featured Package</FormLabel><FormDescription>Display this package prominently.</FormDescription></div><FormControl><Switch checked={field.value} onCheckedChange={field.onChange} /></FormControl></FormItem>)} />
+                            {form.watch('is_featured') && (
+                                 <FormField
+                                    control={form.control}
+                                    name="featured_image_file"
+                                    render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>Featured Image</FormLabel>
+                                        <FormControl>
+                                            <div className="flex items-center gap-4">
+                                                <label htmlFor="featured-image-file" className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-10 px-4 py-2 cursor-pointer shadow-sm">
+                                                    Choose File
+                                                </label>
+                                                <Input 
+                                                    id="featured-image-file"
+                                                    type="file" 
+                                                    accept="image/*"
+                                                    className="hidden"
+                                                    onChange={(e) => field.onChange(e.target.files)}
+                                                />
+                                                {featuredImageFile && featuredImageFile.length > 0 ? (
+                                                    <div className="flex items-center justify-between p-2 bg-muted rounded-md flex-1">
+                                                        <div className="flex items-center gap-2">
+                                                            <FileIcon className="h-4 w-4 text-muted-foreground" />
+                                                            <span className="font-medium truncate max-w-xs">{featuredImageFile[0].name}</span>
+                                                        </div>
+                                                        <Button type="button" variant="ghost" size="icon" className="h-6 w-6 text-destructive" onClick={() => form.setValue("featured_image_file", null, { shouldValidate: true })}>
+                                                            <X className="h-4 w-4" />
+                                                        </Button>
+                                                    </div>
+                                                ) : <span className="text-sm text-muted-foreground">No file selected.</span>}
+                                            </div>
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                    )}
+                                />
+                            )}
+                             <FormField control={form.control} name="is_active" render={({ field }) => ( <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4"><div className="space-y-0.5"><FormLabel className="text-base">Active Package</FormLabel><FormDescription>Make this package available for booking.</FormDescription></div><FormControl><Switch checked={field.value} onCheckedChange={field.onChange} /></FormControl></FormItem>)} />
+                        </CardContent>
+                    </Card>
+                </div>
                 </div>
                 
                 <div className="flex justify-end gap-2">
@@ -412,3 +412,5 @@ export default function CreateTourPackagePage() {
     </div>
   )
 }
+
+    
