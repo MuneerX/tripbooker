@@ -8,7 +8,7 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import * as z from "zod"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { useRouter } from "next/navigation"
@@ -16,7 +16,6 @@ import { useToast } from "@/hooks/use-toast"
 import { Switch } from "@/components/ui/switch"
 import { Upload, File as FileIcon, X, ArrowLeft, RefreshCw } from "lucide-react"
 import { createOperator } from "@/lib/supabase/queries"
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 
 const MAX_FILE_SIZE = 2 * 1024 * 1024; // 2MB
 const ACCEPTED_IMAGE_TYPES = ["image/jpeg", "image/jpg", "image/png", "image/webp"];
@@ -39,21 +38,7 @@ const operatorSchema = z.object({
       (files) => !files || ACCEPTED_IMAGE_TYPES.includes(files?.[0]?.type),
       ".jpg, .jpeg, .png and .webp files are accepted."
     ),
-  commission_status: z.boolean().default(false),
-  commission_type: z.enum(["percentage", "amount"]).default("percentage"),
-  commission_value: z.coerce.number().min(0).default(0),
-}).refine(
-  (data) => {
-    if (data.commission_status && data.commission_type === "percentage" && data.commission_value > 100) {
-      return false;
-    }
-    return true;
-  },
-  {
-    message: "Percentage value cannot be more than 100.",
-    path: ["commission_value"],
-  }
-);
+});
 
 type OperatorFormValues = z.infer<typeof operatorSchema>;
 
@@ -74,14 +59,10 @@ export default function CreateOperatorPage() {
       description: "",
       is_verified: false,
       is_active: true,
-      commission_status: false,
-      commission_type: "percentage",
-      commission_value: 0,
     },
   });
 
   const logoFile = form.watch("logo_file");
-  const commissionStatus = form.watch("commission_status");
   const operatorName = form.watch("name");
 
   const generateReferralCode = () => {
@@ -241,70 +222,6 @@ export default function CreateOperatorPage() {
                                 </FormItem> 
                             )} />
                         </CardContent>
-                    </Card>
-                    <Card>
-                        <CardHeader>
-                             <FormField
-                                control={form.control}
-                                name="commission_status"
-                                render={({ field }) => (
-                                <FormItem className="flex flex-row items-center justify-between">
-                                    <div className="space-y-0.5">
-                                        <CardTitle>Agent Commission</CardTitle>
-                                        <CardDescription>Enable commissions for agents.</CardDescription>
-                                    </div>
-                                    <FormControl><Switch checked={field.value} onCheckedChange={field.onChange} /></FormControl>
-                                </FormItem>
-                                )}
-                            />
-                        </CardHeader>
-                        {commissionStatus && (
-                            <CardContent className="space-y-4">
-                                <FormField
-                                    control={form.control}
-                                    name="commission_type"
-                                    render={({ field }) => (
-                                    <FormItem className="space-y-3">
-                                        <FormLabel>Commission Type</FormLabel>
-                                        <FormControl>
-                                        <RadioGroup
-                                            onValueChange={field.onChange}
-                                            defaultValue={field.value}
-                                            className="flex space-x-4"
-                                        >
-                                            <FormItem className="flex items-center space-x-3 space-y-0">
-                                            <FormControl>
-                                                <RadioGroupItem value="percentage" />
-                                            </FormControl>
-                                            <FormLabel className="font-normal">Percentage</FormLabel>
-                                            </FormItem>
-                                            <FormItem className="flex items-center space-x-3 space-y-0">
-                                            <FormControl>
-                                                <RadioGroupItem value="amount" />
-                                            </FormControl>
-                                            <FormLabel className="font-normal">Amount</FormLabel>
-                                            </FormItem>
-                                        </RadioGroup>
-                                        </FormControl>
-                                        <FormMessage />
-                                    </FormItem>
-                                    )}
-                                />
-                                <FormField
-                                    control={form.control}
-                                    name="commission_value"
-                                    render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel>Commission Value</FormLabel>
-                                        <FormControl>
-                                            <Input type="number" {...field} />
-                                        </FormControl>
-                                        <FormMessage />
-                                    </FormItem>
-                                    )}
-                                />
-                            </CardContent>
-                        )}
                     </Card>
                 </div>
             </div>

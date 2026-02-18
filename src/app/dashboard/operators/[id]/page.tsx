@@ -180,37 +180,6 @@ export default function OperatorDetailPage() {
                        </div>
                     </CardContent>
                 </Card>
-                 <Card>
-                    <CardHeader>
-                        <CardTitle>Agent Commission</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                         {operator.commission_status ? (
-                            <div className="grid grid-cols-2 gap-4">
-                                <div className="flex items-start gap-3">
-                                    <div className="mt-1">{operator.commission_type === 'percentage' ? <Percent className="h-5 w-5 text-muted-foreground" /> : <DollarSign className="h-5 w-5 text-muted-foreground" />}</div>
-                                    <div>
-                                        <p className="text-sm text-muted-foreground">Commission Type</p>
-                                        <p className="font-medium capitalize">{operator.commission_type}</p>
-                                    </div>
-                                </div>
-                                <div className="flex items-start gap-3">
-                                    <div className="mt-1">{operator.commission_type === 'percentage' ? <Percent className="h-5 w-5 text-muted-foreground" /> : <DollarSign className="h-5 w-5 text-muted-foreground" />}</div>
-                                    <div>
-                                        <p className="text-sm text-muted-foreground">Commission Value</p>
-                                        <p className="font-medium">
-                                            {operator.commission_type === 'percentage'
-                                                ? `${operator.commission_value}%`
-                                                : formatCurrency(operator.commission_value)}
-                                        </p>
-                                    </div>
-                                </div>
-                            </div>
-                        ) : (
-                            <p className="text-sm text-muted-foreground">Agent commission is not enabled for this agent.</p>
-                        )}
-                    </CardContent>
-                </Card>
             </div>
         </div>
 

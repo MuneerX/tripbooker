@@ -41,6 +41,9 @@ export type TourPackage = {
   bookings: Booking[];
   reviews: Review[];
   trip_days?: TripDay[];
+  commission_status: boolean;
+  commission_type: 'percentage' | 'amount';
+  commission_value: number;
 };
 
 export type Activity = {
@@ -223,9 +226,6 @@ export type Operator = {
   updated_at: string;
   referral_code: string | null;
   status: 'active' | 'blocked';
-  commission_status: boolean;
-  commission_type: 'percentage' | 'amount';
-  commission_value: number;
 };
 
 export type CharterTour = {

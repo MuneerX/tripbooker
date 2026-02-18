@@ -92,6 +92,9 @@ export async function createTourPackage(pkg: Partial<TourPackage>) {
     is_active: pkg.is_active,
     image_urls: pkg.image_urls,
     featured_image_url: pkg.featured_image_url,
+    commission_status: pkg.commission_status,
+    commission_type: pkg.commission_type,
+    commission_value: pkg.commission_value,
   };
 
 
@@ -184,6 +187,9 @@ export async function uploadTourImages(formData: FormData) {
     image_urls: imageUrls,
     featured_image_url: featuredImageUrl,
     pay_in_parts: payInParts,
+    commission_status: formData.get('commission_status') === 'true',
+    commission_type: formData.get('commission_type') as 'percentage' | 'amount',
+    commission_value: Number(formData.get('commission_value')),
   };
   
   return createTourPackage(tourPackageData);
@@ -308,6 +314,9 @@ export async function updateTourPackage(id: string, formData: FormData) {
       image_urls: finalImageUrls,
       featured_image_url: finalFeaturedImageUrl,
       updated_at: new Date().toISOString(),
+      commission_status: formData.get('commission_status') === 'true',
+      commission_type: formData.get('commission_type') as 'percentage' | 'amount',
+      commission_value: Number(formData.get('commission_value')),
     };
 
     const { data, error } = await supabase
@@ -1260,9 +1269,6 @@ export async function createOperator(formData: FormData) {
     is_verified: formData.get('is_verified') === 'true',
     is_active: formData.get('is_active') === 'true',
     referral_code: formData.get('referral_code') as string || null,
-    commission_status: formData.get('commission_status') === 'true',
-    commission_type: formData.get('commission_type') as 'percentage' | 'amount' || 'percentage',
-    commission_value: Number(formData.get('commission_value')) || 0,
   };
 
   const { data, error } = await supabase.from('operators').insert([operatorData]).select().single();
@@ -1325,9 +1331,6 @@ export async function updateOperator(id: string, formData: FormData): Promise<Op
         is_active: formData.get('is_active') === 'true',
         logo_url: logoUrl,
         updated_at: new Date().toISOString(),
-        commission_status: formData.get('commission_status') === 'true',
-        commission_type: formData.get('commission_type') as 'percentage' | 'amount' || 'percentage',
-        commission_value: Number(formData.get('commission_value')) || 0,
     };
     
     const { data, error } = await supabase.from('operators').update(updateData).eq('id', id).select().single();

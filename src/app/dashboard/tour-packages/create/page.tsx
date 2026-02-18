@@ -18,6 +18,7 @@ import { uploadTourImages } from "@/lib/supabase/queries"
 import { Upload, File as FileIcon, X } from "lucide-react"
 import { PayInPartsForm } from "./_components/PayInPartsForm";
 import { MarkdownEditor } from "@/components/ui/MarkdownEditor";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 
 const MAX_FILE_SIZE = 2 * 1024 * 1024; // 2MB
 const ACCEPTED_IMAGE_TYPES = ["image/jpeg", "image/jpg", "image/png", "image/webp"];
@@ -61,7 +62,21 @@ const tourPackageSchema = z.object({
   featured_image_file: z.any()
     .optional(),
   pay_in_parts: z.array(payInPartSchema).optional(),
-});
+  commission_status: z.boolean().default(false),
+  commission_type: z.enum(["percentage", "amount"]).default("percentage"),
+  commission_value: z.coerce.number().min(0).default(0),
+}).refine(
+  (data) => {
+    if (data.commission_status && data.commission_type === "percentage" && data.commission_value > 100) {
+      return false;
+    }
+    return true;
+  },
+  {
+    message: "Percentage value cannot be more than 100.",
+    path: ["commission_value"],
+  }
+);
 
 type TourPackageFormValues = z.infer<typeof tourPackageSchema>;
 
@@ -90,11 +105,15 @@ export default function CreateTourPackagePage() {
       is_featured: false,
       is_active: true,
       pay_in_parts: [],
+      commission_status: false,
+      commission_type: "percentage",
+      commission_value: 0,
     },
   });
   
   const imageFiles = form.watch("image_files");
   const featuredImageFile = form.watch("featured_image_file");
+  const commissionStatus = form.watch("commission_status");
 
   const handleRemoveImage = (indexToRemove: number) => {
     const currentFiles = form.getValues("image_files");
@@ -314,6 +333,70 @@ export default function CreateTourPackagePage() {
                             )}
                              <FormField control={form.control} name="is_active" render={({ field }) => ( <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4"><div className="space-y-0.5"><FormLabel className="text-base">Active Package</FormLabel><FormDescription>Make this package available for booking.</FormDescription></div><FormControl><Switch checked={field.value} onCheckedChange={field.onChange} /></FormControl></FormItem>)} />
                         </CardContent>
+                    </Card>
+                    <Card>
+                        <CardHeader>
+                             <FormField
+                                control={form.control}
+                                name="commission_status"
+                                render={({ field }) => (
+                                <FormItem className="flex flex-row items-center justify-between">
+                                    <div className="space-y-0.5">
+                                        <CardTitle>Agent Commission</CardTitle>
+                                        <CardDescription>Enable commissions for this package.</CardDescription>
+                                    </div>
+                                    <FormControl><Switch checked={field.value} onCheckedChange={field.onChange} /></FormControl>
+                                </FormItem>
+                                )}
+                            />
+                        </CardHeader>
+                        {commissionStatus && (
+                            <CardContent className="space-y-4">
+                                <FormField
+                                    control={form.control}
+                                    name="commission_type"
+                                    render={({ field }) => (
+                                    <FormItem className="space-y-3">
+                                        <FormLabel>Commission Type</FormLabel>
+                                        <FormControl>
+                                        <RadioGroup
+                                            onValueChange={field.onChange}
+                                            defaultValue={field.value}
+                                            className="flex space-x-4"
+                                        >
+                                            <FormItem className="flex items-center space-x-3 space-y-0">
+                                            <FormControl>
+                                                <RadioGroupItem value="percentage" />
+                                            </FormControl>
+                                            <FormLabel className="font-normal">Percentage</FormLabel>
+                                            </FormItem>
+                                            <FormItem className="flex items-center space-x-3 space-y-0">
+                                            <FormControl>
+                                                <RadioGroupItem value="amount" />
+                                            </FormControl>
+                                            <FormLabel className="font-normal">Amount</FormLabel>
+                                            </FormItem>
+                                        </RadioGroup>
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                    )}
+                                />
+                                <FormField
+                                    control={form.control}
+                                    name="commission_value"
+                                    render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>Commission Value</FormLabel>
+                                        <FormControl>
+                                            <Input type="number" {...field} />
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                    )}
+                                />
+                            </CardContent>
+                        )}
                     </Card>
                 </div>
                 </div>
