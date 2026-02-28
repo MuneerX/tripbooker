@@ -1,5 +1,4 @@
 
-
 import type { Timestamp } from 'firebase/firestore';
 
 export type PayInPart = {
@@ -226,6 +225,22 @@ export type Operator = {
   updated_at: string;
   referral_code: string | null;
   status: 'active' | 'blocked';
+};
+
+export type AgentCommission = {
+  id: string;
+  created_at: string;
+  package_id: string | null;
+  booking_id: string | null;
+  agent_id: string | null;
+  agent_refferal: string | null;
+  commission_type: string | null;
+  commission_value: number | null;
+  booking_amount: number | null;
+  commission_amount: number | null;
+  commission_status: 'pending' | 'paid' | 'cancelled' | string | null;
+  tour_package?: { name: string } | null;
+  booking?: { order_id: string } | null;
 };
 
 export type CharterTour = {

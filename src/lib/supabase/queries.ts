@@ -1,11 +1,10 @@
 
-
 "use server"
 
 import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
 
-import type { TourPackage, TripDay, Activity, TripLocation, PayInPart, Booking, Review, BookingGuest, Payment, Profile, Operator, UserPipSchedule, CharterTour } from '@/lib/types'
+import type { TourPackage, TripDay, Activity, TripLocation, PayInPart, Booking, Review, BookingGuest, Payment, Profile, Operator, UserPipSchedule, CharterTour, AgentCommission } from '@/lib/types'
 import { createClient } from '@supabase/supabase-js'
 
 // Correctly create a Supabase client with admin privileges (service_role)
@@ -1402,6 +1401,28 @@ export async function updateOperatorStatus(id: string, newStatus: 'active' | 'bl
     ...data,
     status: data.is_active ? 'active' : 'blocked',
   } as Operator;
+}
+
+/**
+ * Fetches all commissions for a specific agent.
+ */
+export async function getAgentCommissions(agentId: string): Promise<AgentCommission[]> {
+    const supabase = createAdminClient();
+    const { data, error } = await supabase
+        .from('agent_commission')
+        .select(`
+            *,
+            tour_package:package_id(name),
+            booking:booking_id(order_id)
+        `)
+        .eq('agent_id', agentId)
+        .order('created_at', { ascending: false });
+
+    if (error) {
+        console.error('Error fetching agent commissions:', error);
+        return [];
+    }
+    return data as AgentCommission[];
 }
 
 

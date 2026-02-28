@@ -1,5 +1,4 @@
 
-
 "use client";
 
 import * as React from "react";
@@ -7,11 +6,11 @@ import { useParams, useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Edit, UserCheck, UserX, Mail, Phone, Hash, UserCog, Building, Contact, Check, ShieldCheck, Percent, DollarSign } from "lucide-react";
-import { cn, formatCurrency } from "@/lib/utils";
+import { ArrowLeft, Edit, UserCheck, UserX, Mail, Phone, Hash, UserCog, Building, Contact, Check, ShieldCheck, Percent, DollarSign, Calendar, Clock } from "lucide-react";
+import { cn, formatCurrency, getStatusBadgeColor } from "@/lib/utils";
 import { Separator } from "@/components/ui/separator";
-import { getOperatorById, updateOperatorStatus } from "@/lib/supabase/queries";
-import type { Operator } from "@/lib/types";
+import { getOperatorById, updateOperatorStatus, getAgentCommissions } from "@/lib/supabase/queries";
+import type { Operator, AgentCommission } from "@/lib/types";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -27,6 +26,8 @@ import { useToast } from "@/hooks/use-toast";
 import { useBreadcrumb } from "../../layout";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import Link from "next/link";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { format } from "date-fns";
 
 export default function OperatorDetailPage() {
   const router = useRouter();
@@ -36,24 +37,31 @@ export default function OperatorDetailPage() {
   const { setBreadcrumbName } = useBreadcrumb();
 
   const [operator, setOperator] = React.useState<Operator | null>(null);
+  const [commissions, setCommissions] = React.useState<AgentCommission[]>([]);
   const [loading, setLoading] = React.useState(true);
 
   React.useEffect(() => {
     if (id) {
-      const fetchOperator = async () => {
+      const fetchData = async () => {
         setLoading(true);
-        const data = await getOperatorById(id as string);
-        if (data) {
-          setOperator(data);
-          setBreadcrumbName(data.name || 'Agent');
+        const [opData, commData] = await Promise.all([
+            getOperatorById(id as string),
+            getAgentCommissions(id as string)
+        ]);
+
+        if (opData) {
+          setOperator(opData);
+          setBreadcrumbName(opData.name || 'Agent');
         } else {
           toast({ variant: "destructive", title: "Error", description: "Agent not found." });
           setBreadcrumbName('Not Found');
           router.push('/dashboard/operators');
         }
+        
+        setCommissions(commData);
         setLoading(false);
       };
-      fetchOperator();
+      fetchData();
     }
     return () => setBreadcrumbName('');
   }, [id, router, toast, setBreadcrumbName]);
@@ -78,6 +86,16 @@ export default function OperatorDetailPage() {
         });
     }
   };
+
+  const commissionStats = React.useMemo(() => {
+    const totalEarned = commissions.reduce((sum, c) => sum + (Number(c.commission_amount) || 0), 0);
+    const totalPending = commissions
+        .filter(c => c.commission_status === 'pending')
+        .reduce((sum, c) => sum + (Number(c.commission_amount) || 0), 0);
+    const totalBookings = commissions.length;
+    
+    return { totalEarned, totalPending, totalBookings };
+  }, [commissions]);
 
   if (loading || !operator) {
     return (
@@ -183,28 +201,90 @@ export default function OperatorDetailPage() {
                 </Card>
                 <Card>
                     <CardHeader>
-                        <CardTitle>Commission Details</CardTitle>
-                        <CardDescription>Summary of commissions earned by this agent.</CardDescription>
+                        <CardTitle>Commission Summary</CardTitle>
+                        <CardDescription>Overall performance and earnings for this agent.</CardDescription>
                     </CardHeader>
-                    <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-8">
+                    <CardContent className="grid grid-cols-1 md:grid-cols-3 gap-6">
                         <div className="flex items-start gap-3">
                             <DollarSign className="h-5 w-5 text-muted-foreground mt-1" />
                             <div>
-                                <p className="text-sm text-muted-foreground">Total Commission Earned</p>
-                                <p className="font-medium">{formatCurrency(0)}</p>
+                                <p className="text-sm text-muted-foreground">Total Earned</p>
+                                <p className="text-xl font-bold text-green-600">{formatCurrency(commissionStats.totalEarned)}</p>
+                            </div>
+                        </div>
+                        <div className="flex items-start gap-3">
+                            <Clock className="h-5 w-5 text-muted-foreground mt-1" />
+                            <div>
+                                <p className="text-sm text-muted-foreground">Pending</p>
+                                <p className="text-xl font-bold text-orange-600">{formatCurrency(commissionStats.totalPending)}</p>
                             </div>
                         </div>
                         <div className="flex items-start gap-3">
                             <Percent className="h-5 w-5 text-muted-foreground mt-1" />
                             <div>
-                                <p className="text-sm text-muted-foreground">Total Referred Bookings</p>
-                                <p className="font-medium">0</p>
+                                <p className="text-sm text-muted-foreground">Referred Bookings</p>
+                                <p className="text-xl font-bold">{commissionStats.totalBookings}</p>
                             </div>
                         </div>
                     </CardContent>
                 </Card>
             </div>
         </div>
+
+        <Card className="mt-8">
+            <CardHeader>
+                <CardTitle>Commission History</CardTitle>
+                <CardDescription>Detailed list of all commissions earned by this agent.</CardDescription>
+            </CardHeader>
+            <CardContent>
+                {commissions.length > 0 ? (
+                    <Table>
+                        <TableHeader>
+                            <TableRow>
+                                <TableHead>Date</TableHead>
+                                <TableHead>Order ID</TableHead>
+                                <TableHead>Package</TableHead>
+                                <TableHead className="text-right">Booking Amt</TableHead>
+                                <TableHead>Commission</TableHead>
+                                <TableHead className="text-right">Earned</TableHead>
+                                <TableHead>Status</TableHead>
+                            </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                            {commissions.map((comm) => (
+                                <TableRow key={comm.id}>
+                                    <TableCell className="text-xs">{format(new Date(comm.created_at), "dd MMM yyyy")}</TableCell>
+                                    <TableCell className="font-mono text-xs">
+                                        <Link href={`/dashboard/bookings/${comm.booking_id}`} className="hover:underline text-primary">
+                                            #{comm.booking?.order_id || 'N/A'}
+                                        </Link>
+                                    </TableCell>
+                                    <TableCell className="max-w-[200px] truncate">
+                                        {comm.tour_package?.name || 'N/A'}
+                                    </TableCell>
+                                    <TableCell className="text-right">{formatCurrency(Number(comm.booking_amount) || 0)}</TableCell>
+                                    <TableCell className="text-xs">
+                                        {comm.commission_type === 'percentage' ? `${comm.commission_value}%` : formatCurrency(Number(comm.commission_value) || 0)}
+                                    </TableCell>
+                                    <TableCell className="text-right font-semibold text-green-600">
+                                        {formatCurrency(Number(comm.commission_amount) || 0)}
+                                    </TableCell>
+                                    <TableCell>
+                                        <Badge variant="outline" className={cn("capitalize", getStatusBadgeColor(comm.commission_status as any))}>
+                                            {comm.commission_status}
+                                        </Badge>
+                                    </TableCell>
+                                </TableRow>
+                            ))}
+                        </TableBody>
+                    </Table>
+                ) : (
+                    <div className="py-12 text-center text-muted-foreground">
+                        No commission history found for this agent.
+                    </div>
+                )}
+            </CardContent>
+        </Card>
 
         <AlertDialogContent>
           <AlertDialogHeader>
@@ -224,5 +304,3 @@ export default function OperatorDetailPage() {
     </div>
   );
 }
-
-    
