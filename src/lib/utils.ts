@@ -21,13 +21,14 @@ export function formatCurrency(amount: number) {
   }).format(amount);
 }
 
-export function getStatusBadgeColor(status: 'active' | 'inactive' | 'pending' | 'confirmed' | 'cancelled' | 'completed' | 'new' | 'approved' | 'paid' | 'unpaid') {
+export function getStatusBadgeColor(status: 'active' | 'inactive' | 'pending' | 'confirmed' | 'cancelled' | 'completed' | 'new' | 'approved' | 'paid' | 'unpaid' | 'transferred') {
   switch (status) {
     case 'active':
     case 'completed':
     case 'confirmed':
     case 'approved':
     case 'paid':
+    case 'transferred':
       return 'text-green-600 border-green-600/20 bg-green-500/10 hover:bg-green-500/20';
     case 'inactive':
     case 'cancelled':

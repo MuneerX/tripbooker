@@ -6,10 +6,10 @@ import { useParams, useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Edit, UserCheck, UserX, Mail, Phone, Hash, UserCog, Building, Contact, Check, ShieldCheck, Percent, DollarSign, Calendar, Clock } from "lucide-react";
+import { ArrowLeft, Edit, UserCheck, UserX, Mail, Phone, Hash, UserCog, Building, Contact, Check, ShieldCheck, Percent, DollarSign, Calendar, Clock, ArrowUp, ArrowDown, MoreHorizontal, Search } from "lucide-react";
 import { cn, formatCurrency, getStatusBadgeColor } from "@/lib/utils";
 import { Separator } from "@/components/ui/separator";
-import { getOperatorById, updateOperatorStatus, getAgentCommissions } from "@/lib/supabase/queries";
+import { getOperatorById, updateOperatorStatus, getAgentCommissions, updateCommissionStatus } from "@/lib/supabase/queries";
 import type { Operator, AgentCommission } from "@/lib/types";
 import {
   AlertDialog,
@@ -22,12 +22,23 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { useBreadcrumb } from "../../layout";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import Link from "next/link";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { format } from "date-fns";
+
+type SortableKeys = 'created_at' | 'booking.order_id' | 'tour_package.name' | 'booking_amount' | 'commission_amount' | 'commission_status';
 
 export default function OperatorDetailPage() {
   const router = useRouter();
@@ -39,11 +50,13 @@ export default function OperatorDetailPage() {
   const [operator, setOperator] = React.useState<Operator | null>(null);
   const [commissions, setCommissions] = React.useState<AgentCommission[]>([]);
   const [loading, setLoading] = React.useState(true);
+  const [searchTerm, setSearchTerm] = React.useState("");
+  const [sortConfig, setSortConfig] = React.useState<{ key: SortableKeys; direction: 'asc' | 'desc' } | null>(null);
 
-  React.useEffect(() => {
-    if (id) {
-      const fetchData = async () => {
-        setLoading(true);
+  const fetchData = React.useCallback(async () => {
+    if (!id) return;
+    setLoading(true);
+    try {
         const [opData, commData] = await Promise.all([
             getOperatorById(id as string),
             getAgentCommissions(id as string)
@@ -59,12 +72,17 @@ export default function OperatorDetailPage() {
         }
         
         setCommissions(commData);
+    } catch (error: any) {
+        toast({ variant: "destructive", title: "Error", description: error.message });
+    } finally {
         setLoading(false);
-      };
-      fetchData();
     }
-    return () => setBreadcrumbName('');
   }, [id, router, toast, setBreadcrumbName]);
+
+  React.useEffect(() => {
+    fetchData();
+    return () => setBreadcrumbName('');
+  }, [fetchData, setBreadcrumbName]);
 
   const handleStatusToggle = async () => {
     if (!operator) return;
@@ -87,6 +105,16 @@ export default function OperatorDetailPage() {
     }
   };
 
+  const handleCommissionStatusUpdate = async (commId: string, status: string) => {
+    try {
+        await updateCommissionStatus(commId, status);
+        toast({ title: "Success", description: `Commission status updated to ${status}.` });
+        fetchData(); // Refresh list
+    } catch (error: any) {
+        toast({ variant: "destructive", title: "Error", description: "Failed to update commission status." });
+    }
+  };
+
   const commissionStats = React.useMemo(() => {
     const totalEarned = commissions.reduce((sum, c) => sum + (Number(c.commission_amount) || 0), 0);
     const totalPending = commissions
@@ -96,6 +124,47 @@ export default function OperatorDetailPage() {
     
     return { totalEarned, totalPending, totalBookings };
   }, [commissions]);
+
+  const filteredAndSortedCommissions = React.useMemo(() => {
+    let result = commissions.filter(comm => 
+        (comm.booking?.order_id?.toLowerCase().includes(searchTerm.toLowerCase())) ||
+        (comm.tour_package?.name?.toLowerCase().includes(searchTerm.toLowerCase()))
+    );
+
+    if (sortConfig) {
+        result.sort((a, b) => {
+            const getNestedValue = (obj: any, path: string) => path.split('.').reduce((o, i) => o?.[i], obj);
+            let aValue = getNestedValue(a, sortConfig.key);
+            let bValue = getNestedValue(b, sortConfig.key);
+
+            if (aValue === null || aValue === undefined) return 1;
+            if (bValue === null || bValue === undefined) return -1;
+
+            if (typeof aValue === 'string' && typeof bValue === 'string') {
+                return aValue.localeCompare(bValue) * (sortConfig.direction === 'asc' ? 1 : -1);
+            }
+
+            if (aValue < bValue) return sortConfig.direction === 'asc' ? -1 : 1;
+            if (aValue > bValue) return sortConfig.direction === 'asc' ? 1 : -1;
+            return 0;
+        });
+    }
+
+    return result;
+  }, [commissions, searchTerm, sortConfig]);
+
+  const handleSort = (key: SortableKeys) => {
+    let direction: 'asc' | 'desc' = 'asc';
+    if (sortConfig && sortConfig.key === key && sortConfig.direction === 'asc') {
+      direction = 'desc';
+    }
+    setSortConfig({ key, direction });
+  };
+
+  const renderSortArrow = (key: SortableKeys) => {
+    if (sortConfig?.key !== key) return null;
+    return sortConfig.direction === 'asc' ? <ArrowUp className="ml-2 h-4 w-4" /> : <ArrowDown className="ml-2 h-4 w-4" />;
+  };
 
   if (loading || !operator) {
     return (
@@ -233,25 +302,51 @@ export default function OperatorDetailPage() {
 
         <Card className="mt-8">
             <CardHeader>
-                <CardTitle>Commission History</CardTitle>
-                <CardDescription>Detailed list of all commissions earned by this agent.</CardDescription>
+                <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+                    <div>
+                        <CardTitle>Commission History</CardTitle>
+                        <CardDescription>Detailed list of all commissions earned by this agent.</CardDescription>
+                    </div>
+                    <div className="relative w-full sm:w-64">
+                        <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                        <Input 
+                            placeholder="Search by Order ID or Package..." 
+                            value={searchTerm} 
+                            onChange={(e) => setSearchTerm(e.target.value)} 
+                            className="pl-8"
+                        />
+                    </div>
+                </div>
             </CardHeader>
             <CardContent>
-                {commissions.length > 0 ? (
+                {filteredAndSortedCommissions.length > 0 ? (
                     <Table>
                         <TableHeader>
                             <TableRow>
-                                <TableHead>Date</TableHead>
-                                <TableHead>Order ID</TableHead>
-                                <TableHead>Package</TableHead>
-                                <TableHead className="text-right">Booking Amt</TableHead>
+                                <TableHead className="cursor-pointer hover:bg-muted" onClick={() => handleSort('created_at')}>
+                                    <div className="flex items-center">Date {renderSortArrow('created_at')}</div>
+                                </TableHead>
+                                <TableHead className="cursor-pointer hover:bg-muted" onClick={() => handleSort('booking.order_id')}>
+                                    <div className="flex items-center">Order ID {renderSortArrow('booking.order_id')}</div>
+                                </TableHead>
+                                <TableHead className="cursor-pointer hover:bg-muted" onClick={() => handleSort('tour_package.name')}>
+                                    <div className="flex items-center">Package {renderSortArrow('tour_package.name')}</div>
+                                </TableHead>
+                                <TableHead className="text-right cursor-pointer hover:bg-muted" onClick={() => handleSort('booking_amount')}>
+                                    <div className="flex items-center justify-end">Booking Amt {renderSortArrow('booking_amount')}</div>
+                                </TableHead>
                                 <TableHead>Commission</TableHead>
-                                <TableHead className="text-right">Earned</TableHead>
-                                <TableHead>Status</TableHead>
+                                <TableHead className="text-right cursor-pointer hover:bg-muted" onClick={() => handleSort('commission_amount')}>
+                                    <div className="flex items-center justify-end">Earned {renderSortArrow('commission_amount')}</div>
+                                </TableHead>
+                                <TableHead className="cursor-pointer hover:bg-muted" onClick={() => handleSort('commission_status')}>
+                                    <div className="flex items-center">Status {renderSortArrow('commission_status')}</div>
+                                </TableHead>
+                                <TableHead className="text-right"><span className="sr-only">Actions</span></TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
-                            {commissions.map((comm) => (
+                            {filteredAndSortedCommissions.map((comm) => (
                                 <TableRow key={comm.id}>
                                     <TableCell className="text-xs">{format(new Date(comm.created_at), "dd MMM yyyy")}</TableCell>
                                     <TableCell className="font-mono text-xs">
@@ -274,13 +369,30 @@ export default function OperatorDetailPage() {
                                             {comm.commission_status}
                                         </Badge>
                                     </TableCell>
+                                    <TableCell className="text-right">
+                                        <DropdownMenu>
+                                            <DropdownMenuTrigger asChild>
+                                                <Button variant="ghost" size="icon" className="h-8 w-8">
+                                                    <MoreHorizontal className="h-4 w-4" />
+                                                </Button>
+                                            </DropdownMenuTrigger>
+                                            <DropdownMenuContent align="end">
+                                                <DropdownMenuLabel>Update Status</DropdownMenuLabel>
+                                                <DropdownMenuItem onClick={() => handleCommissionStatusUpdate(comm.id, 'pending')}>Mark as Pending</DropdownMenuItem>
+                                                <DropdownMenuItem onClick={() => handleCommissionStatusUpdate(comm.id, 'paid')}>Mark as Paid</DropdownMenuItem>
+                                                <DropdownMenuItem onClick={() => handleCommissionStatusUpdate(comm.id, 'transferred')}>Mark as Transferred</DropdownMenuItem>
+                                                <DropdownMenuSeparator />
+                                                <DropdownMenuItem onClick={() => handleCommissionStatusUpdate(comm.id, 'cancelled')} className="text-red-600">Cancel Commission</DropdownMenuItem>
+                                            </DropdownMenuContent>
+                                        </DropdownMenu>
+                                    </TableCell>
                                 </TableRow>
                             ))}
                         </TableBody>
                     </Table>
                 ) : (
                     <div className="py-12 text-center text-muted-foreground">
-                        No commission history found for this agent.
+                        No commission history found matching your criteria.
                     </div>
                 )}
             </CardContent>

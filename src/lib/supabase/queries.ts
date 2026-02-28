@@ -1425,6 +1425,25 @@ export async function getAgentCommissions(agentId: string): Promise<AgentCommiss
     return data as AgentCommission[];
 }
 
+/**
+ * Updates the status of a commission record.
+ */
+export async function updateCommissionStatus(id: string, status: string) {
+    const supabase = createAdminClient();
+    const { data, error } = await supabase
+        .from('agent_commission')
+        .update({ commission_status: status })
+        .eq('id', id)
+        .select()
+        .single();
+    
+    if (error) {
+        console.error(`Error updating commission status for ${id}:`, error);
+        throw new Error(error.message);
+    }
+    return data;
+}
+
 
 // --- Notification / Booking Status Functions ---
 
