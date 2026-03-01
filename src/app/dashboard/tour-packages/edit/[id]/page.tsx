@@ -14,7 +14,7 @@ import { useToast } from "@/hooks/use-toast"
 import { Switch } from "@/components/ui/switch"
 import { getTourPackageById, updateTourPackage } from "@/lib/supabase/queries"
 import { Upload, File as FileIcon, X, Image as ImageIcon } from "lucide-react"
-import type { TourPackage } from "@/lib/types"
+import type { TourPackage, PayInPart } from "@/lib/types"
 import Image from "next/image"
 import { PayInPartsForm } from "@/app/dashboard/tour-packages/create/_components/PayInPartsForm"
 import { useBreadcrumb } from "../../../layout"
@@ -128,7 +128,6 @@ export default function EditTourPackagePage() {
       };
       fetchPackage();
     }
-     // Clear on unmount
     return () => setBreadcrumbName('');
   }, [id, router, toast, form, setBreadcrumbName]);
 
@@ -170,13 +169,11 @@ export default function EditTourPackagePage() {
   const onSubmit = async (data: TourPackageFormValues) => {
     const formData = new FormData();
 
-    // If pay in parts is disabled, don't send the data
     const finalData = {
       ...data,
       pay_in_parts: isPayInPartsEnabled ? data.pay_in_parts : []
     }
     
-    // Pass original image urls to compare on server for deletion
     if (tourPackage?.image_urls) {
         formData.append('original_image_urls', JSON.stringify(tourPackage.image_urls));
     }
@@ -184,10 +181,9 @@ export default function EditTourPackagePage() {
         formData.append('original_featured_image_url', tourPackage.featured_image_url);
     }
 
-    // Append all other form data
     Object.entries(finalData).forEach(([key, value]) => {
       if (key === 'new_image_files' || key === 'new_featured_image_file' || key === 'image_urls' || key === 'featured_image_url' || key === 'pay_in_parts') {
-        // Handled separately
+        // Skip
       } else if (value !== undefined && value !== null) {
         formData.append(key, String(value));
       }
@@ -197,7 +193,6 @@ export default function EditTourPackagePage() {
       formData.append('pay_in_parts', JSON.stringify(finalData.pay_in_parts));
     }
     
-    // Append new image files
     if (finalData.new_image_files) {
         Array.from(finalData.new_image_files).forEach((file: any) => {
             formData.append('new_image_files', file);
@@ -207,7 +202,6 @@ export default function EditTourPackagePage() {
         formData.append('new_featured_image_file', finalData.new_featured_image_file[0]);
     }
 
-    // Append remaining existing image urls
     formData.append('image_urls', JSON.stringify(finalData.image_urls || []));
     formData.append('featured_image_url', finalData.featured_image_url || '');
 
@@ -229,11 +223,11 @@ export default function EditTourPackagePage() {
   };
 
   if (loading) {
-    return <div>Loading...</div>
+    return <div className="p-8 text-center">Loading tour package data...</div>
   }
   
   if (!tourPackage) {
-    return <div>Package not found.</div>
+    return <div className="p-8 text-center text-destructive">Package not found.</div>
   }
 
   return (
@@ -250,19 +244,130 @@ export default function EditTourPackagePage() {
                     <Card>
                         <CardHeader><CardTitle>General Information</CardTitle></CardHeader>
                         <CardContent className="space-y-6">
-                            <FormField control={form.control} name="name" render={({ field }) => ( <FormItem><FormLabel>Tour Name</FormLabel><FormControl><Input placeholder="e.g., Himalayan Adventure" {...field} /></FormControl><FormMessage /></FormItem> )} />
+                            <FormField
+                              control={form.control}
+                              name="name"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel>Tour Name</FormLabel>
+                                  <FormControl>
+                                    <Input placeholder="e.g., Himalayan Adventure" {...field} />
+                                  </FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                            
                             <div className="grid grid-cols-2 gap-4">
-                                <FormField control={form.control} name="package_type" render={({ field }) => ( <FormItem><FormLabel>Tour Type</FormLabel><Select onValueChange={field.onChange} value={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Select a type" /></SelectTrigger></FormControl><SelectContent><SelectItem value="World">World</SelectItem><SelectItem value="India">India</SelectItem><SelectItem value="Kerala">Kerala</SelectItem></SelectContent></Select><FormMessage /></FormItem> )} />
-                                <FormField control={form.control} name="category" render={({ field }) => ( <FormItem><FormLabel>Category</FormLabel><Select onValueChange={field.onChange} value={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Select a category" /></SelectTrigger></FormControl><SelectContent><SelectItem value="Adventure">Adventure</SelectItem><SelectItem value="Leisure">Leisure</SelectItem><SelectItem value="Pilgrimage">Pilgrimage</SelectItem><SelectItem value="Cultural">Cultural</SelectItem><SelectItem value="Wildlife">Wildlife</SelectItem><SelectItem value="Family">Family</SelectItem><SelectItem value="Premium">Premium</SelectItem><SelectItem value="LadiesOnly">Ladies Only</SelectItem></Select><FormLabel /></FormItem>)} />
+                                <FormField
+                                  control={form.control}
+                                  name="package_type"
+                                  render={({ field }) => (
+                                    <FormItem>
+                                      <FormLabel>Tour Type</FormLabel>
+                                      <Select onValueChange={field.onChange} value={field.value}>
+                                        <FormControl>
+                                          <SelectTrigger>
+                                            <SelectValue placeholder="Select a type" />
+                                          </SelectTrigger>
+                                        </FormControl>
+                                        <SelectContent>
+                                          <SelectItem value="World">World</SelectItem>
+                                          <SelectItem value="India">India</SelectItem>
+                                          <SelectItem value="Kerala">Kerala</SelectItem>
+                                        </SelectContent>
+                                      </Select>
+                                      <FormMessage />
+                                    </FormItem>
+                                  )}
+                                />
+                                <FormField
+                                  control={form.control}
+                                  name="category"
+                                  render={({ field }) => (
+                                    <FormItem>
+                                      <FormLabel>Category</FormLabel>
+                                      <Select onValueChange={field.onChange} value={field.value}>
+                                        <FormControl>
+                                          <SelectTrigger>
+                                            <SelectValue placeholder="Select a category" />
+                                          </SelectTrigger>
+                                        </FormControl>
+                                        <SelectContent>
+                                          <SelectItem value="Adventure">Adventure</SelectItem>
+                                          <SelectItem value="Leisure">Leisure</SelectItem>
+                                          <SelectItem value="Pilgrimage">Pilgrimage</SelectItem>
+                                          <SelectItem value="Cultural">Cultural</SelectItem>
+                                          <SelectItem value="Wildlife">Wildlife</SelectItem>
+                                          <SelectItem value="Family">Family</SelectItem>
+                                          <SelectItem value="Premium">Premium</SelectItem>
+                                          <SelectItem value="LadiesOnly">Ladies Only</SelectItem>
+                                        </SelectContent>
+                                      </Select>
+                                      <FormMessage />
+                                    </FormItem>
+                                  )}
+                                />
                             </div>
+
                             <div className="grid grid-cols-2 gap-4">
-                                <FormField control={form.control} name="days" render={({ field }) => ( <FormItem><FormLabel>Days</FormLabel><FormControl><Input type="number" placeholder="e.g., 7" {...field} /></FormControl><FormMessage /></FormItem> )} />
-                                <FormField control={form.control} name="nights" render={({ field }) => ( <FormItem><FormLabel>Nights</FormLabel><FormControl><Input type="number" placeholder="e.g., 6" {...field} /></FormControl><FormMessage /></FormItem> )} />
+                                <FormField
+                                  control={form.control}
+                                  name="days"
+                                  render={({ field }) => (
+                                    <FormItem>
+                                      <FormLabel>Days</FormLabel>
+                                      <FormControl>
+                                        <Input type="number" placeholder="e.g., 7" {...field} />
+                                      </FormControl>
+                                      <FormMessage />
+                                    </FormItem>
+                                  )}
+                                />
+                                <FormField
+                                  control={form.control}
+                                  name="nights"
+                                  render={({ field }) => (
+                                    <FormItem>
+                                      <FormLabel>Nights</FormLabel>
+                                      <FormControl>
+                                        <Input type="number" placeholder="e.g., 6" {...field} />
+                                      </FormControl>
+                                      <FormMessage />
+                                    </FormItem>
+                                  )}
+                                />
                             </div>
+
                             <div className="grid grid-cols-2 gap-4">
-                                <FormField control={form.control} name="base_price" render={({ field }) => ( <FormItem><FormLabel>Base Price (INR)</FormLabel><FormControl><Input type="number" placeholder="e.g., 50000" {...field} /></FormControl><FormMessage /></FormItem> )} />
-                                <FormField control={form.control} name="max_guests" render={({ field }) => ( <FormItem><FormLabel>Maximum Guests</FormLabel><FormControl><Input type="number" {...field} /></FormControl><FormMessage /></FormItem> )} />
+                                <FormField
+                                  control={form.control}
+                                  name="base_price"
+                                  render={({ field }) => (
+                                    <FormItem>
+                                      <FormLabel>Base Price (INR)</FormLabel>
+                                      <FormControl>
+                                        <Input type="number" placeholder="e.g., 50000" {...field} />
+                                      </FormControl>
+                                      <FormMessage />
+                                    </FormItem>
+                                  )}
+                                />
+                                <FormField
+                                  control={form.control}
+                                  name="max_guests"
+                                  render={({ field }) => (
+                                    <FormItem>
+                                      <FormLabel>Maximum Guests</FormLabel>
+                                      <FormControl>
+                                        <Input type="number" {...field} />
+                                      </FormControl>
+                                      <FormMessage />
+                                    </FormItem>
+                                  )}
+                                />
                             </div>
+
                              <FormField
                                 control={form.control}
                                 name="new_image_files"
@@ -270,7 +375,6 @@ export default function EditTourPackagePage() {
                                 <FormItem>
                                     <FormLabel>Tour Gallery Images</FormLabel>
                                     <div className="space-y-4">
-                                        {/* Existing Images */}
                                         {existingImageUrls.length > 0 && (
                                             <div>
                                                 <h4 className="text-sm font-medium mb-2">Current Images:</h4>
@@ -287,7 +391,6 @@ export default function EditTourPackagePage() {
                                             </div>
                                         )}
 
-                                        {/* New Image Upload */}
                                         <FormControl>
                                             <div className="flex items-center justify-center w-full">
                                                 <label htmlFor="image-files" className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-lg cursor-pointer bg-muted/50 hover:bg-muted">
@@ -302,7 +405,6 @@ export default function EditTourPackagePage() {
                                         </FormControl>
                                         <FormMessage />
 
-                                        {/* New Images Preview */}
                                         {newImageFiles && newImageFiles.length > 0 && (
                                             <div className="mt-4 space-y-2">
                                                 <h4 className="text-sm font-medium">New Files to Upload:</h4>
@@ -336,10 +438,12 @@ export default function EditTourPackagePage() {
                                 render={({ field }) => (
                                 <FormItem className="flex flex-row items-center justify-between">
                                     <div className="space-y-0.5">
-                                        <CardTitle>Agent Commission</CardTitle>
+                                        <CardTitle className="text-lg">Agent Commission</CardTitle>
                                         <CardDescription>Enable commissions for this package.</CardDescription>
                                     </div>
-                                    <FormControl><Switch checked={field.value} onCheckedChange={field.onChange} /></FormControl>
+                                    <FormControl>
+                                      <Switch checked={field.value} onCheckedChange={field.onChange} />
+                                    </FormControl>
                                 </FormItem>
                                 )}
                             />
@@ -400,7 +504,9 @@ export default function EditTourPackagePage() {
                                         <FormLabel className="text-base">Enable Pay in Parts</FormLabel>
                                         <FormDescription>Allow customers to pay in installments.</FormDescription>
                                     </div>
-                                    <FormControl><Switch checked={isPayInPartsEnabled} onCheckedChange={setIsPayInPartsEnabled} /></FormControl>
+                                    <FormControl>
+                                      <Switch checked={isPayInPartsEnabled} onCheckedChange={setIsPayInPartsEnabled} />
+                                    </FormControl>
                                 </FormItem>
                         </CardHeader>
                         {isPayInPartsEnabled && (
@@ -416,19 +522,117 @@ export default function EditTourPackagePage() {
                     <Card>
                         <CardHeader><CardTitle>Tour Information</CardTitle></CardHeader>
                         <CardContent className="space-y-6">
-                            <FormField control={form.control} name="description" render={({ field }) => ( <FormItem><FormLabel>Tour Description</FormLabel><FormControl><MarkdownEditor value={field.value} onChange={field.onChange} /></FormControl><FormMessage /></FormItem> )} />
-                            <FormField control={form.control} name="highlights" render={({ field }) => ( <FormItem><FormLabel>Highlights</FormLabel><FormControl><MarkdownEditor value={field.value} onChange={field.onChange} /></FormControl><FormMessage /></FormItem> )} />
-                            <FormField control={form.control} name="inclusion" render={({ field }) => ( <FormItem><FormLabel>Inclusions</FormLabel><FormControl><MarkdownEditor value={field.value} onChange={field.onChange} /></FormControl><FormMessage /></FormItem> )} />
-                            <FormField control={form.control} name="exclusion" render={({ field }) => ( <FormItem><FormLabel>Exclusions</FormLabel><FormControl><MarkdownEditor value={field.value} onChange={field.onChange} /></FormControl><FormMessage /></FormItem> )} />
-                            <FormField control={form.control} name="booking_policy" render={({ field }) => ( <FormItem><FormLabel>Booking Policies</FormLabel><FormControl><MarkdownEditor value={field.value ?? ''} onChange={field.onChange} /></FormControl><FormMessage /></FormItem> )} />
-                            <FormField control={form.control} name="cancellation_policy" render={({ field }) => ( <FormItem><FormLabel>Cancellation Policies</FormLabel><FormControl><MarkdownEditor value={field.value ?? ''} onChange={field.onChange} /></FormControl><FormMessage /></FormItem> )} />
-                            <FormField control={form.control} name="terms_and_conditions" render={({ field }) => ( <FormItem><FormLabel>Terms and Conditions</FormLabel><FormControl><MarkdownEditor value={field.value ?? ''} onChange={field.onChange} /></FormControl><FormMessage /></FormItem> )} />
+                            <FormField
+                              control={form.control}
+                              name="description"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel>Tour Description</FormLabel>
+                                  <FormControl>
+                                    <MarkdownEditor value={field.value} onChange={field.onChange} />
+                                  </FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                            <FormField
+                              control={form.control}
+                              name="highlights"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel>Highlights</FormLabel>
+                                  <FormControl>
+                                    <MarkdownEditor value={field.value} onChange={field.onChange} />
+                                  </FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                            <FormField
+                              control={form.control}
+                              name="inclusion"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel>Inclusions</FormLabel>
+                                  <FormControl>
+                                    <MarkdownEditor value={field.value} onChange={field.onChange} />
+                                  </FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                            <FormField
+                              control={form.control}
+                              name="exclusion"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel>Exclusions</FormLabel>
+                                  <FormControl>
+                                    <MarkdownEditor value={field.value} onChange={field.onChange} />
+                                  </FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                            <FormField
+                              control={form.control}
+                              name="booking_policy"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel>Booking Policies</FormLabel>
+                                  <FormControl>
+                                    <MarkdownEditor value={field.value ?? ''} onChange={field.onChange} />
+                                  </FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                            <FormField
+                              control={form.control}
+                              name="cancellation_policy"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel>Cancellation Policies</FormLabel>
+                                  <FormControl>
+                                    <MarkdownEditor value={field.value ?? ''} onChange={field.onChange} />
+                                  </FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                            <FormField
+                              control={form.control}
+                              name="terms_and_conditions"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel>Terms and Conditions</FormLabel>
+                                  <FormControl>
+                                    <MarkdownEditor value={field.value ?? ''} onChange={field.onChange} />
+                                  </FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
                         </CardContent>
                     </Card>
                     <Card>
                         <CardHeader><CardTitle>Status & Visibility</CardTitle></CardHeader>
                         <CardContent className="space-y-6">
-                            <FormField control={form.control} name="is_featured" render={({ field }) => ( <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4"><div className="space-y-0.5"><FormLabel className="text-base">Featured Package</FormLabel><FormDescription>Display this package prominently.</FormDescription></div><FormControl><Switch checked={field.value} onCheckedChange={field.onChange} /></FormControl></FormItem>)} />
+                            <FormField
+                              control={form.control}
+                              name="is_featured"
+                              render={({ field }) => (
+                                <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                                  <div className="space-y-0.5">
+                                    <FormLabel className="text-base">Featured Package</FormLabel>
+                                    <FormDescription>Display this package prominently.</FormDescription>
+                                  </div>
+                                  <FormControl>
+                                    <Switch checked={field.value} onCheckedChange={field.onChange} />
+                                  </FormControl>
+                                </FormItem>
+                              )}
+                            />
                              {form.watch('is_featured') && (
                                  <FormField
                                     control={form.control}
@@ -474,7 +678,21 @@ export default function EditTourPackagePage() {
                                     )}
                                 />
                             )}
-                             <FormField control={form.control} name="is_active" render={({ field }) => ( <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4"><div className="space-y-0.5"><FormLabel className="text-base">Active Package</FormLabel><FormDescription>Make this package available for booking.</FormDescription></div><FormControl><Switch checked={field.value} onCheckedChange={field.onChange} /></FormControl></FormItem>)} />
+                             <FormField
+                               control={form.control}
+                               name="is_active"
+                               render={({ field }) => (
+                                 <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                                   <div className="space-y-0.5">
+                                     <FormLabel className="text-base">Active Package</FormLabel>
+                                     <FormDescription>Make this package available for booking.</FormDescription>
+                                   </div>
+                                   <FormControl>
+                                     <Switch checked={field.value ?? false} onCheckedChange={field.onChange} />
+                                   </FormControl>
+                                 </FormItem>
+                               )}
+                             />
                         </CardContent>
                     </Card>
                 </div>

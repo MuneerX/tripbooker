@@ -141,7 +141,6 @@ export default function CreateTourPackagePage() {
   const onSubmit = async (data: TourPackageFormValues) => {
     const formData = new FormData();
     
-    // If pay in parts is disabled, don't send the data
     const finalData = {
       ...data,
       pay_in_parts: isPayInPartsEnabled ? data.pay_in_parts : []
@@ -149,7 +148,7 @@ export default function CreateTourPackagePage() {
 
     Object.entries(finalData).forEach(([key, value]) => {
       if (key === 'image_files' || key === 'featured_image_file' || key === 'pay_in_parts') {
-        // Skip file and array fields for now
+        // Skip
       } else if (value !== undefined && value !== null) {
         formData.append(key, String(value));
       }
@@ -199,19 +198,130 @@ export default function CreateTourPackagePage() {
                     <Card>
                         <CardHeader><CardTitle>General Information</CardTitle></CardHeader>
                         <CardContent className="space-y-6">
-                            <FormField control={form.control} name="name" render={({ field }) => ( <FormItem><FormLabel>Tour Name <span className="text-destructive">*</span></FormLabel><FormControl><Input placeholder="e.g., Himalayan Adventure" {...field} /></FormControl><FormMessage /></FormItem> )} />
+                            <FormField
+                              control={form.control}
+                              name="name"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel>Tour Name <span className="text-destructive">*</span></FormLabel>
+                                  <FormControl>
+                                    <Input placeholder="e.g., Himalayan Adventure" {...field} />
+                                  </FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                            
                             <div className="grid grid-cols-2 gap-4">
-                                <FormField control={form.control} name="package_type" render={({ field }) => ( <FormItem><FormLabel>Tour Type <span className="text-destructive">*</span></FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Select a type" /></SelectTrigger></FormControl><SelectContent><SelectItem value="World">World</SelectItem><SelectItem value="India">India</SelectItem><SelectItem value="Kerala">Kerala</SelectItem></SelectContent></Select><FormMessage /></FormItem> )} />
-                                <FormField control={form.control} name="category" render={({ field }) => ( <FormItem><FormLabel>Category <span className="text-destructive">*</span></FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Select a category" /></SelectTrigger></FormControl><SelectContent><SelectItem value="Adventure">Adventure</SelectItem><SelectItem value="Leisure">Leisure</SelectItem><SelectItem value="Pilgrimage">Pilgrimage</SelectItem><SelectItem value="Cultural">Cultural</SelectItem><SelectItem value="Wildlife">Wildlife</SelectItem><SelectItem value="Family">Family</SelectItem><SelectItem value="Premium">Premium</SelectItem><SelectItem value="LadiesOnly">Ladies Only</SelectItem></Select><FormMessage /></FormItem>)} />
+                                <FormField
+                                  control={form.control}
+                                  name="package_type"
+                                  render={({ field }) => (
+                                    <FormItem>
+                                      <FormLabel>Tour Type <span className="text-destructive">*</span></FormLabel>
+                                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                        <FormControl>
+                                          <SelectTrigger>
+                                            <SelectValue placeholder="Select a type" />
+                                          </SelectTrigger>
+                                        </FormControl>
+                                        <SelectContent>
+                                          <SelectItem value="World">World</SelectItem>
+                                          <SelectItem value="India">India</SelectItem>
+                                          <SelectItem value="Kerala">Kerala</SelectItem>
+                                        </SelectContent>
+                                      </Select>
+                                      <FormMessage />
+                                    </FormItem>
+                                  )}
+                                />
+                                <FormField
+                                  control={form.control}
+                                  name="category"
+                                  render={({ field }) => (
+                                    <FormItem>
+                                      <FormLabel>Category <span className="text-destructive">*</span></FormLabel>
+                                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                        <FormControl>
+                                          <SelectTrigger>
+                                            <SelectValue placeholder="Select a category" />
+                                          </SelectTrigger>
+                                        </FormControl>
+                                        <SelectContent>
+                                          <SelectItem value="Adventure">Adventure</SelectItem>
+                                          <SelectItem value="Leisure">Leisure</SelectItem>
+                                          <SelectItem value="Pilgrimage">Pilgrimage</SelectItem>
+                                          <SelectItem value="Cultural">Cultural</SelectItem>
+                                          <SelectItem value="Wildlife">Wildlife</SelectItem>
+                                          <SelectItem value="Family">Family</SelectItem>
+                                          <SelectItem value="Premium">Premium</SelectItem>
+                                          <SelectItem value="LadiesOnly">Ladies Only</SelectItem>
+                                        </SelectContent>
+                                      </Select>
+                                      <FormMessage />
+                                    </FormItem>
+                                  )}
+                                />
                             </div>
+
                             <div className="grid grid-cols-2 gap-4">
-                                <FormField control={form.control} name="days" render={({ field }) => ( <FormItem><FormLabel>Days <span className="text-destructive">*</span></FormLabel><FormControl><Input type="number" placeholder="e.g., 7" {...field} /></FormControl><FormMessage /></FormItem> )} />
-                                <FormField control={form.control} name="nights" render={({ field }) => ( <FormItem><FormLabel>Nights <span className="text-destructive">*</span></FormLabel><FormControl><Input type="number" placeholder="e.g., 6" {...field} /></FormControl><FormMessage /></FormItem> )} />
+                                <FormField
+                                  control={form.control}
+                                  name="days"
+                                  render={({ field }) => (
+                                    <FormItem>
+                                      <FormLabel>Days <span className="text-destructive">*</span></FormLabel>
+                                      <FormControl>
+                                        <Input type="number" placeholder="e.g., 7" {...field} />
+                                      </FormControl>
+                                      <FormMessage />
+                                    </FormItem>
+                                  )}
+                                />
+                                <FormField
+                                  control={form.control}
+                                  name="nights"
+                                  render={({ field }) => (
+                                    <FormItem>
+                                      <FormLabel>Nights <span className="text-destructive">*</span></FormLabel>
+                                      <FormControl>
+                                        <Input type="number" placeholder="e.g., 6" {...field} />
+                                      </FormControl>
+                                      <FormMessage />
+                                    </FormItem>
+                                  )}
+                                />
                             </div>
+
                             <div className="grid grid-cols-2 gap-4">
-                                <FormField control={form.control} name="base_price" render={({ field }) => ( <FormItem><FormLabel>Base Price (INR) <span className="text-destructive">*</span></FormLabel><FormControl><Input type="number" placeholder="e.g., 50000" {...field} /></FormControl><FormMessage /></FormItem> )} />
-                                <FormField control={form.control} name="max_guests" render={({ field }) => ( <FormItem><FormLabel>Maximum Guests <span className="text-destructive">*</span></FormLabel><FormControl><Input type="number" {...field} /></FormControl><FormMessage /></FormItem> )} />
+                                <FormField
+                                  control={form.control}
+                                  name="base_price"
+                                  render={({ field }) => (
+                                    <FormItem>
+                                      <FormLabel>Base Price (INR) <span className="text-destructive">*</span></FormLabel>
+                                      <FormControl>
+                                        <Input type="number" placeholder="e.g., 50000" {...field} />
+                                      </FormControl>
+                                      <FormMessage />
+                                    </FormItem>
+                                  )}
+                                />
+                                <FormField
+                                  control={form.control}
+                                  name="max_guests"
+                                  render={({ field }) => (
+                                    <FormItem>
+                                      <FormLabel>Maximum Guests <span className="text-destructive">*</span></FormLabel>
+                                      <FormControl>
+                                        <Input type="number" {...field} />
+                                      </FormControl>
+                                      <FormMessage />
+                                    </FormItem>
+                                  )}
+                                />
                             </div>
+
                              <FormField
                                 control={form.control}
                                 name="image_files"
@@ -265,10 +375,12 @@ export default function CreateTourPackagePage() {
                                 render={({ field }) => (
                                 <FormItem className="flex flex-row items-center justify-between">
                                     <div className="space-y-0.5">
-                                        <CardTitle>Agent Commission</CardTitle>
+                                        <CardTitle className="text-lg">Agent Commission</CardTitle>
                                         <CardDescription>Enable commissions for this package.</CardDescription>
                                     </div>
-                                    <FormControl><Switch checked={field.value} onCheckedChange={field.onChange} /></FormControl>
+                                    <FormControl>
+                                      <Switch checked={field.value} onCheckedChange={field.onChange} />
+                                    </FormControl>
                                 </FormItem>
                                 )}
                             />
@@ -329,7 +441,9 @@ export default function CreateTourPackagePage() {
                                     <FormLabel className="text-base">Enable Pay in Parts</FormLabel>
                                     <FormDescription>Allow customers to pay in installments.</FormDescription>
                                 </div>
-                                <FormControl><Switch checked={isPayInPartsEnabled} onCheckedChange={setIsPayInPartsEnabled} /></FormControl>
+                                <FormControl>
+                                  <Switch checked={isPayInPartsEnabled} onCheckedChange={setIsPayInPartsEnabled} />
+                                </FormControl>
                             </FormItem>
                         </CardHeader>
                         {isPayInPartsEnabled && (
@@ -345,19 +459,117 @@ export default function CreateTourPackagePage() {
                     <Card>
                         <CardHeader><CardTitle>Tour Information</CardTitle></CardHeader>
                         <CardContent className="space-y-6">
-                            <FormField control={form.control} name="description" render={({ field }) => ( <FormItem><FormLabel>Tour Description <span className="text-destructive">*</span></FormLabel><FormControl><MarkdownEditor value={field.value} onChange={field.onChange} /></FormControl><FormMessage /></FormItem> )} />
-                            <FormField control={form.control} name="highlights" render={({ field }) => ( <FormItem><FormLabel>Highlights <span className="text-destructive">*</span></FormLabel><FormControl><MarkdownEditor value={field.value} onChange={field.onChange} /></FormControl><FormMessage /></FormItem> )} />
-                            <FormField control={form.control} name="inclusion" render={({ field }) => ( <FormItem><FormLabel>Inclusions <span className="text-destructive">*</span></FormLabel><FormControl><MarkdownEditor value={field.value} onChange={field.onChange} /></FormControl><FormMessage /></FormItem> )} />
-                            <FormField control={form.control} name="exclusion" render={({ field }) => ( <FormItem><FormLabel>Exclusions <span className="text-destructive">*</span></FormLabel><FormControl><MarkdownEditor value={field.value} onChange={field.onChange} /></FormControl><FormMessage /></FormItem> )} />
-                            <FormField control={form.control} name="booking_policy" render={({ field }) => ( <FormItem><FormLabel>Booking Policies</FormLabel><FormControl><MarkdownEditor value={field.value ?? ''} onChange={field.onChange} /></FormControl><FormMessage /></FormItem> )} />
-                            <FormField control={form.control} name="cancellation_policy" render={({ field }) => ( <FormItem><FormLabel>Cancellation Policies</FormLabel><FormControl><MarkdownEditor value={field.value ?? ''} onChange={field.onChange} /></FormControl><FormMessage /></FormItem> )} />
-                            <FormField control={form.control} name="terms_and_conditions" render={({ field }) => ( <FormItem><FormLabel>Terms and Conditions</FormLabel><FormControl><MarkdownEditor value={field.value ?? ''} onChange={field.onChange} /></FormControl><FormMessage /></FormItem> )} />
+                            <FormField
+                              control={form.control}
+                              name="description"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel>Tour Description <span className="text-destructive">*</span></FormLabel>
+                                  <FormControl>
+                                    <MarkdownEditor value={field.value} onChange={field.onChange} />
+                                  </FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                            <FormField
+                              control={form.control}
+                              name="highlights"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel>Highlights <span className="text-destructive">*</span></FormLabel>
+                                  <FormControl>
+                                    <MarkdownEditor value={field.value} onChange={field.onChange} />
+                                  </FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                            <FormField
+                              control={form.control}
+                              name="inclusion"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel>Inclusions <span className="text-destructive">*</span></FormLabel>
+                                  <FormControl>
+                                    <MarkdownEditor value={field.value} onChange={field.onChange} />
+                                  </FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                            <FormField
+                              control={form.control}
+                              name="exclusion"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel>Exclusions <span className="text-destructive">*</span></FormLabel>
+                                  <FormControl>
+                                    <MarkdownEditor value={field.value} onChange={field.onChange} />
+                                  </FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                            <FormField
+                              control={form.control}
+                              name="booking_policy"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel>Booking Policies</FormLabel>
+                                  <FormControl>
+                                    <MarkdownEditor value={field.value ?? ''} onChange={field.onChange} />
+                                  </FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                            <FormField
+                              control={form.control}
+                              name="cancellation_policy"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel>Cancellation Policies</FormLabel>
+                                  <FormControl>
+                                    <MarkdownEditor value={field.value ?? ''} onChange={field.onChange} />
+                                  </FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                            <FormField
+                              control={form.control}
+                              name="terms_and_conditions"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel>Terms and Conditions</FormLabel>
+                                  <FormControl>
+                                    <MarkdownEditor value={field.value ?? ''} onChange={field.onChange} />
+                                  </FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
                         </CardContent>
                     </Card>
                     <Card>
                         <CardHeader><CardTitle>Status & Visibility</CardTitle></CardHeader>
                         <CardContent className="space-y-6">
-                            <FormField control={form.control} name="is_featured" render={({ field }) => ( <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4"><div className="space-y-0.5"><FormLabel className="text-base">Featured Package</FormLabel><FormDescription>Display this package prominently.</FormDescription></div><FormControl><Switch checked={field.value} onCheckedChange={field.onChange} /></FormControl></FormItem>)} />
+                            <FormField
+                              control={form.control}
+                              name="is_featured"
+                              render={({ field }) => (
+                                <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                                  <div className="space-y-0.5">
+                                    <FormLabel className="text-base">Featured Package</FormLabel>
+                                    <FormDescription>Display this package prominently.</FormDescription>
+                                  </div>
+                                  <FormControl>
+                                    <Switch checked={field.value} onCheckedChange={field.onChange} />
+                                  </FormControl>
+                                </FormItem>
+                              )}
+                            />
                             {form.watch('is_featured') && (
                                  <FormField
                                     control={form.control}
@@ -395,7 +607,21 @@ export default function CreateTourPackagePage() {
                                     )}
                                 />
                             )}
-                             <FormField control={form.control} name="is_active" render={({ field }) => ( <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4"><div className="space-y-0.5"><FormLabel className="text-base">Active Package</FormLabel><FormDescription>Make this package available for booking.</FormDescription></div><FormControl><Switch checked={field.value} onCheckedChange={field.onChange} /></FormControl></FormItem>)} />
+                             <FormField
+                               control={form.control}
+                               name="is_active"
+                               render={({ field }) => (
+                                 <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                                   <div className="space-y-0.5">
+                                     <FormLabel className="text-base">Active Package</FormLabel>
+                                     <FormDescription>Make this package available for booking.</FormDescription>
+                                   </div>
+                                   <FormControl>
+                                     <Switch checked={field.value} onCheckedChange={field.onChange} />
+                                   </FormControl>
+                                 </FormItem>
+                               )}
+                             />
                         </CardContent>
                     </Card>
                 </div>
