@@ -1,5 +1,3 @@
-
-
 "use client"
 
 import * as React from "react"
@@ -204,7 +202,7 @@ export default function CreateTourPackagePage() {
                             <FormField control={form.control} name="name" render={({ field }) => ( <FormItem><FormLabel>Tour Name <span className="text-destructive">*</span></FormLabel><FormControl><Input placeholder="e.g., Himalayan Adventure" {...field} /></FormControl><FormMessage /></FormItem> )} />
                             <div className="grid grid-cols-2 gap-4">
                                 <FormField control={form.control} name="package_type" render={({ field }) => ( <FormItem><FormLabel>Tour Type <span className="text-destructive">*</span></FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Select a type" /></SelectTrigger></FormControl><SelectContent><SelectItem value="World">World</SelectItem><SelectItem value="India">India</SelectItem><SelectItem value="Kerala">Kerala</SelectItem></SelectContent></Select><FormMessage /></FormItem> )} />
-                                <FormField control={form.control} name="category" render={({ field }) => ( <FormItem><FormLabel>Category <span className="text-destructive">*</span></FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Select a category" /></SelectTrigger></FormControl><SelectContent><SelectItem value="Adventure">Adventure</SelectItem><SelectItem value="Leisure">Leisure</SelectItem><SelectItem value="Pilgrimage">Pilgrimage</SelectItem><SelectItem value="Cultural">Cultural</SelectItem><SelectItem value="Wildlife">Wildlife</SelectItem><SelectItem value="Family">Family</SelectItem><SelectItem value="Premium">Premium</SelectItem><SelectItem value="LadiesOnly">Ladies Only</SelectItem></SelectContent></Select><FormMessage /></FormItem>)} />
+                                <FormField control={form.control} name="category" render={({ field }) => ( <FormItem><FormLabel>Category <span className="text-destructive">*</span></FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Select a category" /></SelectTrigger></FormControl><SelectContent><SelectItem value="Adventure">Adventure</SelectItem><SelectItem value="Leisure">Leisure</SelectItem><SelectItem value="Pilgrimage">Pilgrimage</SelectItem><SelectItem value="Cultural">Cultural</SelectItem><SelectItem value="Wildlife">Wildlife</SelectItem><SelectItem value="Family">Family</SelectItem><SelectItem value="Premium">Premium</SelectItem><SelectItem value="LadiesOnly">Ladies Only</SelectItem></Select><FormMessage /></FormItem>)} />
                             </div>
                             <div className="grid grid-cols-2 gap-4">
                                 <FormField control={form.control} name="days" render={({ field }) => ( <FormItem><FormLabel>Days <span className="text-destructive">*</span></FormLabel><FormControl><Input type="number" placeholder="e.g., 7" {...field} /></FormControl><FormMessage /></FormItem> )} />
@@ -258,22 +256,7 @@ export default function CreateTourPackagePage() {
                             />
                         </CardContent>
                     </Card>
-                     <Card>
-                        <CardHeader>
-                            <FormItem className="flex flex-row items-center justify-between rounded-lg p-0">
-                                <div className="space-y-0.5">
-                                    <FormLabel className="text-base">Enable Pay in Parts</FormLabel>
-                                    <FormDescription>Allow customers to pay in installments.</FormDescription>
-                                </div>
-                                <FormControl><Switch checked={isPayInPartsEnabled} onCheckedChange={setIsPayInPartsEnabled} /></FormControl>
-                            </FormItem>
-                        </CardHeader>
-                        {isPayInPartsEnabled && (
-                            <CardContent>
-                                <PayInPartsForm />
-                            </CardContent>
-                        )}
-                    </Card>
+                    
                     <Card>
                         <CardHeader>
                              <FormField
@@ -314,7 +297,7 @@ export default function CreateTourPackagePage() {
                                             <FormControl>
                                                 <RadioGroupItem value="amount" />
                                             </FormControl>
-                                            <FormLabel className="font-normal">Amount</FormLabel>
+                                            <FormLabel className="font-normal">Fixed</FormLabel>
                                             </FormItem>
                                         </RadioGroup>
                                         </FormControl>
@@ -335,6 +318,23 @@ export default function CreateTourPackagePage() {
                                     </FormItem>
                                     )}
                                 />
+                            </CardContent>
+                        )}
+                    </Card>
+
+                     <Card>
+                        <CardHeader>
+                            <FormItem className="flex flex-row items-center justify-between rounded-lg p-0">
+                                <div className="space-y-0.5">
+                                    <FormLabel className="text-base">Enable Pay in Parts</FormLabel>
+                                    <FormDescription>Allow customers to pay in installments.</FormDescription>
+                                </div>
+                                <FormControl><Switch checked={isPayInPartsEnabled} onCheckedChange={setIsPayInPartsEnabled} /></FormControl>
+                            </FormItem>
+                        </CardHeader>
+                        {isPayInPartsEnabled && (
+                            <CardContent>
+                                <PayInPartsForm />
                             </CardContent>
                         )}
                     </Card>
@@ -412,5 +412,3 @@ export default function CreateTourPackagePage() {
     </div>
   )
 }
-
-    
