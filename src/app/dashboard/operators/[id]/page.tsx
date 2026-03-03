@@ -5,7 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Edit, UserCheck, UserX, Mail, Phone, Hash, UserCog, Building, Contact, Check, ShieldCheck, Percent, DollarSign, Calendar, Clock, ArrowUp, ArrowDown, MoreHorizontal, Search } from "lucide-react";
+import { ArrowLeft, Edit, UserCheck, UserX, Mail, Phone, Hash, UserCog, Building, Contact, Check, ShieldCheck, Percent, DollarSign, Calendar, Clock, ArrowUp, ArrowDown, MoreHorizontal, Search, Copy } from "lucide-react";
 import { cn, formatCurrency, getStatusBadgeColor } from "@/lib/utils";
 import { Separator } from "@/components/ui/separator";
 import { getOperatorById, updateOperatorStatus, getAgentCommissions, updateCommissionStatus } from "@/lib/supabase/queries";
@@ -111,6 +111,16 @@ export default function OperatorDetailPage() {
         fetchData(); // Refresh list
     } catch (error: any) {
         toast({ variant: "destructive", title: "Error", description: "Failed to update commission status." });
+    }
+  };
+
+  const copyReferralCode = () => {
+    if (operator?.referral_code) {
+      navigator.clipboard.writeText(operator.referral_code);
+      toast({
+        title: "Copied!",
+        description: "Referral code copied to clipboard.",
+      });
     }
   };
 
@@ -231,7 +241,14 @@ export default function OperatorDetailPage() {
                                 <UserCog className="h-5 w-5 text-muted-foreground mt-0.5" />
                                 <div>
                                     <p className="font-medium text-muted-foreground">Referral Code</p>
-                                    <p>{operator.referral_code || 'N/A'}</p>
+                                    <div className="flex items-center gap-2">
+                                      <p className="font-mono bg-muted px-1.5 py-0.5 rounded text-xs">{operator.referral_code || 'N/A'}</p>
+                                      {operator.referral_code && (
+                                        <Button variant="ghost" size="icon" className="h-6 w-6" onClick={copyReferralCode}>
+                                          <Copy className="h-3 w-3" />
+                                        </Button>
+                                      )}
+                                    </div>
                                 </div>
                             </div>
                             <div className="flex items-start gap-2 col-span-2">

@@ -1,5 +1,3 @@
-
-
 "use client"
 
 import * as React from "react"
@@ -184,7 +182,7 @@ export default function EditOperatorPage() {
                         <CardContent className="space-y-6">
                             <FormField control={form.control} name="name" render={({ field }) => ( <FormItem><FormLabel>Agent Name</FormLabel><FormControl><Input placeholder="e.g., Happy Trails Inc." {...field} /></FormControl><FormMessage /></FormItem> )} />
                             <FormField control={form.control} name="description" render={({ field }) => ( <FormItem><FormLabel>Description</FormLabel><FormControl><Textarea placeholder="A brief description of the agent." {...field} /></FormControl><FormMessage /></FormItem> )} />
-                            <FormField control={form.control} name="address" render={({ field }) => ( <FormItem><FormLabel>Address</FormLabel><FormControl><Textarea placeholder="Agent's full address" {...field} /></FormControl><FormMessage /></FormItem> )} />
+                            <FormField control={form.control} name="address" render={({ field }) => ( <FormItem><FormLabel>Address</FormLabel><FormControl><Textarea placeholder="Agent's full address" {...field} /></FormControl><FormMessage /></FormMessage> )} />
 
                             <FormItem>
                                 <FormLabel>Agent Logo</FormLabel>
@@ -262,8 +260,8 @@ export default function EditOperatorPage() {
                                     <FormLabel>Referral Code</FormLabel>
                                     <div className="flex items-center gap-2">
                                         <FormControl><Input placeholder="e.g., HTI-REF" {...field} /></FormControl>
-                                        <Button type="button" variant="outline" size="icon" onClick={generateReferralCode}>
-                                            <RefreshCw className="h-4 w-4"/>
+                                        <Button type="button" variant="outline" onClick={generateReferralCode} className="whitespace-nowrap">
+                                            <RefreshCw className="mr-2 h-4 w-4"/> Generate Code
                                         </Button>
                                     </div>
                                     <FormMessage />

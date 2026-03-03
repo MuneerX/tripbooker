@@ -1,5 +1,3 @@
-
-
 "use client"
 
 import * as React from "react"
@@ -214,8 +212,8 @@ export default function CreateOperatorPage() {
                                     <FormLabel>Referral Code</FormLabel>
                                     <div className="flex items-center gap-2">
                                         <FormControl><Input placeholder="e.g., HTI-REF" {...field} /></FormControl>
-                                        <Button type="button" variant="outline" size="icon" onClick={generateReferralCode}>
-                                            <RefreshCw className="h-4 w-4"/>
+                                        <Button type="button" variant="outline" onClick={generateReferralCode} className="whitespace-nowrap">
+                                            <RefreshCw className="mr-2 h-4 w-4"/> Generate Code
                                         </Button>
                                     </div>
                                     <FormMessage />
