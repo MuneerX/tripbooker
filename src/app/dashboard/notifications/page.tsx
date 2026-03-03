@@ -16,7 +16,7 @@ import Link from "next/link";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 
-export default function NotificationsPage() {
+function NotificationsContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const initialTab = searchParams.get('tab') || 'bookings';
@@ -316,4 +316,12 @@ function EmptyState({ text }: { text: string }) {
             <p className="mt-2 text-xs font-medium uppercase tracking-wider">{text}</p>
         </div>
     );
+}
+
+export default function NotificationsPage() {
+  return (
+    <React.Suspense fallback={<div className="flex items-center justify-center h-full"><p className="text-muted-foreground">Loading notifications...</p></div>}>
+      <NotificationsContent />
+    </React.Suspense>
+  );
 }
