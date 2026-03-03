@@ -137,9 +137,45 @@ export default function CreateOperatorPage() {
                             <CardDescription>Fill in the main details of the agent.</CardDescription>
                         </CardHeader>
                         <CardContent className="space-y-6">
-                            <FormField control={form.control} name="name" render={({ field }) => ( <FormItem><FormLabel>Agent Name <span className="text-destructive">*</span></FormLabel><FormControl><Input placeholder="e.g., Happy Trails Inc." {...field} /></FormControl><FormMessage /></FormItem> )} />
-                            <FormField control={form.control} name="description" render={({ field }) => ( <FormItem><FormLabel>Description</FormLabel><FormControl><Textarea placeholder="A brief description of the agent." {...field} /></FormControl><FormMessage /></FormItem> )} />
-                            <FormField control={form.control} name="address" render={({ field }) => ( <FormItem><FormLabel>Address</FormLabel><FormControl><Textarea placeholder="Agent's full address" {...field} /></FormControl><FormMessage /></FormItem> )} />
+                            <FormField
+                              control={form.control}
+                              name="name"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel>Agent Name <span className="text-destructive">*</span></FormLabel>
+                                  <FormControl>
+                                    <Input placeholder="e.g., Happy Trails Inc." {...field} />
+                                  </FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                            <FormField
+                              control={form.control}
+                              name="description"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel>Description</FormLabel>
+                                  <FormControl>
+                                    <Textarea placeholder="A brief description of the agent." {...field} />
+                                  </FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                            <FormField
+                              control={form.control}
+                              name="address"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel>Address</FormLabel>
+                                  <FormControl>
+                                    <Textarea placeholder="Agent's full address" {...field} />
+                                  </FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
 
                              <FormField
                                 control={form.control}
@@ -183,8 +219,30 @@ export default function CreateOperatorPage() {
                             <CardTitle>Status</CardTitle>
                         </CardHeader>
                         <CardContent className="space-y-4">
-                            <FormField control={form.control} name="is_verified" render={({ field }) => ( <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3"><FormLabel>Verified</FormLabel><FormControl><Switch checked={field.value} onCheckedChange={field.onChange} /></FormControl></FormItem>)} />
-                            <FormField control={form.control} name="is_active" render={({ field }) => ( <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3"><FormLabel>Active</FormLabel><FormControl><Switch checked={field.value} onCheckedChange={field.onChange} /></FormControl></FormItem>)} />
+                            <FormField
+                              control={form.control}
+                              name="is_verified"
+                              render={({ field }) => (
+                                <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3">
+                                  <FormLabel>Verified</FormLabel>
+                                  <FormControl>
+                                    <Switch checked={field.value} onCheckedChange={field.onChange} />
+                                  </FormControl>
+                                </FormItem>
+                              )}
+                            />
+                            <FormField
+                              control={form.control}
+                              name="is_active"
+                              render={({ field }) => (
+                                <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3">
+                                  <FormLabel>Active</FormLabel>
+                                  <FormControl>
+                                    <Switch checked={field.value} onCheckedChange={field.onChange} />
+                                  </FormControl>
+                                </FormItem>
+                              )}
+                            />
                         </CardContent>
                     </Card>
                 </div>
@@ -196,9 +254,45 @@ export default function CreateOperatorPage() {
                             <CardTitle>Contact Information</CardTitle>
                         </CardHeader>
                         <CardContent className="space-y-4">
-                             <FormField control={form.control} name="contact_person" render={({ field }) => ( <FormItem><FormLabel>Contact Person</FormLabel><FormControl><Input placeholder="John Doe" {...field} /></FormControl><FormMessage /></FormItem> )} />
-                            <FormField control={form.control} name="email" render={({ field }) => ( <FormItem><FormLabel>Email</FormLabel><FormControl><Input type="email" placeholder="contact@happytrails.com" {...field} /></FormControl><FormMessage /></FormItem> )} />
-                            <FormField control={form.control} name="phone" render={({ field }) => ( <FormItem><FormLabel>Phone Number</FormLabel><FormControl><Input placeholder="+91 12345 67890" {...field} /></FormControl><FormMessage /></FormItem> )} />
+                             <FormField
+                               control={form.control}
+                               name="contact_person"
+                               render={({ field }) => (
+                                 <FormItem>
+                                   <FormLabel>Contact Person</FormLabel>
+                                   <FormControl>
+                                     <Input placeholder="John Doe" {...field} />
+                                   </FormControl>
+                                   <FormMessage />
+                                 </FormItem>
+                               )}
+                             />
+                            <FormField
+                              control={form.control}
+                              name="email"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel>Email</FormLabel>
+                                  <FormControl>
+                                    <Input type="email" placeholder="contact@happytrails.com" {...field} />
+                                  </FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                            <FormField
+                              control={form.control}
+                              name="phone"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel>Phone Number</FormLabel>
+                                  <FormControl>
+                                    <Input placeholder="+91 12345 67890" {...field} />
+                                  </FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
                         </CardContent>
                     </Card>
                     <Card>
@@ -206,12 +300,29 @@ export default function CreateOperatorPage() {
                             <CardTitle>Codes</CardTitle>
                         </CardHeader>
                         <CardContent className="space-y-4">
-                            <FormField control={form.control} name="code" render={({ field }) => ( <FormItem><FormLabel>Agent Code</FormLabel><FormControl><Input placeholder="e.g., HTI001" {...field} /></FormControl><FormMessage /></FormItem> )} />
-                            <FormField control={form.control} name="referral_code" render={({ field }) => ( 
+                            <FormField
+                              control={form.control}
+                              name="code"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel>Agent Code</FormLabel>
+                                  <FormControl>
+                                    <Input placeholder="e.g., HTI001" {...field} />
+                                  </FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                            <FormField
+                              control={form.control}
+                              name="referral_code"
+                              render={({ field }) => ( 
                                 <FormItem>
                                     <FormLabel>Referral Code</FormLabel>
                                     <div className="flex items-center gap-2">
-                                        <FormControl><Input placeholder="e.g., HTI-REF" {...field} /></FormControl>
+                                        <FormControl>
+                                          <Input placeholder="e.g., HTI-REF" {...field} />
+                                        </FormControl>
                                         <Button type="button" variant="outline" onClick={generateReferralCode} className="whitespace-nowrap">
                                             <RefreshCw className="mr-2 h-4 w-4"/> Generate Code
                                         </Button>
