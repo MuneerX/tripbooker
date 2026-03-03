@@ -3,7 +3,7 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { MoreHorizontal, UserCheck, UserX, Users, View, PlusCircle, FilePenLine, Trash2, UserCog, ArrowUp, ArrowDown } from "lucide-react";
+import { MoreHorizontal, UserCheck, UserX, Users, View, PlusCircle, FilePenLine, Trash2, UserCog, ArrowUp, ArrowDown, FileDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -27,6 +27,7 @@ import { getOperators, deleteOperator, updateOperatorStatus } from "@/lib/supaba
 import { useToast } from "@/hooks/use-toast";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useRouter } from "next/navigation";
+import { format } from 'date-fns';
 
 type SortableKeys = 'name' | 'status';
 
@@ -72,6 +73,56 @@ export default function OperatorsPage() {
       document.body.style.pointerEvents = '';
     };
   }, [itemToToggle, itemToDelete]);
+
+  const handleExport = () => {
+    if (loading || allOperators.length === 0) {
+        toast({
+            variant: "destructive",
+            title: "Nothing to export",
+            description: "There is no agent data available to export.",
+        });
+        return;
+    }
+
+    const headers = [
+        "Agent Name", "Agent Code", "Referral Code", "Contact Person", 
+        "Email", "Phone", "Status", "Verified", "Joined Date", "Address"
+    ];
+
+    const csvRows = [headers.join(",")];
+
+    allOperators.forEach(op => {
+        const row = [
+            `"${op.name?.replace(/"/g, '""') || 'N/A'}"`,
+            `"${op.code || 'N/A'}"`,
+            `"${op.referral_code || 'N/A'}"`,
+            `"${op.contact_person?.replace(/"/g, '""') || 'N/A'}"`,
+            `"${op.email || 'N/A'}"`,
+            `"${op.phone || 'N/A'}"`,
+            `"${op.status}"`,
+            op.is_verified ? "Yes" : "No",
+            `"${op.created_at ? format(new Date(op.created_at), "yyyy-MM-dd") : 'N/A'}"`,
+            `"${op.address?.replace(/"/g, '""') || 'N/A'}"`,
+        ];
+        
+        csvRows.push(row.join(","));
+    });
+
+    const csvString = csvRows.join("\n");
+    const blob = new Blob([csvString], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement("a");
+    const url = URL.createObjectURL(blob);
+    link.setAttribute("href", url);
+    link.setAttribute("download", `agents_export_${new Date().toISOString().split('T')[0]}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    
+    toast({
+        title: "Export Successful",
+        description: "Your agent data has been downloaded as a CSV file.",
+    });
+  };
 
   const handleStatusToggle = async () => {
     if (!itemToToggle) return;
@@ -194,6 +245,10 @@ export default function OperatorsPage() {
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="w-full sm:w-64"
               />
+              <Button onClick={handleExport} variant="outline" className="w-full sm:w-auto">
+                <FileDown className="mr-2 h-4 w-4" />
+                Export CSV
+              </Button>
               <Button asChild>
                 <Link href="/dashboard/operators/create">
                   <PlusCircle className="mr-2 h-4 w-4" /> Create Agent
@@ -429,5 +484,3 @@ export default function OperatorsPage() {
     </div>
   );
 }
-
-    
