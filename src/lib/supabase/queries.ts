@@ -1217,9 +1217,34 @@ export async function getOperators(): Promise<Operator[]> {
   })) as Operator[];
 }
 
+/**
+ * Fetches recently registered agents (e.g. in the last 7 days).
+ */
+export async function getRecentOperators(): Promise<Operator[]> {
+    const supabase = createAdminClient();
+    const sevenDaysAgo = new Date();
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+    
+    const { data, error } = await supabase
+        .from('operators')
+        .select('*')
+        .gte('created_at', sevenDaysAgo.toISOString())
+        .order('created_at', { ascending: false });
+
+    if (error) {
+        console.error('Error fetching recent operators:', error);
+        return [];
+    }
+
+    return (data || []).map(op => ({
+        ...op,
+        status: op.is_active ? 'active' : 'blocked',
+    })) as Operator[];
+}
+
 export async function getOperatorById(id: string): Promise<Operator | null> {
     const supabase = createAdminClient();
-    const { data, error } = await supabase
+    const { data, error = null } = await supabase
         .from('operators')
         .select('*')
         .eq('id', id)

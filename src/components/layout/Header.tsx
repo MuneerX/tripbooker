@@ -1,8 +1,7 @@
 
-
 "use client";
 
-import { Bell, Menu, User } from 'lucide-react';
+import { Bell, Menu, User, Book, Star, UserPlus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { useSidebar } from '@/components/ui/sidebar';
@@ -13,8 +12,8 @@ import { ThemeToggle } from '@/components/ThemeToggle';
 import { createClient } from '@/lib/supabase/client';
 import { useRouter } from 'next/navigation';
 import * as React from 'react';
-import { getPendingBookings } from '@/lib/supabase/queries';
-import type { Booking } from '@/lib/types';
+import { getPendingBookings, getPendingReviews, getRecentOperators } from '@/lib/supabase/queries';
+import type { Booking, Review, Operator } from '@/lib/types';
 import { formatDistanceToNow } from 'date-fns';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
@@ -24,10 +23,13 @@ export function AppHeader() {
   const supabase = createClient();
   const [user, setUser] = React.useState<any>(null);
   const [profile, setProfile] = React.useState<any>(null);
-  const [notifications, setNotifications] = React.useState<Booking[]>([]);
+  
+  const [bookings, setBookings] = React.useState<Booking[]>([]);
+  const [reviews, setReviews] = React.useState<Review[]>([]);
+  const [agents, setAgents] = React.useState<Operator[]>([]);
 
   React.useEffect(() => {
-    const fetchUserAndNotifications = async () => {
+    const fetchData = async () => {
       const { data: { user } } = await supabase.auth.getUser();
       setUser(user);
       if (user) {
@@ -35,10 +37,17 @@ export function AppHeader() {
         setProfile(profileData);
       }
       
-      const pendingBookings = await getPendingBookings();
-      setNotifications(pendingBookings);
+      const [pendingBookings, pendingReviews, newAgents] = await Promise.all([
+        getPendingBookings(),
+        getPendingReviews(),
+        getRecentOperators()
+      ]);
+      
+      setBookings(pendingBookings);
+      setReviews(pendingReviews);
+      setAgents(newAgents);
     };
-    fetchUserAndNotifications();
+    fetchData();
   }, [supabase]);
 
   const handleLogout = async () => {
@@ -51,7 +60,7 @@ export function AppHeader() {
   const displayEmail = user?.email;
   const avatarUrl = profile?.avatar_url;
   
-  const recentNotifications = notifications.slice(0, 3);
+  const totalNotifications = bookings.length + reviews.length + agents.length;
 
   return (
     <header className="flex h-14 items-center gap-4 border-b bg-card px-4 print:hidden lg:h-[60px] lg:px-6">
@@ -67,32 +76,64 @@ export function AppHeader() {
             <DropdownMenuTrigger asChild>
             <Button variant="outline" size="icon" className="relative h-9 w-9">
                 <Bell className="h-5 w-5" />
-                {notifications.length > 0 && (
+                {totalNotifications > 0 && (
                 <Badge className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full p-0 text-[10px]" variant="destructive">
-                    {notifications.length}
+                    {totalNotifications}
                 </Badge>
                 )}
                 <span className="sr-only">Toggle notifications</span>
             </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-80">
-            <DropdownMenuLabel>Notifications</DropdownMenuLabel>
+            <DropdownMenuLabel>Alerts & Notifications</DropdownMenuLabel>
             <DropdownMenuSeparator />
-            {recentNotifications.length > 0 ? (
-                recentNotifications.map(booking => (
-                <DropdownMenuItem key={booking.id} asChild className="cursor-pointer">
-                    <Link href={`/dashboard/bookings/${booking.id}`}>
-                        <div className="flex flex-col">
-                        <p className="text-sm font-medium">New Booking: {booking.order_id}</p>
-                        <p className="text-xs text-muted-foreground">{booking.customer_name} booked {booking.tour_package?.name}</p>
-                        <p className="text-xs text-muted-foreground mt-1">{formatDistanceToNow(new Date(booking.created_at), { addSuffix: true })}</p>
+            
+            {bookings.length > 0 && (
+                <DropdownMenuItem asChild className="cursor-pointer">
+                    <Link href="/dashboard/notifications?tab=bookings">
+                        <div className="flex items-center gap-3">
+                            <div className="p-2 bg-orange-100 rounded-full text-orange-600"><Book className="h-4 w-4" /></div>
+                            <div className="flex flex-col">
+                                <p className="text-sm font-medium">{bookings.length} Pending Booking(s)</p>
+                                <p className="text-xs text-muted-foreground">New reservations awaiting approval.</p>
+                            </div>
                         </div>
                     </Link>
                 </DropdownMenuItem>
-                ))
-            ) : (
-                <div className="px-2 py-4 text-center text-sm text-muted-foreground">No new notifications</div>
             )}
+
+            {reviews.length > 0 && (
+                <DropdownMenuItem asChild className="cursor-pointer">
+                    <Link href="/dashboard/notifications?tab=reviews">
+                        <div className="flex items-center gap-3">
+                            <div className="p-2 bg-blue-100 rounded-full text-blue-600"><Star className="h-4 w-4" /></div>
+                            <div className="flex flex-col">
+                                <p className="text-sm font-medium">{reviews.length} New Review(s)</p>
+                                <p className="text-xs text-muted-foreground">Customer feedback needing moderation.</p>
+                            </div>
+                        </div>
+                    </Link>
+                </DropdownMenuItem>
+            )}
+
+            {agents.length > 0 && (
+                <DropdownMenuItem asChild className="cursor-pointer">
+                    <Link href="/dashboard/notifications?tab=agents">
+                        <div className="flex items-center gap-3">
+                            <div className="p-2 bg-green-100 rounded-full text-green-600"><UserPlus className="h-4 w-4" /></div>
+                            <div className="flex flex-col">
+                                <p className="text-sm font-medium">{agents.length} New Agent(s)</p>
+                                <p className="text-xs text-muted-foreground">Recent operator registrations.</p>
+                            </div>
+                        </div>
+                    </Link>
+                </DropdownMenuItem>
+            )}
+
+            {totalNotifications === 0 && (
+                <div className="px-2 py-4 text-center text-sm text-muted-foreground">All caught up! No new alerts.</div>
+            )}
+
             <DropdownMenuSeparator />
             <div className="p-1">
                 <Button asChild variant="outline" className="w-full">
