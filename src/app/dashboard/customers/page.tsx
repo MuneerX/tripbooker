@@ -2,7 +2,7 @@
 "use client";
 
 import * as React from "react";
-import { MoreHorizontal, UserCheck, UserX, Users, View, ArrowUp, ArrowDown } from "lucide-react";
+import { MoreHorizontal, UserCheck, UserX, Users, View, ArrowUp, ArrowDown, FileDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -26,6 +26,7 @@ import { getProfiles, updateProfileStatus } from "@/lib/supabase/queries";
 import { useToast } from "@/hooks/use-toast";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useRouter } from "next/navigation";
+import { format } from 'date-fns';
 
 
 type SortableKeys = 'full_name' | 'is_kv_customer' | 'status' | 'created_at';
@@ -76,6 +77,58 @@ export default function CustomersPage() {
       document.body.style.pointerEvents = '';
     };
   }, [itemToToggle]);
+
+  const handleExport = () => {
+    if (loading || allProfiles.length === 0) {
+        toast({
+            variant: "destructive",
+            title: "Nothing to export",
+            description: "There is no customer data available to export.",
+        });
+        return;
+    }
+
+    const headers = [
+        "Full Name", "Email", "Phone Number", "WhatsApp Number", 
+        "Joined Date", "KV Customer", "Status", "City", "District", "State", "Address", "Pincode"
+    ];
+
+    const csvRows = [headers.join(",")];
+
+    allProfiles.forEach(profile => {
+        const row = [
+            `"${profile.full_name?.replace(/"/g, '""') || 'N/A'}"`,
+            `"${profile.email || 'N/A'}"`,
+            `"${profile.phone_number || 'N/A'}"`,
+            `"${profile.whatsapp_number || 'N/A'}"`,
+            `"${profile.created_at ? format(new Date(profile.created_at), "yyyy-MM-dd") : 'N/A'}"`,
+            profile.is_kv_customer ? "Yes" : "No",
+            `"${profile.status}"`,
+            `"${profile.city?.replace(/"/g, '""') || 'N/A'}"`,
+            `"${profile.district?.replace(/"/g, '""') || 'N/A'}"`,
+            `"${profile.state?.replace(/"/g, '""') || 'N/A'}"`,
+            `"${profile.address?.replace(/"/g, '""') || 'N/A'}"`,
+            `"${profile.pincode || 'N/A'}"`,
+        ];
+        
+        csvRows.push(row.join(","));
+    });
+
+    const csvString = csvRows.join("\n");
+    const blob = new Blob([csvString], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement("a");
+    const url = URL.createObjectURL(blob);
+    link.setAttribute("href", url);
+    link.setAttribute("download", `customers_export_${new Date().toISOString().split('T')[0]}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    
+    toast({
+        title: "Export Successful",
+        description: "Your customer data has been downloaded as a CSV file.",
+    });
+  };
 
   const handleStatusToggle = async () => {
     if (!itemToToggle) return;
@@ -221,8 +274,12 @@ export default function CustomersPage() {
                 placeholder="Search by name, email, or phone..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full sm:w-auto"
+                className="w-full sm:w-64"
               />
+              <Button onClick={handleExport} variant="outline" className="w-full sm:w-auto">
+                <FileDown className="mr-2 h-4 w-4" />
+                Export CSV
+              </Button>
             </div>
           </div>
         </CardHeader>
