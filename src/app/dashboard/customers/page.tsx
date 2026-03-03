@@ -103,7 +103,9 @@ export default function CustomersPage() {
   const filteredProfiles = allProfiles
     .filter((profile) =>
         profile.full_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        profile.email?.toLowerCase().includes(searchTerm.toLowerCase())
+        profile.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        profile.phone_number?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        profile.whatsapp_number?.toLowerCase().includes(searchTerm.toLowerCase())
     )
     .filter((profile) => {
         if (!profile.created_at) return true;
@@ -216,7 +218,7 @@ export default function CustomersPage() {
                     />
                 </div>
               <Input
-                placeholder="Search by name or email..."
+                placeholder="Search by name, email, or phone..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="w-full sm:w-auto"
