@@ -379,7 +379,7 @@ export default function OperatorDetailPage() {
                                             <DropdownMenuContent align="end">
                                                 <DropdownMenuLabel>Update Status</DropdownMenuLabel>
                                                 <DropdownMenuItem onClick={() => handleCommissionStatusUpdate(comm.id, 'pending')}>Mark as Pending</DropdownMenuItem>
-                                                <DropdownMenuItem onClick={() => handleCommissionStatusUpdate(comm.id, 'paid')}>Mark as Paid</DropdownMenuItem>
+                                                <DropdownMenuItem onClick={() => handleCommissionStatusUpdate(comm.id, 'approved')}>Mark as Approved</DropdownMenuItem>
                                                 <DropdownMenuItem onClick={() => handleCommissionStatusUpdate(comm.id, 'transferred')}>Mark as Transferred</DropdownMenuItem>
                                                 <DropdownMenuSeparator />
                                                 <DropdownMenuItem onClick={() => handleCommissionStatusUpdate(comm.id, 'cancelled')} className="text-red-600">Cancel Commission</DropdownMenuItem>
@@ -406,7 +406,7 @@ export default function OperatorDetailPage() {
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AccordionCancel>Cancel</AccordionCancel>
             <AlertDialogAction onClick={handleStatusToggle} className={cn(operator.status === 'active' && "bg-destructive hover:bg-destructive/90")}>
               {operator.status === 'active' ? 'Block' : 'Unblock'}
             </AlertDialogAction>

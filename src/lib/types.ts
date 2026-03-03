@@ -238,7 +238,7 @@ export type AgentCommission = {
   commission_value: number | null;
   booking_amount: number | null;
   commission_amount: number | null;
-  commission_status: 'pending' | 'paid' | 'cancelled' | string | null;
+  commission_status: 'pending' | 'approved' | 'cancelled' | string | null;
   tour_package?: { name: string } | null;
   booking?: { order_id: string } | null;
 };
