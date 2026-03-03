@@ -1,4 +1,3 @@
-
 "use client";
 
 import * as React from "react";
@@ -406,7 +405,7 @@ export default function OperatorDetailPage() {
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AccordionCancel>Cancel</AccordionCancel>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
             <AlertDialogAction onClick={handleStatusToggle} className={cn(operator.status === 'active' && "bg-destructive hover:bg-destructive/90")}>
               {operator.status === 'active' ? 'Block' : 'Unblock'}
             </AlertDialogAction>
