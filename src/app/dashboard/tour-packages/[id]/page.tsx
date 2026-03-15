@@ -1,4 +1,3 @@
-
 "use client";
 
 import * as React from "react";
@@ -289,7 +288,7 @@ export default function TourPackageDetailPage() {
                                 <Card key={booking.id}>
                                     <CardHeader className="p-4">
                                         <div className="flex items-center justify-between">
-                                            <CardTitle className="text-sm font-mono">{booking.booking_reference}</CardTitle>
+                                            <CardTitle className="text-sm font-mono">{booking.order_id}</CardTitle>
                                             <Badge variant="outline" className={cn("capitalize", getStatusBadgeColor(booking.booking_status))}>
                                                 {booking.booking_status}
                                             </Badge>
@@ -329,7 +328,7 @@ export default function TourPackageDetailPage() {
                                 {bookingsForPackage.length > 0 ? (
                                   bookingsForPackage.map((booking) => (
                                     <TableRow key={booking.id}>
-                                      <TableCell className="font-mono text-xs">{booking.booking_reference}</TableCell>
+                                      <TableCell className="font-mono text-xs">{booking.order_id}</TableCell>
                                       <TableCell>
                                         <div className="font-medium">{booking.customer_name}</div>
                                         <div className="text-sm text-muted-foreground hidden md:inline">{booking.customer_email}</div>

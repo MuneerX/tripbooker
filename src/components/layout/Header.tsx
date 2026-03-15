@@ -1,4 +1,3 @@
-
 "use client";
 
 import { Bell, Menu, User, Book, Star, UserPlus } from 'lucide-react';
@@ -149,7 +148,7 @@ export function AppHeader() {
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" className="relative h-9 w-9 rounded-full">
                 <Avatar className="h-9 w-9">
-                  <AvatarImage src={avatarUrl || ''} alt={displayName} />
+                  <AvatarImage src={avatarUrl || undefined} alt={displayName} />
                   <AvatarFallback>{displayName.charAt(0)}</AvatarFallback>
                 </Avatar>
               </Button>

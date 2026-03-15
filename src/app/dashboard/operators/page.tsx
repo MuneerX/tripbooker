@@ -269,7 +269,7 @@ export default function OperatorsPage() {
                          <div className="flex items-start justify-between">
                             <div className="flex items-center gap-3">
                                 <Avatar className="h-10 w-10">
-                                  <AvatarImage src={operator.logo_url || ''} alt={operator.name || ''} />
+                                  <AvatarImage src={operator.logo_url || undefined} alt={operator.name || ''} />
                                   <AvatarFallback>{operator.name?.charAt(0) || 'A'}</AvatarFallback>
                                 </Avatar>
                                 <div>
@@ -362,7 +362,7 @@ export default function OperatorsPage() {
                     <TableCell>
                       <div className="flex items-center gap-3">
                         <Avatar className="h-9 w-9">
-                          <AvatarImage src={operator.logo_url || ''} alt={operator.name || ''} />
+                          <AvatarImage src={operator.logo_url || undefined} alt={operator.name || ''} />
                           <AvatarFallback>{operator.name?.charAt(0) || 'A'}</AvatarFallback>
                         </Avatar>
                         <span className="font-medium">{operator.name || 'N/A'}</span>

@@ -221,7 +221,7 @@ export default function OperatorDetailPage() {
                     <CardContent className="space-y-6">
                         <div className="flex justify-center">
                             <Avatar className="h-40 w-40 border-4 border-primary/20">
-                                <AvatarImage src={operator.logo_url || ''} alt={operator.name || 'logo'}/>
+                                <AvatarImage src={operator.logo_url || undefined} alt={operator.name || 'logo'}/>
                                 <AvatarFallback className="text-6xl">{operator.name?.charAt(0) || 'A'}</AvatarFallback>
                             </Avatar>
                         </div>
@@ -422,7 +422,7 @@ export default function OperatorDetailPage() {
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogCancel onClick={() => setOperator(null)}>Cancel</AlertDialogCancel>
             <AlertDialogAction onClick={handleStatusToggle} className={cn(operator.status === 'active' && "bg-destructive hover:bg-destructive/90")}>
               {operator.status === 'active' ? 'Block' : 'Unblock'}
             </AlertDialogAction>

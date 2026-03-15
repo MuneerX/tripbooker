@@ -1,4 +1,3 @@
-
 "use client";
 
 import * as React from "react";
@@ -95,23 +94,23 @@ function NotificationsContent() {
     
     let title = "";
     let sub = "";
-    let avatar = "";
+    let avatar = undefined;
     let initial = "U";
 
     if (type === 'booking') {
         title = "New Booking Request";
         sub = `${data.customer_name} booked ${data.tour_package?.name}`;
-        avatar = data.avatar_url || '';
+        avatar = data.avatar_url || undefined;
         initial = data.customer_name?.charAt(0) || 'B';
     } else if (type === 'review') {
         title = "New Review Received";
         sub = `${data.customer_name} rated ${data.rating} stars`;
-        avatar = data.avatar_url || '';
+        avatar = data.avatar_url || undefined;
         initial = data.customer_name?.charAt(0) || 'R';
     } else if (type === 'agent') {
         title = "Agent Registration";
         sub = `${data.name} just signed up`;
-        avatar = data.logo_url || '';
+        avatar = data.logo_url || undefined;
         initial = data.name?.charAt(0) || 'A';
     }
 
@@ -194,7 +193,7 @@ function NotificationsContent() {
                 <CardContent className="space-y-6">
                     <div className="flex items-center gap-4 bg-muted/30 p-4 rounded-lg">
                         <Avatar className="h-12 w-12">
-                            <AvatarImage src={data.avatar_url} />
+                            <AvatarImage src={data.avatar_url || undefined} />
                             <AvatarFallback>{data.customer_name.charAt(0)}</AvatarFallback>
                         </Avatar>
                         <div>

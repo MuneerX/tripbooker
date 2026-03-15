@@ -119,7 +119,7 @@ const CharterTourDetail = ({ tour }: { tour: CharterTour }) => {
                 <div className="grid gap-2">
                     <CardTitle className="text-xl flex items-center gap-3">
                        <Avatar className="h-10 w-10">
-                            <AvatarImage src={tour.avatar_url || ''} alt={tour.name || 'Avatar'} />
+                            <AvatarImage src={tour.avatar_url || undefined} alt={tour.name || 'Avatar'} />
                             <AvatarFallback>{tour.name?.charAt(0) || "U"}</AvatarFallback>
                         </Avatar>
                         {tour.name || "Charter Inquiry"}
@@ -193,7 +193,7 @@ const CharterTourDetail = ({ tour }: { tour: CharterTour }) => {
                             <BooleanDetailItem icon={UserCog} label="Tour Guide" value={!!tour.need_tour_guide} />
                             <BooleanDetailItem icon={Car} label="Pickup/Drop" value={!!tour.need_pickup} />
                             <BooleanDetailItem icon={Utensils} label="Food" value={!!tour.need_food} />
-                            <BooleanDetailItem icon={Camera} label="Photographer" value={!!tour.need_photographer} />
+                            <BooleanDetailItem icon={Camera} label="Photographer" value={!!tour.need_food} />
                             <BooleanDetailItem icon={Star} label="VIP Services" value={!!tour.need_vip} />
                         </CardContent>
                     </Card>
@@ -254,7 +254,7 @@ const InquiryList = ({
               )}
               <div className="flex items-start gap-3">
                 <Avatar className="h-10 w-10 border">
-                  <AvatarImage src={tour.avatar_url || ""} alt={tour.name || "U"} />
+                  <AvatarImage src={tour.avatar_url || undefined} alt={tour.name || "U"} />
                   <AvatarFallback>{tour.name?.charAt(0) || "U"}</AvatarFallback>
                 </Avatar>
                 <div className="grid gap-0.5 flex-1 min-w-0">

@@ -1,4 +1,3 @@
-
 "use client";
 
 import * as React from "react";
@@ -10,7 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import type { Profile } from "@/lib/types";
-import { getStatusBadgeColor, cn } from "@/lib/utils";
+import { formatCurrency, getStatusBadgeColor, cn } from "@/lib/utils";
 import { StatCard } from "@/components/dashboard/StatCard";
 import {
   AlertDialog,
@@ -295,7 +294,7 @@ export default function CustomersPage() {
                          <div className="flex items-start justify-between gap-3">
                             <div className="flex items-center gap-3 flex-1 min-w-0">
                                 <Avatar className="h-10 w-10 flex-shrink-0">
-                                  <AvatarImage src={profile.avatar_url || ''} alt={profile.full_name || ''} />
+                                  <AvatarImage src={profile.avatar_url || undefined} alt={profile.full_name || ''} />
                                   <AvatarFallback>{profile.full_name?.charAt(0) || 'U'}</AvatarFallback>
                                 </Avatar>
                                 <div className="flex-1 min-w-0 space-y-0.5">
@@ -379,7 +378,7 @@ export default function CustomersPage() {
                     <TableCell>
                       <div className="flex items-center gap-3">
                         <Avatar className="h-9 w-9">
-                          <AvatarImage src={profile.avatar_url || ''} alt={profile.full_name || ''} />
+                          <AvatarImage src={profile.avatar_url || undefined} alt={profile.full_name || ''} />
                           <AvatarFallback>{profile.full_name?.charAt(0) || 'U'}</AvatarFallback>
                         </Avatar>
                         <span className="font-medium">{profile.full_name || 'N/A'}</span>

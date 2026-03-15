@@ -1,4 +1,3 @@
-
 "use client";
 
 import * as React from "react";
@@ -126,7 +125,7 @@ export default function CustomerDetailPage() {
                     <CardContent className="space-y-6">
                         <div className="flex justify-center">
                             <Avatar className="h-40 w-40 border-4 border-primary/20">
-                                <AvatarImage src={profile.avatar_url || ''} alt={profile.full_name || ''} />
+                                <AvatarImage src={profile.avatar_url || undefined} alt={profile.full_name || ''} />
                                 <AvatarFallback className="text-6xl">{profile.full_name?.charAt(0) || 'C'}</AvatarFallback>
                             </Avatar>
                         </div>
