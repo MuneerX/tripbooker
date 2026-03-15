@@ -5,9 +5,9 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Bell, Check, X, ArrowRight, User, Package, Calendar, Info, Star, UserCog, UserPlus } from "lucide-react";
-import type { Booking, Review, Operator } from "@/lib/types";
-import { getPendingBookings, acceptBooking, cancelBooking, getPendingReviews, updateReviewStatus, getRecentOperators } from "@/lib/supabase/queries";
+import { Bell, Check, X, ArrowRight, User, Package, Calendar, Info, Star, ClipboardCheck } from "lucide-react";
+import type { Booking, Review } from "@/lib/types";
+import { getPendingBookings, acceptBooking, cancelBooking, getPendingReviews, updateReviewStatus } from "@/lib/supabase/queries";
 import { useToast } from "@/hooks/use-toast";
 import { format, formatDistanceToNow } from "date-fns";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -18,36 +18,37 @@ import { cn } from "@/lib/utils";
 function NotificationsContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const initialTab = searchParams.get('tab') || 'bookings';
+  const initialTab = searchParams.get('tab') || 'all';
   
   const { toast } = useToast();
   const [bookings, setBookings] = React.useState<Booking[]>([]);
   const [reviews, setReviews] = React.useState<Review[]>([]);
-  const [agents, setAgents] = React.useState<Operator[]>([]);
   const [loading, setLoading] = React.useState(true);
   
-  const [selectedItem, setSelectedItem] = React.useState<{type: 'booking' | 'review' | 'agent', data: any} | null>(null);
+  const [selectedItem, setSelectedItem] = React.useState<{type: 'booking' | 'review', data: any} | null>(null);
 
   const fetchAllNotifications = React.useCallback(async () => {
     setLoading(true);
     try {
-      const [pendingBookings, pendingReviews, newAgents] = await Promise.all([
+      const [pendingBookings, pendingReviews] = await Promise.all([
         getPendingBookings(),
-        getPendingReviews(),
-        getRecentOperators()
+        getPendingReviews()
       ]);
       
       setBookings(pendingBookings);
       setReviews(pendingReviews);
-      setAgents(newAgents);
 
       // Set initial selection based on tab
       if (initialTab === 'bookings' && pendingBookings.length > 0) {
         setSelectedItem({ type: 'booking', data: pendingBookings[0] });
       } else if (initialTab === 'reviews' && pendingReviews.length > 0) {
         setSelectedItem({ type: 'review', data: pendingReviews[0] });
-      } else if (initialTab === 'agents' && newAgents.length > 0) {
-        setSelectedItem({ type: 'agent', data: newAgents[0] });
+      } else if (initialTab === 'all') {
+        if (pendingBookings.length > 0) {
+            setSelectedItem({ type: 'booking', data: pendingBookings[0] });
+        } else if (pendingReviews.length > 0) {
+            setSelectedItem({ type: 'review', data: pendingReviews[0] });
+        }
       } else {
         setSelectedItem(null);
       }
@@ -61,6 +62,14 @@ function NotificationsContent() {
   React.useEffect(() => {
     fetchAllNotifications();
   }, [fetchAllNotifications]);
+
+  const allNotifications = React.useMemo(() => {
+    const combined = [
+        ...bookings.map(b => ({ type: 'booking' as const, data: b, date: new Date(b.created_at) })),
+        ...reviews.map(r => ({ type: 'review' as const, data: r, date: new Date(r.created_at) }))
+    ];
+    return combined.sort((a, b) => b.date.getTime() - a.date.getTime());
+  }, [bookings, reviews]);
 
   const handleBookingAction = async (action: 'accept' | 'cancel', bookingId: string) => {
     try {
@@ -89,7 +98,7 @@ function NotificationsContent() {
     }
   };
 
-  const renderSidebarItem = (type: 'booking' | 'review' | 'agent', data: any) => {
+  const renderSidebarItem = (type: 'booking' | 'review', data: any) => {
     const isSelected = selectedItem?.type === type && selectedItem?.data.id === data.id;
     
     let title = "";
@@ -99,7 +108,7 @@ function NotificationsContent() {
 
     if (type === 'booking') {
         title = "New Booking Request";
-        sub = `${data.customer_name} booked ${data.tour_package?.name}`;
+        sub = `${data.customer_name} booked ${data.tour_package?.name || 'Package'}`;
         avatar = data.avatar_url || undefined;
         initial = data.customer_name?.charAt(0) || 'B';
     } else if (type === 'review') {
@@ -107,11 +116,6 @@ function NotificationsContent() {
         sub = `${data.customer_name} rated ${data.rating} stars`;
         avatar = data.avatar_url || undefined;
         initial = data.customer_name?.charAt(0) || 'R';
-    } else if (type === 'agent') {
-        title = "Agent Registration";
-        sub = `${data.name} just signed up`;
-        avatar = data.logo_url || undefined;
-        initial = data.name?.charAt(0) || 'A';
     }
 
     return (
@@ -119,7 +123,7 @@ function NotificationsContent() {
             key={data.id}
             className={cn(
                 "w-full text-left p-3 rounded-lg border transition-colors mb-2",
-                isSelected ? "bg-muted border-primary" : "hover:bg-muted/50"
+                isSelected ? "bg-muted border-primary shadow-sm" : "hover:bg-muted/50"
             )}
             onClick={() => setSelectedItem({ type, data })}
         >
@@ -128,10 +132,17 @@ function NotificationsContent() {
                     <AvatarImage src={avatar} />
                     <AvatarFallback>{initial}</AvatarFallback>
                 </Avatar>
-                <div className="grid gap-0.5 min-w-0">
-                    <p className="font-semibold text-sm truncate">{title}</p>
+                <div className="grid gap-0.5 min-w-0 flex-1">
+                    <div className="flex items-center justify-between gap-2">
+                        <p className="font-semibold text-sm truncate">{title}</p>
+                        {type === 'booking' ? (
+                            <ClipboardCheck className="h-3 w-3 text-orange-500" />
+                        ) : (
+                            <Star className="h-3 w-3 text-blue-500" />
+                        )}
+                    </div>
                     <p className="text-xs text-muted-foreground truncate">{sub}</p>
-                    <p className="text-xs text-muted-foreground mt-1">
+                    <p className="text-[10px] text-muted-foreground mt-1">
                         {formatDistanceToNow(new Date(data.created_at), { addSuffix: true })}
                     </p>
                 </div>
@@ -188,7 +199,7 @@ function NotificationsContent() {
             <Card>
                 <CardHeader>
                     <CardTitle className="text-lg">Review Moderation</CardTitle>
-                    <CardDescription>A new rating has been submitted for <Link href={`/dashboard/tour-packages/${data.package_id}`} className="text-primary hover:underline">{data.tour_package?.name}</Link></CardDescription>
+                    <CardDescription>A new rating has been submitted for <Link href={`/dashboard/tour-packages/${data.package_id}`} className="text-primary hover:underline">{data.tour_package?.name || 'the package'}</Link></CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-6">
                     <div className="flex items-center gap-4 bg-muted/30 p-4 rounded-lg">
@@ -216,41 +227,6 @@ function NotificationsContent() {
             </Card>
         );
     }
-
-    if (type === 'agent') {
-        return (
-            <Card>
-                <CardHeader>
-                    <div className="flex items-start justify-between">
-                        <div className="grid gap-1">
-                            <CardTitle className="text-lg">New Agent Registered</CardTitle>
-                            <CardDescription>A new operator has created an account.</CardDescription>
-                        </div>
-                        <Button variant="ghost" size="sm" asChild>
-                            <Link href={`/dashboard/operators/${data.id}`}>
-                                View Profile <ArrowRight className="ml-2 h-4 w-4" />
-                            </Link>
-                        </Button>
-                    </div>
-                </CardHeader>
-                <CardContent className="space-y-6">
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                        <DetailField icon={UserCog} label="Agent Name" value={data.name} />
-                        <DetailField icon={Info} label="Agent Code" value={data.code || 'N/A'} />
-                        <DetailField icon={Calendar} label="Registered" value={format(new Date(data.created_at), "PPP")} />
-                        <DetailField icon={UserPlus} label="Referral Code" value={data.referral_code || 'None'} />
-                    </div>
-                    <div className="p-4 bg-blue-50 text-blue-700 rounded-lg text-sm flex items-start gap-2">
-                        <Info className="h-4 w-4 mt-0.5 shrink-0" />
-                        <p>Verify the agent's identity and documentation before marking them as a verified operator.</p>
-                    </div>
-                    <Button className="w-full" asChild>
-                        <Link href={`/dashboard/operators/edit/${data.id}`}>Go to Verification</Link>
-                    </Button>
-                </CardContent>
-            </Card>
-        );
-    }
   };
 
   return (
@@ -265,21 +241,25 @@ function NotificationsContent() {
                 <div className="lg:col-span-1">
                     <Tabs defaultValue={initialTab} className="w-full">
                         <TabsList className="grid w-full grid-cols-3 mb-4">
+                            <TabsTrigger value="all">All</TabsTrigger>
                             <TabsTrigger value="bookings">Bookings</TabsTrigger>
                             <TabsTrigger value="reviews">Reviews</TabsTrigger>
-                            <TabsTrigger value="agents">Agents</TabsTrigger>
                         </TabsList>
                         
+                        <TabsContent value="all" className="mt-0">
+                            {allNotifications.length > 0 ? (
+                                allNotifications.map(n => renderSidebarItem(n.type, n.data))
+                            ) : (
+                                <EmptyState text="No alerts found" />
+                            )}
+                        </TabsContent>
+
                         <TabsContent value="bookings" className="mt-0">
                             {bookings.length > 0 ? bookings.map(b => renderSidebarItem('booking', b)) : <EmptyState text="No pending bookings" />}
                         </TabsContent>
                         
                         <TabsContent value="reviews" className="mt-0">
                             {reviews.length > 0 ? reviews.map(r => renderSidebarItem('review', r)) : <EmptyState text="No reviews to moderate" />}
-                        </TabsContent>
-                        
-                        <TabsContent value="agents" className="mt-0">
-                            {agents.length > 0 ? agents.map(a => renderSidebarItem('agent', a)) : <EmptyState text="No recent registrations" />}
                         </TabsContent>
                     </Tabs>
                 </div>

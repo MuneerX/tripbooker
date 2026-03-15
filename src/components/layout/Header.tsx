@@ -1,6 +1,6 @@
 "use client";
 
-import { Bell, Menu, User, Book, Star, UserPlus } from 'lucide-react';
+import { Bell, Menu, User, Book, Star } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { useSidebar } from '@/components/ui/sidebar';
@@ -11,8 +11,8 @@ import { ThemeToggle } from '@/components/ThemeToggle';
 import { createClient } from '@/lib/supabase/client';
 import { useRouter } from 'next/navigation';
 import * as React from 'react';
-import { getPendingBookings, getPendingReviews, getRecentOperators } from '@/lib/supabase/queries';
-import type { Booking, Review, Operator } from '@/lib/types';
+import { getPendingBookings, getPendingReviews } from '@/lib/supabase/queries';
+import type { Booking, Review } from '@/lib/types';
 import { formatDistanceToNow } from 'date-fns';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
@@ -25,7 +25,6 @@ export function AppHeader() {
   
   const [bookings, setBookings] = React.useState<Booking[]>([]);
   const [reviews, setReviews] = React.useState<Review[]>([]);
-  const [agents, setAgents] = React.useState<Operator[]>([]);
 
   React.useEffect(() => {
     const fetchData = async () => {
@@ -36,15 +35,13 @@ export function AppHeader() {
         setProfile(profileData);
       }
       
-      const [pendingBookings, pendingReviews, newAgents] = await Promise.all([
+      const [pendingBookings, pendingReviews] = await Promise.all([
         getPendingBookings(),
-        getPendingReviews(),
-        getRecentOperators()
+        getPendingReviews()
       ]);
       
       setBookings(pendingBookings);
       setReviews(pendingReviews);
-      setAgents(newAgents);
     };
     fetchData();
   }, [supabase]);
@@ -59,7 +56,7 @@ export function AppHeader() {
   const displayEmail = user?.email;
   const avatarUrl = profile?.avatar_url;
   
-  const totalNotifications = bookings.length + reviews.length + agents.length;
+  const totalNotifications = bookings.length + reviews.length;
 
   return (
     <header className="flex h-14 items-center gap-4 border-b bg-card px-4 print:hidden lg:h-[60px] lg:px-6">
@@ -109,20 +106,6 @@ export function AppHeader() {
                             <div className="flex flex-col">
                                 <p className="text-sm font-medium">{reviews.length} New Review(s)</p>
                                 <p className="text-xs text-muted-foreground">Customer feedback needing moderation.</p>
-                            </div>
-                        </div>
-                    </Link>
-                </DropdownMenuItem>
-            )}
-
-            {agents.length > 0 && (
-                <DropdownMenuItem asChild className="cursor-pointer">
-                    <Link href="/dashboard/notifications?tab=agents">
-                        <div className="flex items-center gap-3">
-                            <div className="p-2 bg-green-100 rounded-full text-green-600"><UserPlus className="h-4 w-4" /></div>
-                            <div className="flex flex-col">
-                                <p className="text-sm font-medium">{agents.length} New Agent(s)</p>
-                                <p className="text-xs text-muted-foreground">Recent operator registrations.</p>
                             </div>
                         </div>
                     </Link>
