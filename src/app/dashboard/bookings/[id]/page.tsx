@@ -455,6 +455,11 @@ export default function BookingDetailPage() {
                   <Badge className={cn("capitalize", getStatusBadgeColor(booking.booking_status))}>
                     {booking.booking_status}
                   </Badge>
+                  {booking.referral_code && (
+                    <Badge variant="secondary" className="font-mono">
+                      Ref Code: {booking.referral_code}
+                    </Badge>
+                  )}
                 </div>
                  {booking.booking_status === 'cancelled' && booking.cancellation_reason && (
                     <div className="mt-2 flex items-center gap-2 text-sm text-destructive">
@@ -520,9 +525,9 @@ export default function BookingDetailPage() {
                                 <CardHeader><CardTitle>Customer Details</CardTitle></CardHeader>
                                 <CardContent className="grid grid-cols-2 gap-x-6 gap-y-4">
                                     <div className="flex items-start gap-3"><User className="h-5 w-5 text-muted-foreground mt-1" /><div><p className="text-sm text-muted-foreground">Customer Name</p><p className="font-medium">{booking.customer.full_name}</p></div></div>
-                                    <div className="flex items-start gap-3"><MapPinIcon className="h-5 w-5 text-muted-foreground mt-1" /><div><p className="text-sm text-muted-foreground">City</p><p className="font-medium">{booking.customer.address?.city || 'N/A'}</p></div></div>
-                                    <div className="flex items-start gap-3"><Phone className="h-5 w-5 text-muted-foreground mt-1" /><div><p className="text-sm text-muted-foreground">Contact Number</p><p className="font-medium">{booking.customer.address?.phone_number || 'N/A'}</p></div></div>
-                                    <div className="flex items-start gap-3"><Hash className="h-5 w-5 text-muted-foreground mt-1" /><div><p className="text-sm text-muted-foreground">Pincode</p><p className="font-medium">{booking.customer.address?.pincode || 'N/A'}</p></div></div>
+                                    <div className="flex items-start gap-3"><MapPinIcon className="h-5 w-5 text-muted-foreground mt-1" /><div><p className="text-sm text-muted-foreground">City</p><p className="font-medium">{booking.customer.city || 'N/A'}</p></div></div>
+                                    <div className="flex items-start gap-3"><Phone className="h-5 w-5 text-muted-foreground mt-1" /><div><p className="text-sm text-muted-foreground">Contact Number</p><p className="font-medium">{booking.customer.phone_number || 'N/A'}</p></div></div>
+                                    <div className="flex items-start gap-3"><Hash className="h-5 w-5 text-muted-foreground mt-1" /><div><p className="text-sm text-muted-foreground">Pincode</p><p className="font-medium">{booking.customer.pincode || 'N/A'}</p></div></div>
                                 </CardContent>
                             </Card>
                              {agent && commission !== null && (

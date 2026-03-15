@@ -81,7 +81,7 @@ function NotificationsContent() {
   const handleReviewAction = async (action: 'approved' | 'rejected', reviewId: string) => {
     try {
       await updateReviewStatus(reviewId, action);
-      toast({ title: "Success", description: `Review has been ${action}.` });
+      toast({ title: "Success", description: `Review has been ${action === 'approved' ? 'published' : 'removed'}.` });
       fetchAllNotifications();
       router.refresh();
     } catch (error: any) {

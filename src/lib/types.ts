@@ -177,12 +177,18 @@ export type Review = {
   id: string;
   package_id: string;
   user_id: string;
+  booking_id?: string | null;
   customer_name: string;
   rating: number;
+  title?: string | null;
   comment: string | null;
+  image_urls?: string[];
+  is_verified: boolean;
+  helpful_votes?: number;
   created_at: string;
+  updated_at?: string;
   avatar_url?: string | null;
-  status: 'pending' | 'approved' | 'rejected';
+  tour_package?: { name: string } | null;
 };
 
 export type Profile = {

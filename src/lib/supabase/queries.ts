@@ -1050,6 +1050,7 @@ export async function getReviews(packageId?: string): Promise<Review[]> {
         avatar_url
       )
     `)
+    .eq('is_verified', true)
     .order('created_at', { ascending: false });
 
   if (packageId) {
@@ -1068,10 +1069,12 @@ export async function getReviews(packageId?: string): Promise<Review[]> {
     comment: item.comment,
     customer_name: item.customer?.full_name || 'Anonymous',
     avatar_url: item.customer?.avatar_url,
-    status: item.status || 'pending',
   }));
 }
 
+/**
+ * Fetches unverified reviews for moderation.
+ */
 export async function getPendingReviews(): Promise<Review[]> {
     const supabase = createAdminClient();
     const { data, error } = await supabase
@@ -1081,7 +1084,7 @@ export async function getPendingReviews(): Promise<Review[]> {
             customer:profiles (full_name, avatar_url),
             tour_package:package_id (name)
         `)
-        .eq('status', 'pending')
+        .eq('is_verified', false)
         .order('created_at', { ascending: false });
     
     if (error) {
@@ -1097,11 +1100,21 @@ export async function getPendingReviews(): Promise<Review[]> {
     }));
 }
 
+/**
+ * Moderates a review by verifying or deleting it.
+ */
 export async function updateReviewStatus(reviewId: string, status: 'approved' | 'rejected') {
     const supabase = createAdminClient();
+    
+    if (status === 'rejected') {
+        const { error } = await supabase.from('reviews').delete().eq('id', reviewId);
+        if (error) throw new Error(error.message);
+        return { success: true };
+    }
+
     const { data, error } = await supabase
         .from('reviews')
-        .update({ status })
+        .update({ is_verified: true, updated_at: new Date().toISOString() })
         .eq('id', reviewId)
         .select()
         .single();
