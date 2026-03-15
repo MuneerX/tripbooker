@@ -1,3 +1,4 @@
+
 "use client";
 
 import * as React from "react";
@@ -7,7 +8,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Check, X, Calendar, Users, Clock, Info, Star, CheckCircle, XCircle, ArrowUpRight, Sun, Moon, CreditCard, User, Phone, MapPinIcon, Hash, FileDown, Plus, ChevronDown, UserCog, DollarSign, Tag } from "lucide-react";
+import { ArrowLeft, Check, X, Calendar, Users, Clock, Info, Star, CheckCircle, XCircle, ArrowUpRight, Sun, Moon, CreditCard, User, Phone, MapPinIcon, Hash, FileDown, Plus, ChevronDown, UserCog, DollarSign, Tag, Edit2 } from "lucide-react";
 import { formatCurrency, getStatusBadgeColor, cn } from "@/lib/utils";
 import { Separator } from "@/components/ui/separator";
 import { addMonths, format, isBefore, isAfter, parseISO, startOfDay } from "date-fns";
@@ -115,14 +116,14 @@ export default function BookingDetailPage() {
 
     try {
       await acceptBooking(booking.id, confirmTravelDate || undefined);
-      toast({ title: "Success", description: "Booking has been confirmed." });
+      toast({ title: "Success", description: "Booking details have been updated." });
       fetchBooking(); // Refresh data
       router.refresh();
     } catch (error: any) {
       toast({
         variant: "destructive",
         title: "Error",
-        description: error.message || `Failed to confirm booking.`,
+        description: error.message || `Failed to update booking.`,
       });
     } finally {
       setIsConfirmDialogOpen(false);
@@ -357,9 +358,12 @@ export default function BookingDetailPage() {
        <Dialog open={isConfirmDialogOpen} onOpenChange={setIsConfirmDialogOpen}>
         <DialogContent>
             <DialogHeader>
-              <DialogTitle>Confirm Booking</DialogTitle>
+              <DialogTitle>{booking.booking_status === 'pending' ? 'Confirm Booking' : 'Update Travel Date'}</DialogTitle>
               <DialogDescription>
-                Assign a travel date to confirm booking "{booking.order_id}".
+                {booking.booking_status === 'pending' 
+                  ? `Assign a travel date to confirm booking "${booking.order_id}".`
+                  : `Update the travel date for booking "${booking.order_id}".`
+                }
               </DialogDescription>
             </DialogHeader>
             <div className="space-y-4 py-4">
@@ -376,7 +380,7 @@ export default function BookingDetailPage() {
             <DialogFooter>
               <Button variant="outline" onClick={() => setIsConfirmDialogOpen(false)}>Cancel</Button>
               <Button onClick={handleConfirmBooking}>
-                Confirm Reservation
+                {booking.booking_status === 'pending' ? 'Confirm Reservation' : 'Update Date'}
               </Button>
             </DialogFooter>
           </DialogContent>
@@ -483,6 +487,10 @@ export default function BookingDetailPage() {
                  )}
                  {booking.booking_status === 'confirmed' && (
                     <>
+                        <Button variant="outline" size="sm" onClick={() => setIsConfirmDialogOpen(true)}>
+                            <Edit2 className="mr-2 h-4 w-4" />
+                            Edit Travel Date
+                        </Button>
                         <Button variant="destructive" size="sm" onClick={() => setIsCancelDialogOpen(true)}>
                             <X className="mr-2 h-4 w-4" />
                             Cancel Booking

@@ -1,3 +1,4 @@
+
 "use client";
 
 import * as React from "react";
@@ -166,12 +167,16 @@ export default function OperatorsPage() {
     }
   };
 
-  const filteredOperators = allOperators.filter((operator) =>
-    operator.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    operator.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    operator.code?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    operator.phone?.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredOperators = allOperators.filter((operator) => {
+    const term = searchTerm.toLowerCase();
+    return (
+      operator.name?.toLowerCase().includes(term) ||
+      operator.email?.toLowerCase().includes(term) ||
+      operator.code?.toLowerCase().includes(term) ||
+      operator.phone?.toLowerCase().includes(term) ||
+      operator.referral_code?.toLowerCase().includes(term)
+    );
+  });
   
   const handleSort = (key: SortableKeys) => {
     let direction: 'asc' | 'desc' = 'asc';
@@ -368,7 +373,7 @@ export default function OperatorsPage() {
                         <span className="font-medium">{operator.name || 'N/A'}</span>
                       </div>
                     </TableCell>
-                    <TableCell>{operator.referral_code || 'N/A'}</TableCell>
+                    <TableCell className="font-mono">{operator.referral_code || 'N/A'}</TableCell>
                     <TableCell>{operator.code || 'N/A'}</TableCell>
                     <TableCell className="hidden md:table-cell">{operator.email || 'N/A'}</TableCell>
                     <TableCell className="hidden lg:table-cell">{operator.phone || 'N/A'}</TableCell>
