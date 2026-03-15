@@ -83,8 +83,11 @@ export default function BookingDetailPage() {
       setBooking(data);
       if (data) {
         setBreadcrumbName(`Booking #${data.order_id}`);
-        if (data.travel_date) {
-            setConfirmTravelDate(format(new Date(data.travel_date), "yyyy-MM-dd"));
+        // Automatically pre-fill the confirmation travel date
+        // If travel_date is missing, default to booking_date
+        const initialDate = data.travel_date || data.booking_date;
+        if (initialDate) {
+            setConfirmTravelDate(format(new Date(initialDate), "yyyy-MM-dd"));
         }
       } else {
         setBreadcrumbName('Booking Not Found');
@@ -361,7 +364,7 @@ export default function BookingDetailPage() {
               <DialogTitle>{booking.booking_status === 'pending' ? 'Confirm Booking' : 'Update Travel Date'}</DialogTitle>
               <DialogDescription>
                 {booking.booking_status === 'pending' 
-                  ? `Assign a travel date to confirm booking "${booking.order_id}".`
+                  ? `Assign a travel date to confirm booking "${booking.order_id}". Defaults to reservation date if left unchanged.`
                   : `Update the travel date for booking "${booking.order_id}".`
                 }
               </DialogDescription>

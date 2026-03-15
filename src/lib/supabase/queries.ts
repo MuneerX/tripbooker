@@ -1,3 +1,4 @@
+
 "use server"
 
 import { createServerClient } from '@supabase/ssr'
@@ -1512,9 +1513,21 @@ export async function getPendingBookings(): Promise<Booking[]> {
 
 export async function acceptBooking(bookingId: string, travelDate?: string) {
   const supabase = createAdminClient();
+  
+  // Get current booking to check for booking_date if travelDate is missing
+  const { data: currentBooking } = await supabase
+    .from('tour_bookings')
+    .select('booking_date, travel_date')
+    .eq('id', bookingId)
+    .single();
+
   const updateData: any = { booking_status: 'confirmed' };
+  
   if (travelDate) {
     updateData.travel_date = travelDate;
+  } else if (currentBooking && !currentBooking.travel_date) {
+    // Automatically assign reservation date as travel date if none exists
+    updateData.travel_date = currentBooking.booking_date;
   }
 
   const { data, error } = await supabase
