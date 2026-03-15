@@ -1,5 +1,3 @@
-
-
 "use client";
 
 import * as React from "react";
@@ -9,13 +7,13 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Check, X, Calendar, Users, Clock, Info, Star, CheckCircle, XCircle, ArrowUpRight, Sun, Moon, CreditCard, User, Phone, MapPinIcon, Hash, FileDown, Plus, ChevronDown, UserCog, DollarSign } from "lucide-react";
+import { ArrowLeft, Check, X, Calendar, Users, Clock, Info, Star, CheckCircle, XCircle, ArrowUpRight, Sun, Moon, CreditCard, User, Phone, MapPinIcon, Hash, FileDown, Plus, ChevronDown, UserCog, DollarSign, Tag } from "lucide-react";
 import { formatCurrency, getStatusBadgeColor, cn } from "@/lib/utils";
 import { Separator } from "@/components/ui/separator";
 import { addMonths, format, isBefore, isAfter, parseISO, startOfDay } from "date-fns";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { getBookingById, acceptBooking, cancelBooking, getOperators } from "@/lib/supabase/queries";
+import { getBookingById, acceptBooking, cancelBooking, getOperators, completeBooking } from "@/lib/supabase/queries";
 import type { Booking, BookingGuest, TripDay, Payment, UserPipSchedule, Operator } from "@/lib/types";
 import { useBreadcrumb } from "../../layout";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
@@ -34,6 +32,7 @@ import { useToast } from "@/hooks/use-toast";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Input } from "@/components/ui/input";
 
 
 type TimelineStatus = 'paid' | 'paid-ahead' | 'overdue-paid' | 'overdue' | 'next-pay' | 'locked';
@@ -61,8 +60,12 @@ export default function BookingDetailPage() {
   const [booking, setBooking] = React.useState<Booking | null>(null);
   const [operators, setOperators] = React.useState<Operator[]>([]);
   const [openDays, setOpenDays] = React.useState<Record<string, boolean>>({});
-  const [actionToConfirm, setActionToConfirm] = React.useState<'accept' | null>(null);
+  
+  const [isConfirmDialogOpen, setIsConfirmDialogOpen] = React.useState(false);
+  const [isCompleteDialogOpen, setIsCompleteDialogOpen] = React.useState(false);
   const [isCancelDialogOpen, setIsCancelDialogOpen] = React.useState(false);
+  
+  const [confirmTravelDate, setConfirmTravelDate] = React.useState('');
   const [cancellationReason, setCancellationReason] = React.useState('');
   const [otherReason, setOtherReason] = React.useState('');
 
@@ -79,6 +82,9 @@ export default function BookingDetailPage() {
       setBooking(data);
       if (data) {
         setBreadcrumbName(`Booking #${data.order_id}`);
+        if (data.travel_date) {
+            setConfirmTravelDate(format(new Date(data.travel_date), "yyyy-MM-dd"));
+        }
       } else {
         setBreadcrumbName('Booking Not Found');
       }
@@ -104,24 +110,41 @@ export default function BookingDetailPage() {
 
   const allDaysInitiallyOpen = Object.values(openDays).every(Boolean);
 
-  const handleActionConfirm = async () => {
-    if (!actionToConfirm || !booking) return;
+  const handleConfirmBooking = async () => {
+    if (!booking) return;
 
     try {
-      if (actionToConfirm === 'accept') {
-        await acceptBooking(booking.id);
-        toast({ title: "Success", description: "Booking has been confirmed." });
-      }
+      await acceptBooking(booking.id, confirmTravelDate || undefined);
+      toast({ title: "Success", description: "Booking has been confirmed." });
       fetchBooking(); // Refresh data
       router.refresh();
     } catch (error: any) {
       toast({
         variant: "destructive",
         title: "Error",
-        description: error.message || `Failed to ${actionToConfirm} booking.`,
+        description: error.message || `Failed to confirm booking.`,
       });
     } finally {
-      setActionToConfirm(null);
+      setIsConfirmDialogOpen(false);
+    }
+  };
+
+  const handleCompleteBooking = async () => {
+    if (!booking) return;
+
+    try {
+      await completeBooking(booking.id);
+      toast({ title: "Success", description: "Booking has been marked as completed." });
+      fetchBooking(); // Refresh data
+      router.refresh();
+    } catch (error: any) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: error.message || `Failed to complete booking.`,
+      });
+    } finally {
+      setIsCompleteDialogOpen(false);
     }
   };
 
@@ -331,18 +354,46 @@ export default function BookingDetailPage() {
 
   return (
     <div className="space-y-6">
-       <AlertDialog open={!!actionToConfirm} onOpenChange={(open) => !open && setActionToConfirm(null)}>
+       <Dialog open={isConfirmDialogOpen} onOpenChange={setIsConfirmDialogOpen}>
+        <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Confirm Booking</DialogTitle>
+              <DialogDescription>
+                Assign a travel date to confirm booking "{booking.order_id}".
+              </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-4 py-4">
+                <div className="space-y-2">
+                    <Label htmlFor="travel-date">Travel Date</Label>
+                    <Input 
+                        id="travel-date"
+                        type="date" 
+                        value={confirmTravelDate} 
+                        onChange={(e) => setConfirmTravelDate(e.target.value)} 
+                    />
+                </div>
+            </div>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setIsConfirmDialogOpen(false)}>Cancel</Button>
+              <Button onClick={handleConfirmBooking}>
+                Confirm Reservation
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+      </Dialog>
+
+      <AlertDialog open={isCompleteDialogOpen} onOpenChange={setIsCompleteDialogOpen}>
         <AlertDialogContent>
             <AlertDialogHeader>
-              <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+              <AlertDialogTitle>Mark as Completed?</AlertDialogTitle>
               <AlertDialogDescription>
-                This action will confirm the booking with reference "{booking.order_id}".
+                This will mark the tour booking "{booking.order_id}" as completed. This action is usually taken after the travel has finished.
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
-              <AlertDialogCancel onClick={() => setActionToConfirm(null)}>Cancel</AlertDialogCancel>
-              <AlertDialogAction onClick={handleActionConfirm}>
-                Accept
+              <AlertDialogCancel onClick={() => setIsCompleteDialogOpen(false)}>Cancel</AlertDialogCancel>
+              <AlertDialogAction onClick={handleCompleteBooking}>
+                Complete
               </AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>
@@ -419,17 +470,23 @@ export default function BookingDetailPage() {
                             <X className="mr-2 h-4 w-4" />
                             Cancel Booking
                         </Button>
-                        <Button size="sm" variant="default" onClick={() => setActionToConfirm('accept')}>
+                        <Button size="sm" variant="default" onClick={() => setIsConfirmDialogOpen(true)}>
                             <Check className="mr-2 h-4 w-4" />
                             Accept Reservation
                         </Button>
                     </>
                  )}
                  {booking.booking_status === 'confirmed' && (
-                     <Button variant="destructive" size="sm" onClick={() => setIsCancelDialogOpen(true)}>
-                        <X className="mr-2 h-4 w-4" />
-                        Cancel Booking
-                    </Button>
+                    <>
+                        <Button variant="destructive" size="sm" onClick={() => setIsCancelDialogOpen(true)}>
+                            <X className="mr-2 h-4 w-4" />
+                            Cancel Booking
+                        </Button>
+                        <Button size="sm" variant="default" onClick={() => setIsCompleteDialogOpen(true)}>
+                            <CheckCircle className="mr-2 h-4 w-4" />
+                            Mark Completed
+                        </Button>
+                    </>
                  )}
             </div>
         </div>
@@ -453,7 +510,7 @@ export default function BookingDetailPage() {
                                 <CardContent className="grid grid-cols-2 gap-x-6 gap-y-4">
                                     <div className="flex items-start gap-3"><Calendar className="h-5 w-5 text-muted-foreground mt-1" /><div><p className="text-sm text-muted-foreground">Created On</p><p className="font-medium">{format(new Date(booking.created_at), "PPP")}</p></div></div>
                                     <div className="flex items-start gap-3"><Calendar className="h-5 w-5 text-muted-foreground mt-1" /><div><p className="text-sm text-muted-foreground">Reservation Date</p><p className="font-medium">{format(new Date(booking.booking_date), "PPP")}</p></div></div>
-                                    <div className="flex items-start gap-3"><Hash className="h-5 w-5 text-muted-foreground mt-1" /><div><p className="text-sm text-muted-foreground">Referral Code</p><p className="font-medium">{booking.referral_code || 'N/A'}</p></div></div>
+                                    <div className="flex items-start gap-3"><Tag className="h-5 w-5 text-muted-foreground mt-1" /><div><p className="text-sm text-muted-foreground">Referral Code</p><p className="font-mono font-medium">{booking.referral_code || 'N/A'}</p></div></div>
                                     <div className="flex items-start gap-3"><Calendar className="h-5 w-5 text-muted-foreground mt-1" /><div><p className="text-sm text-muted-foreground">Travel Date</p><p className="font-medium">{booking.travel_date ? format(new Date(booking.travel_date), "PPP") : 'N/A'}</p></div></div>
                                     <div className="flex items-start gap-3"><Users className="h-5 w-5 text-muted-foreground mt-1" /><div><p className="text-sm text-muted-foreground">No. of Guests</p><p className="font-medium">{booking.total_adults} Adult(s), {booking.total_children} Child(ren)</p></div></div>
                                 </CardContent>
@@ -846,8 +903,3 @@ export default function BookingDetailPage() {
     </div>
   );
 }
-
-
-    
-
-    

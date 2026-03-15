@@ -1,4 +1,3 @@
-
 "use client";
 
 import * as React from "react";
@@ -26,12 +25,13 @@ import {
   UserCog,
   Bell,
   Menu,
+  User,
 } from "lucide-react";
 import { format } from "date-fns";
 import { formatCurrency, cn } from "@/lib/utils";
 import type { CharterTour } from "@/lib/types";
 
-import { getCharterTours } from "@/lib/supabase/queries";
+import { getCharterTours, markCharterTourAsRead } from "@/lib/supabase/queries";
 import { useToast } from "@/hooks/use-toast";
 
 import { Button } from "@/components/ui/button";
@@ -41,6 +41,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Separator } from "@/components/ui/separator";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Badge } from "@/components/ui/badge";
 
 
 // --- Detail Item Components ---
@@ -140,6 +141,9 @@ const CharterTourDetail = ({ tour }: { tour: CharterTour }) => {
                             <DetailItem icon={Phone} label="Mobile Number" value={tour.mobile_number} />
                             <DetailItem icon={Phone} label="WhatsApp" value={tour.whatsapp_number} />
                             <DetailItem icon={Clock} label="Best time to call" value={tour.time_to_call} />
+                            {(tour as any).submitter_name && (
+                                <DetailItem icon={User} label="Submitted By (Profile)" value={(tour as any).submitter_name} />
+                            )}
                         </CardContent>
                     </Card>
                     <Card className="bg-muted/30">
@@ -238,28 +242,36 @@ const InquiryList = ({
             <button
               key={tour.id}
               className={cn(
-                "w-full text-left p-3 rounded-lg border transition-colors bg-background",
+                "w-full text-left p-3 rounded-lg border transition-colors bg-background relative",
                 selectedTour?.id === tour.id
                   ? "border-primary shadow-sm"
                   : "hover:bg-muted/50"
               )}
               onClick={() => onTourSelect(tour)}
             >
+              {!tour.is_read && (
+                <div className="absolute top-2 right-2 h-2 w-2 rounded-full bg-primary" />
+              )}
               <div className="flex items-start gap-3">
                 <Avatar className="h-10 w-10 border">
                   <AvatarImage src={tour.avatar_url || ""} alt={tour.name || "U"} />
                   <AvatarFallback>{tour.name?.charAt(0) || "U"}</AvatarFallback>
                 </Avatar>
                 <div className="grid gap-0.5 flex-1 min-w-0">
-                  <p className="font-semibold text-sm line-clamp-1">
-                    {tour.name}
-                  </p>
+                  <div className="flex items-center justify-between gap-2">
+                    <p className={cn("text-sm line-clamp-1", !tour.is_read ? "font-bold" : "font-semibold")}>
+                        {tour.name}
+                    </p>
+                  </div>
                   <p className="text-xs text-muted-foreground truncate">
                     {tour.travel_purpose}
                   </p>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    {format(new Date(tour.created_at), "PPP")}
-                  </p>
+                  <div className="flex items-center justify-between mt-1">
+                    <p className="text-xs text-muted-foreground">
+                        {format(new Date(tour.created_at), "PPP")}
+                    </p>
+                    {!tour.is_read && <Badge variant="secondary" className="text-[10px] h-4 px-1">New</Badge>}
+                  </div>
                 </div>
               </div>
             </button>
@@ -280,26 +292,37 @@ export default function CharterToursPage() {
   const [loading, setLoading] = React.useState(true);
   const [isListOpen, setIsListOpen] = React.useState(false);
 
-  React.useEffect(() => {
-    const fetchTours = async () => {
-      setLoading(true);
-      try {
-        const data = await getCharterTours();
-        setTours(data);
-        if (data.length > 0) {
-          setSelectedTour(data[0]);
-        }
-      } catch (error: any) {
-        toast({
-          variant: "destructive",
-          title: "Error fetching inquiries",
-          description: error.message,
-        });
+  const fetchTours = React.useCallback(async () => {
+    setLoading(true);
+    try {
+      const data = await getCharterTours();
+      setTours(data);
+      if (data.length > 0 && !selectedTour) {
+        setSelectedTour(data[0]);
       }
-      setLoading(false);
-    };
+    } catch (error: any) {
+      toast({
+        variant: "destructive",
+        title: "Error fetching inquiries",
+        description: error.message,
+      });
+    }
+    setLoading(false);
+  }, [toast, selectedTour]);
+
+  React.useEffect(() => {
     fetchTours();
-  }, [toast]);
+  }, [fetchTours]);
+
+  const handleSelectTour = async (tour: CharterTour) => {
+    setSelectedTour(tour);
+    setIsListOpen(false);
+    if (!tour.is_read) {
+        await markCharterTourAsRead(tour.id);
+        // Optimistic update
+        setTours(prev => prev.map(t => t.id === tour.id ? { ...t, is_read: true } : t));
+    }
+  };
   
   const renderSkeleton = () => (
     <div className="lg:grid lg:grid-cols-4 gap-8">
@@ -358,10 +381,7 @@ export default function CharterToursPage() {
                            <InquiryList
                              tours={tours}
                              selectedTour={selectedTour}
-                             onTourSelect={(tour) => {
-                               setSelectedTour(tour);
-                               setIsListOpen(false);
-                             }}
+                             onTourSelect={handleSelectTour}
                            />
                         </SheetContent>
                     </Sheet>
@@ -373,7 +393,7 @@ export default function CharterToursPage() {
                     <InquiryList
                         tours={tours}
                         selectedTour={selectedTour}
-                        onTourSelect={setSelectedTour}
+                        onTourSelect={handleSelectTour}
                     />
                 </div>
                 

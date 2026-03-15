@@ -1,4 +1,3 @@
-
 "use server"
 
 import { createServerClient } from '@supabase/ssr'
@@ -1498,17 +1497,38 @@ export async function getPendingBookings(): Promise<Booking[]> {
   })) as Booking[];
 }
 
-export async function acceptBooking(bookingId: string) {
+export async function acceptBooking(bookingId: string, travelDate?: string) {
   const supabase = createAdminClient();
+  const updateData: any = { booking_status: 'confirmed' };
+  if (travelDate) {
+    updateData.travel_date = travelDate;
+  }
+
   const { data, error } = await supabase
     .from('tour_bookings')
-    .update({ booking_status: 'confirmed' })
+    .update(updateData)
     .eq('id', bookingId)
     .select()
     .single();
 
   if (error) {
     console.error(`Error accepting booking ${bookingId}:`, error);
+    throw new Error(error.message);
+  }
+  return data;
+}
+
+export async function completeBooking(bookingId: string) {
+  const supabase = createAdminClient();
+  const { data, error } = await supabase
+    .from('tour_bookings')
+    .update({ booking_status: 'completed' })
+    .eq('id', bookingId)
+    .select()
+    .single();
+
+  if (error) {
+    console.error(`Error completing booking ${bookingId}:`, error);
     throw new Error(error.message);
   }
   return data;
@@ -1547,12 +1567,12 @@ export async function getCharterTours(): Promise<CharterTour[]> {
   
   const tours = data || [];
   const emails = tours.map(tour => tour.email).filter(Boolean) as string[];
-  const profilesByEmail = new Map<string, { avatar_url: string | null }>();
+  const profilesByEmail = new Map<string, { avatar_url: string | null, full_name: string | null }>();
 
   if (emails.length > 0) {
     const { data: profiles, error: profileError } = await supabase
       .from('profiles')
-      .select('email, avatar_url')
+      .select('email, avatar_url, full_name')
       .in('email', emails);
 
     if (profileError) {
@@ -1561,7 +1581,7 @@ export async function getCharterTours(): Promise<CharterTour[]> {
     } else if (profiles) {
       profiles.forEach(p => {
         if (p.email) {
-          profilesByEmail.set(p.email, { avatar_url: p.avatar_url });
+          profilesByEmail.set(p.email, { avatar_url: p.avatar_url, full_name: p.full_name });
         }
       });
     }
@@ -1570,6 +1590,7 @@ export async function getCharterTours(): Promise<CharterTour[]> {
   return tours.map(tour => ({
     ...tour,
     avatar_url: tour.email ? profilesByEmail.get(tour.email)?.avatar_url : null,
+    submitter_name: tour.email ? profilesByEmail.get(tour.email)?.full_name : null,
   })) as CharterTour[];
 }
 
@@ -1594,11 +1615,12 @@ export async function getCharterTourById(id: string): Promise<CharterTour | null
   if (tour.email) {
     const { data: profile } = await supabase
       .from('profiles')
-      .select('avatar_url')
+      .select('avatar_url, full_name')
       .eq('email', tour.email)
       .single();
     if (profile) {
       tour.avatar_url = profile.avatar_url;
+      (tour as any).submitter_name = profile.full_name;
     }
   }
 
@@ -1621,4 +1643,16 @@ export async function updateCharterTourStatus(id: string, status: 'approved' | '
   }
 
   return data as CharterTour;
+}
+
+export async function markCharterTourAsRead(id: string): Promise<void> {
+  const supabase = createAdminClient();
+  const { error } = await supabase
+    .from('charter_tour')
+    .update({ is_read: true })
+    .eq('id', id);
+
+  if (error) {
+    console.error(`Error marking charter tour as read ${id}:`, error);
+  }
 }

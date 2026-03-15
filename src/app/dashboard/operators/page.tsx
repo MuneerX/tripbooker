@@ -1,4 +1,3 @@
-
 "use client";
 
 import * as React from "react";
@@ -11,7 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import type { Operator } from "@/lib/types";
-import { getStatusBadgeColor, cn } from "@/lib/utils";
+import { formatCurrency, getStatusBadgeColor, cn } from "@/lib/utils";
 import { StatCard } from "@/components/dashboard/StatCard";
 import {
   AlertDialog,
@@ -170,7 +169,8 @@ export default function OperatorsPage() {
   const filteredOperators = allOperators.filter((operator) =>
     operator.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
     operator.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    operator.code?.toLowerCase().includes(searchTerm.toLowerCase())
+    operator.code?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    operator.phone?.toLowerCase().includes(searchTerm.toLowerCase())
   );
   
   const handleSort = (key: SortableKeys) => {
@@ -240,7 +240,7 @@ export default function OperatorsPage() {
             </div>
             <div className="flex w-full items-center gap-2 sm:w-auto">
               <Input
-                placeholder="Search by name, email, code..."
+                placeholder="Search by name, email, code or phone..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="w-full sm:w-64"

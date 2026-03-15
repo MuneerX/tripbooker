@@ -1,4 +1,3 @@
-
 import type { Timestamp } from 'firebase/firestore';
 
 export type PayInPart = {
@@ -281,6 +280,8 @@ export type CharterTour = {
   things_to_exclude: string | null;
   additional_notes: string | null;
   status: string | null;
+  is_read: boolean;
+  user_id: string | null;
   created_at: string;
   updated_at: string | null;
   avatar_url?: string | null;
