@@ -62,8 +62,19 @@ export default function EditCustomerPage() {
         if (profileData) {
           const dob = profileData.dob ? new Date(profileData.dob) : null;
           form.reset({
-            ...profileData,
+            full_name: profileData.full_name,
+            email: profileData.email,
+            phone_number: profileData.phone_number,
+            whatsapp_number: profileData.whatsapp_number,
+            address: profileData.address,
+            city: profileData.city,
+            state: profileData.state,
+            district: profileData.district,
+            pincode: profileData.pincode,
+            is_kv_customer: profileData.is_kv_customer ?? false,
+            is_active: profileData.is_active ?? true,
             dob: dob,
+            gender: (profileData.gender as 'male' | 'female' | 'other' | null | undefined) ?? null,
           });
           if (dob) {
             setDay(String(dob.getDate()).padStart(2, '0'));

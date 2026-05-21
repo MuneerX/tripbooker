@@ -5,15 +5,16 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Bell, Check, X, ArrowRight, User, Package, Calendar, Info, Star, ClipboardCheck } from "lucide-react";
-import type { Booking, Review } from "@/lib/types";
-import { getPendingBookings, acceptBooking, cancelBooking, getPendingReviews, updateReviewStatus } from "@/lib/supabase/queries";
+import { Bell, Check, X, ArrowRight, User, Package, Calendar, Info, Star, ClipboardCheck, UserCog } from "lucide-react";
+import type { Booking, Review, Operator } from "@/lib/types";
+import { getPendingBookings, acceptBooking, cancelBooking, getPendingReviews, updateReviewStatus, getPendingOperators, verifyOperator, deleteOperator } from "@/lib/supabase/queries";
 import { useToast } from "@/hooks/use-toast";
 import { format, formatDistanceToNow } from "date-fns";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import Link from "next/link";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
+import { Badge } from "@/components/ui/badge";
 
 function NotificationsContent() {
   const router = useRouter();
@@ -23,31 +24,38 @@ function NotificationsContent() {
   const { toast } = useToast();
   const [bookings, setBookings] = React.useState<Booking[]>([]);
   const [reviews, setReviews] = React.useState<Review[]>([]);
+  const [agents, setAgents] = React.useState<Operator[]>([]);
   const [loading, setLoading] = React.useState(true);
   
-  const [selectedItem, setSelectedItem] = React.useState<{type: 'booking' | 'review', data: any} | null>(null);
+  const [selectedItem, setSelectedItem] = React.useState<{type: 'booking' | 'review' | 'agent', data: any} | null>(null);
 
   const fetchAllNotifications = React.useCallback(async () => {
     setLoading(true);
     try {
-      const [pendingBookings, pendingReviews] = await Promise.all([
+      const [pendingBookings, pendingReviews, pendingAgents] = await Promise.all([
         getPendingBookings(),
-        getPendingReviews()
+        getPendingReviews(),
+        getPendingOperators()
       ]);
       
       setBookings(pendingBookings);
       setReviews(pendingReviews);
+      setAgents(pendingAgents);
 
       // Set initial selection based on tab
       if (initialTab === 'bookings' && pendingBookings.length > 0) {
         setSelectedItem({ type: 'booking', data: pendingBookings[0] });
       } else if (initialTab === 'reviews' && pendingReviews.length > 0) {
         setSelectedItem({ type: 'review', data: pendingReviews[0] });
+      } else if (initialTab === 'agents' && pendingAgents.length > 0) {
+        setSelectedItem({ type: 'agent', data: pendingAgents[0] });
       } else if (initialTab === 'all') {
         if (pendingBookings.length > 0) {
             setSelectedItem({ type: 'booking', data: pendingBookings[0] });
         } else if (pendingReviews.length > 0) {
             setSelectedItem({ type: 'review', data: pendingReviews[0] });
+        } else if (pendingAgents.length > 0) {
+            setSelectedItem({ type: 'agent', data: pendingAgents[0] });
         }
       } else {
         setSelectedItem(null);
@@ -66,10 +74,11 @@ function NotificationsContent() {
   const allNotifications = React.useMemo(() => {
     const combined = [
         ...bookings.map(b => ({ type: 'booking' as const, data: b, date: new Date(b.created_at) })),
-        ...reviews.map(r => ({ type: 'review' as const, data: r, date: new Date(r.created_at) }))
+        ...reviews.map(r => ({ type: 'review' as const, data: r, date: new Date(r.created_at) })),
+        ...agents.map(a => ({ type: 'agent' as const, data: a, date: new Date(a.created_at) }))
     ];
     return combined.sort((a, b) => b.date.getTime() - a.date.getTime());
-  }, [bookings, reviews]);
+  }, [bookings, reviews, agents]);
 
   const handleBookingAction = async (action: 'accept' | 'cancel', bookingId: string) => {
     try {
@@ -98,7 +107,23 @@ function NotificationsContent() {
     }
   };
 
-  const renderSidebarItem = (type: 'booking' | 'review', data: any) => {
+  const handleAgentAction = async (action: 'approve' | 'reject', agentId: string) => {
+    try {
+      if (action === 'approve') {
+        await verifyOperator(agentId, true, true);
+        toast({ title: "Success", description: "Agent has been verified." });
+      } else {
+        await deleteOperator(agentId);
+        toast({ title: "Success", description: "Agent request has been rejected." });
+      }
+      fetchAllNotifications();
+      router.refresh();
+    } catch (error: any) {
+      toast({ variant: "destructive", title: "Error", description: error.message });
+    }
+  };
+
+  const renderSidebarItem = (type: 'booking' | 'review' | 'agent', data: any) => {
     const isSelected = selectedItem?.type === type && selectedItem?.data.id === data.id;
     
     let title = "";
@@ -116,6 +141,11 @@ function NotificationsContent() {
         sub = `${data.customer_name} rated ${data.rating} stars`;
         avatar = data.avatar_url || undefined;
         initial = data.customer_name?.charAt(0) || 'R';
+    } else if (type === 'agent') {
+        title = "New Agent Registration";
+        sub = `${data.name} applied to be an agent`;
+        avatar = data.logo_url || undefined;
+        initial = data.name?.charAt(0) || 'A';
     }
 
     return (
@@ -137,8 +167,10 @@ function NotificationsContent() {
                         <p className="font-semibold text-sm truncate">{title}</p>
                         {type === 'booking' ? (
                             <ClipboardCheck className="h-3 w-3 text-orange-500" />
-                        ) : (
+                        ) : type === 'review' ? (
                             <Star className="h-3 w-3 text-blue-500" />
+                        ) : (
+                            <UserCog className="h-3 w-3 text-green-500" />
                         )}
                     </div>
                     <p className="text-xs text-muted-foreground truncate">{sub}</p>
@@ -227,6 +259,38 @@ function NotificationsContent() {
             </Card>
         );
     }
+
+    if (type === 'agent') {
+        return (
+            <Card>
+                <CardHeader>
+                    <div className="flex items-start justify-between">
+                        <div className="grid gap-1">
+                            <CardTitle className="text-lg">Agent Registration Request</CardTitle>
+                            <CardDescription>Agent Email: <span className="font-mono">{data.email}</span></CardDescription>
+                        </div>
+                        <Button variant="ghost" size="sm" asChild>
+                            <Link href={`/dashboard/operators/${data.id}`}>
+                                View Profile <ArrowRight className="ml-2 h-4 w-4" />
+                            </Link>
+                        </Button>
+                    </div>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                        <DetailField icon={User} label="Name" value={data.name} />
+                        <DetailField icon={Info} label="Phone" value={data.phone || 'N/A'} />
+                        <DetailField icon={Calendar} label="Registered Date" value={format(new Date(data.created_at), "PPP")} />
+                        <DetailField icon={Info} label="Status" value="Pending Verification" badge />
+                    </div>
+                    <div className="flex gap-2 pt-4 border-t">
+                        <Button variant="outline" className="flex-1 text-destructive" onClick={() => handleAgentAction('reject', data.id)}><X className="mr-2 h-4 w-4" /> Reject</Button>
+                        <Button className="flex-1" onClick={() => handleAgentAction('approve', data.id)}><Check className="mr-2 h-4 w-4" /> Approve Agent</Button>
+                    </div>
+                </CardContent>
+            </Card>
+        );
+    }
   };
 
   return (
@@ -240,13 +304,14 @@ function NotificationsContent() {
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
                 <div className="lg:col-span-1">
                     <Tabs defaultValue={initialTab} className="w-full">
-                        <TabsList className="grid w-full grid-cols-3 mb-4">
+                        <TabsList className="grid w-full grid-cols-4 mb-4">
                             <TabsTrigger value="all">All</TabsTrigger>
                             <TabsTrigger value="bookings">Bookings</TabsTrigger>
                             <TabsTrigger value="reviews">Reviews</TabsTrigger>
+                            <TabsTrigger value="agents">Agents</TabsTrigger>
                         </TabsList>
                         
-                        <TabsContent value="all" className="mt-0">
+                        <TabsContent value="all" className="mt-0 max-h-[600px] overflow-y-auto pr-2">
                             {allNotifications.length > 0 ? (
                                 allNotifications.map(n => renderSidebarItem(n.type, n.data))
                             ) : (
@@ -254,12 +319,16 @@ function NotificationsContent() {
                             )}
                         </TabsContent>
 
-                        <TabsContent value="bookings" className="mt-0">
+                        <TabsContent value="bookings" className="mt-0 max-h-[600px] overflow-y-auto pr-2">
                             {bookings.length > 0 ? bookings.map(b => renderSidebarItem('booking', b)) : <EmptyState text="No pending bookings" />}
                         </TabsContent>
                         
-                        <TabsContent value="reviews" className="mt-0">
+                        <TabsContent value="reviews" className="mt-0 max-h-[600px] overflow-y-auto pr-2">
                             {reviews.length > 0 ? reviews.map(r => renderSidebarItem('review', r)) : <EmptyState text="No reviews to moderate" />}
+                        </TabsContent>
+
+                        <TabsContent value="agents" className="mt-0 max-h-[600px] overflow-y-auto pr-2">
+                            {agents.length > 0 ? agents.map(a => renderSidebarItem('agent', a)) : <EmptyState text="No agent requests" />}
                         </TabsContent>
                     </Tabs>
                 </div>

@@ -10,7 +10,7 @@ export function StatCard({ card }: { card: StatCardType }) {
       <CardHeader className="flex flex-row items-center justify-between pb-2">
         <CardTitle className="text-sm font-medium">{card.label}</CardTitle>
         <div className="text-primary bg-primary/10 p-2 rounded-lg">
-            {React.cloneElement(card.icon as React.ReactElement, { className: 'h-5 w-5' })}
+            {React.cloneElement(card.icon as React.ReactElement, { className: 'h-5 w-5' } as any)}
         </div>
       </CardHeader>
       <CardContent>

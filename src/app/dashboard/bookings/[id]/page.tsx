@@ -189,7 +189,7 @@ export default function BookingDetailPage() {
         return [];
     }
 
-    const schedule = booking.user_pip_schedules.map((part) => {
+    const schedule: Array<UserPipSchedule & { dueDate: Date; paidOn: Date | null; status: TimelineStatus }> = booking.user_pip_schedules.map((part) => {
         const dueDate = parseISO(part.due_date);
         const paidDate = part.paid_date ? parseISO(part.paid_date) : null;
         let status: TimelineStatus = 'locked';

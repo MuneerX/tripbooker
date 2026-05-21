@@ -110,7 +110,7 @@ export default function CreateTripDayPage() {
   const onSubmit = async (data: TripDayFormValues) => {
     setIsSubmitting(true);
     try {
-      await createTripDay(data);
+      await createTripDay(data as any);
       toast({
         title: "Success!",
         description: `Trip Day "${data.day_name}" has been created.`,

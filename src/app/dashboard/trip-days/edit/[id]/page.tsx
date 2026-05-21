@@ -115,6 +115,7 @@ export default function EditTripDayPage() {
                     activity_time: act.activity_time ? act.activity_time : "00:00:00",
                     description: act.description ?? '',
                     special_instructions: act.special_instructions ?? '',
+                    activity_type: (act.activity_type ?? undefined) as 'food' | 'explore' | 'stay' | 'activity' | undefined,
                     }))
                 });
             } else {
@@ -157,7 +158,7 @@ export default function EditTripDayPage() {
   const onSubmit = async (data: TripDayEditFormValues) => {
     setIsSubmitting(true);
     try {
-      await updateTripDay(id, data);
+      await updateTripDay(id, data as any);
        toast({
         title: "Success!",
         description: `Day ${data.day_number}: ${data.day_name} has been updated.`,

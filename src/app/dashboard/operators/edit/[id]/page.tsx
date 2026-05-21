@@ -66,7 +66,18 @@ export default function EditOperatorPage() {
         if (data) {
           setOperator(data);
           setBreadcrumbName(`Edit: ${data.name}`);
-          form.reset(data);
+          form.reset({
+            name: data.name,
+            email: data.email ?? undefined,
+            phone: data.phone ?? undefined,
+            contact_person: data.contact_person ?? undefined,
+            address: data.address ?? undefined,
+            code: data.code ?? undefined,
+            referral_code: data.referral_code ?? undefined,
+            description: data.description ?? undefined,
+            is_verified: data.is_verified ?? false,
+            is_active: data.is_active ?? true,
+          });
         } else {
           toast({ variant: "destructive", title: "Error", description: "Agent not found." });
           router.push('/dashboard/operators');

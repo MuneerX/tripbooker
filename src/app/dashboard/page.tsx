@@ -37,7 +37,7 @@ const StatItem = ({
         return (
              <div className="flex items-center gap-3">
                 <div className={cn("p-2 rounded-lg", iconBg)}>
-                    {React.cloneElement(icon as React.ReactElement, { className: cn('h-5 w-5', iconColor) })}
+                    {React.cloneElement(icon as React.ReactElement, { className: cn('h-5 w-5', iconColor) } as any)}
                 </div>
                 <div>
                     <div className="text-xl font-bold">{value}</div>
@@ -50,7 +50,7 @@ const StatItem = ({
     return (
         <div className="flex items-center gap-3">
             <div className={cn("p-2 rounded-lg", iconBg)}>
-                {React.cloneElement(icon as React.ReactElement, { className: cn('h-5 w-5', iconColor) })}
+                {React.cloneElement(icon as React.ReactElement, { className: cn('h-5 w-5', iconColor) } as any)}
             </div>
             <div>
                 <div className="text-xl font-bold">{value}</div>

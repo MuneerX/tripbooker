@@ -235,22 +235,22 @@ const InquiryList = ({
       <CardTitle>Charter Inquiries</CardTitle>
       <CardDescription>Select an inquiry to view details.</CardDescription>
     </CardHeader>
-    <CardContent>
-      <ScrollArea className="h-full max-h-[calc(100vh-18rem)] -mx-6">
-        <div className="space-y-3 px-6">
+    <CardContent className="p-0">
+      <div className="overflow-y-auto max-h-[calc(100vh-14rem)] p-6 space-y-3">
           {tours.map((tour) => (
             <button
               key={tour.id}
               className={cn(
-                "w-full text-left p-3 rounded-lg border transition-colors bg-background relative",
+                "w-full text-left p-3 rounded-lg border transition-colors relative",
+                !tour.is_read ? "bg-primary/5 border-primary/20 shadow-sm" : "bg-background border-border",
                 selectedTour?.id === tour.id
-                  ? "border-primary shadow-sm"
+                  ? "ring-2 ring-primary ring-offset-2 border-transparent"
                   : "hover:bg-muted/50"
               )}
               onClick={() => onTourSelect(tour)}
             >
               {!tour.is_read && (
-                <div className="absolute top-2 right-2 h-2 w-2 rounded-full bg-primary" />
+                <div className="absolute top-2 right-2 h-2.5 w-2.5 rounded-full bg-primary animate-pulse" />
               )}
               <div className="flex items-start gap-3">
                 <Avatar className="h-10 w-10 border">
@@ -276,8 +276,7 @@ const InquiryList = ({
               </div>
             </button>
           ))}
-        </div>
-      </ScrollArea>
+      </div>
     </CardContent>
   </Card>
 );

@@ -62,9 +62,7 @@ export default function CustomersPage() {
     fetchProfiles();
   }, [toast]);
   
-  React.useEffect(() => {
-    setCurrentPage(1);
-  }, [searchTerm, sortConfig, startDate, endDate]);
+
 
   React.useEffect(() => {
     if (itemToToggle) {
@@ -153,12 +151,14 @@ export default function CustomersPage() {
   };
 
   const filteredProfiles = allProfiles
-    .filter((profile) =>
-        profile.full_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        profile.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        profile.phone_number?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        profile.whatsapp_number?.toLowerCase().includes(searchTerm.toLowerCase())
-    )
+    .filter((profile) => {
+        if (!searchTerm) return true;
+        const term = searchTerm.toLowerCase();
+        return (profile.full_name || '').toLowerCase().includes(term) ||
+               (profile.email || '').toLowerCase().includes(term) ||
+               (profile.phone_number || '').toLowerCase().includes(term) ||
+               (profile.whatsapp_number || '').toLowerCase().includes(term);
+    })
     .filter((profile) => {
         if (!profile.created_at) return true;
         if (!startDate && !endDate) return true;
@@ -183,6 +183,7 @@ export default function CustomersPage() {
       direction = 'desc';
     }
     setSortConfig({ key, direction });
+    setCurrentPage(1);
   };
 
   const renderSortArrow = (key: SortableKeys) => {
@@ -226,8 +227,8 @@ export default function CustomersPage() {
     currentPage * rowsPerPage
   );
   
-  const totalCustomers = allProfiles.length;
-  const activeCustomers = allProfiles.filter(p => p.status === 'active').length;
+  const totalCustomers = filteredProfiles.length;
+  const activeCustomers = filteredProfiles.filter(p => p.status === 'active').length;
   const blockedCustomers = totalCustomers - activeCustomers;
 
   const stats = [
@@ -256,7 +257,7 @@ export default function CustomersPage() {
                         type="date"
                         placeholder="From"
                         value={startDate}
-                        onChange={(e) => setStartDate(e.target.value)}
+                        onChange={(e) => { setStartDate(e.target.value); setCurrentPage(1); }}
                         className="w-full"
                     />
                     <span className="text-muted-foreground">-</span>
@@ -264,7 +265,7 @@ export default function CustomersPage() {
                         type="date"
                         placeholder="To"
                         value={endDate}
-                        onChange={(e) => setEndDate(e.target.value)}
+                        onChange={(e) => { setEndDate(e.target.value); setCurrentPage(1); }}
                         min={startDate}
                         className="w-full"
                     />
@@ -272,7 +273,7 @@ export default function CustomersPage() {
               <Input
                 placeholder="Search by name, email, or phone..."
                 value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
+                onChange={(e) => { setSearchTerm(e.target.value); setCurrentPage(1); }}
                 className="w-full sm:w-64"
               />
               <Button onClick={handleExport} variant="outline" className="w-full sm:w-auto">
@@ -294,11 +295,11 @@ export default function CustomersPage() {
                          <div className="flex items-start justify-between gap-3">
                             <div className="flex items-center gap-3 flex-1 min-w-0">
                                 <Avatar className="h-10 w-10 flex-shrink-0">
-                                  <AvatarImage src={profile.avatar_url || undefined} alt={profile.full_name || ''} />
+                                  <AvatarImage src={profile.avatar_url || undefined} alt={profile.full_name || 'U'} />
                                   <AvatarFallback>{profile.full_name?.charAt(0) || 'U'}</AvatarFallback>
                                 </Avatar>
                                 <div className="flex-1 min-w-0 space-y-0.5">
-                                    <p className="text-base font-semibold truncate">{profile.full_name || 'N/A'}</p>
+                                    <p className="text-base font-semibold truncate">{profile.full_name || 'Unnamed Customer'}</p>
                                     <p className="text-sm text-muted-foreground truncate">{profile.email || 'N/A'}</p>
                                 </div>
                             </div>
@@ -378,10 +379,10 @@ export default function CustomersPage() {
                     <TableCell>
                       <div className="flex items-center gap-3">
                         <Avatar className="h-9 w-9">
-                          <AvatarImage src={profile.avatar_url || undefined} alt={profile.full_name || ''} />
+                          <AvatarImage src={profile.avatar_url || undefined} alt={profile.full_name || 'U'} />
                           <AvatarFallback>{profile.full_name?.charAt(0) || 'U'}</AvatarFallback>
                         </Avatar>
-                        <span className="font-medium">{profile.full_name || 'N/A'}</span>
+                        <span className="font-medium">{profile.full_name || 'Unnamed Customer'}</span>
                       </div>
                     </TableCell>
                     <TableCell className="hidden md:table-cell">{profile.email || 'N/A'}</TableCell>

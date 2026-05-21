@@ -49,12 +49,26 @@ export function PayInPartsFormModal({ children, plan, onSave }: PayInPartsFormMo
   const [isOpen, setIsOpen] = React.useState(false);
   const form = useForm<PayInPartFormValues>({
     resolver: zodResolver(payInPartSchema),
-    defaultValues: plan || defaultPlanValues,
+    defaultValues: plan ? {
+      id: plan.id,
+      plan_name: plan.plan_name ?? '',
+      months: plan.months ?? 0,
+      monthly_payment: plan.monthly_payment ?? 0,
+      total_amount: plan.total_amount ?? 0,
+      processing_fee: plan.processing_fee ?? 0,
+    } : defaultPlanValues,
   });
   
   React.useEffect(() => {
     if (isOpen) {
-        form.reset(plan ? { ...plan } : defaultPlanValues);
+        form.reset(plan ? {
+          id: plan.id,
+          plan_name: plan.plan_name ?? '',
+          months: plan.months ?? 0,
+          monthly_payment: plan.monthly_payment ?? 0,
+          total_amount: plan.total_amount ?? 0,
+          processing_fee: plan.processing_fee ?? 0,
+        } : defaultPlanValues);
     }
   }, [isOpen, plan, form]);
 
