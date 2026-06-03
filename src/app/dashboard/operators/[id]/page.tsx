@@ -229,7 +229,7 @@ export default function OperatorDetailPage() {
                             <h2 className="text-2xl font-bold">{operator.name}</h2>
                         </div>
                         <Separator/>
-                        <div className="grid grid-cols-1 gap-4 text-sm">
+                        <div className="grid grid-cols-2 gap-4 text-sm">
                             <div className="flex items-start gap-2">
                                 <UserCog className="h-5 w-5 text-muted-foreground mt-0.5" />
                                 <div>
@@ -251,7 +251,7 @@ export default function OperatorDetailPage() {
                                     {operator.is_verified ? (
                                         <Badge variant="outline" className="capitalize border-emerald-500 text-emerald-600 bg-emerald-50 mt-1">✓ Verified</Badge>
                                     ) : (
-                                        <p className="text-muted-foreground">Not Verified</p>
+                                        <p className="text-muted-foreground mt-1">Not Verified</p>
                                     )}
                                 </div>
                             </div>
