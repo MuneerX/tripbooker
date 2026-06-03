@@ -28,7 +28,6 @@ const operatorSchema = z.object({
   phone: z.string().optional(),
   contact_person: z.string().optional(),
   address: z.string().optional(),
-  code: z.string().optional(),
   referral_code: z.string().optional(),
   description: z.string().optional(),
   is_verified: z.boolean().default(false),
@@ -72,7 +71,6 @@ export default function EditOperatorPage() {
             phone: data.phone ?? undefined,
             contact_person: data.contact_person ?? undefined,
             address: data.address ?? undefined,
-            code: data.code ?? undefined,
             referral_code: data.referral_code ?? undefined,
             description: data.description ?? undefined,
             is_verified: data.is_verified ?? false,
@@ -356,22 +354,9 @@ export default function EditOperatorPage() {
                     </Card>
                     <Card>
                         <CardHeader>
-                            <CardTitle>Codes</CardTitle>
+                            <CardTitle>Referral Code</CardTitle>
                         </CardHeader>
                         <CardContent className="space-y-4">
-                            <FormField
-                              control={form.control}
-                              name="code"
-                              render={({ field }) => (
-                                <FormItem>
-                                  <FormLabel>Agent Code</FormLabel>
-                                  <FormControl>
-                                    <Input placeholder="e.g., HTI001" {...field} />
-                                  </FormControl>
-                                  <FormMessage />
-                                </FormItem>
-                              )}
-                            />
                             <FormField
                               control={form.control}
                               name="referral_code"
