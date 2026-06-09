@@ -262,9 +262,9 @@ export default function EditCustomerPage() {
               <FormField control={form.control} name="is_kv_customer" render={({ field }) => (
                   <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
                     <div className="space-y-0.5">
-                      <FormLabel className="text-base">KV Customer</FormLabel>
+                      <FormLabel className="text-base">Kerala vision Customer</FormLabel>
                       <FormDescription>
-                        Indicates if this is a Kendriya Vidyalaya customer.
+                        Indicates if this is a Kerala vision customer.
                       </FormDescription>
                     </div>
                     <FormControl>

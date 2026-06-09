@@ -99,7 +99,7 @@ export default function EditOperatorPage() {
         });
         return;
     }
-    const namePrefix = operatorName.substring(0, 3).toUpperCase();
+    const namePrefix = operatorName.replace(/\s+/g, '').substring(0, 3).toUpperCase();
     const randomSuffix = Math.random().toString(36).substring(2, 8).toUpperCase();
     const newCode = `${namePrefix}-${randomSuffix}`;
     form.setValue("referral_code", newCode);

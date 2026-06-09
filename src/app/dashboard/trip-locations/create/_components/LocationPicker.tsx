@@ -83,6 +83,11 @@ export function LocationPicker({ initialPosition }: LocationPickerProps) {
       map.on('click', (e) => {
         handleLocationChange(e.latlng.lat, e.latlng.lng);
       });
+
+      // Fix map sometimes not loading completely
+      setTimeout(() => {
+        map.invalidateSize();
+      }, 100);
     }
 
     // Cleanup function to remove the map
