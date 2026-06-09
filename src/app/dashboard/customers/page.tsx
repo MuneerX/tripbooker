@@ -87,7 +87,7 @@ export default function CustomersPage() {
 
     const headers = [
         "Full Name", "Email", "Phone Number", "WhatsApp Number", 
-        "Joined Date", "Kerala vision Customer", "Status", "City", "District", "State", "Address", "Pincode"
+        "Joined Date", "Kerala Vision Customer", "Status", "City", "District", "State", "Address", "Pincode"
     ];
 
     const csvRows = [headers.join(",")];
@@ -329,7 +329,7 @@ export default function CustomersPage() {
                         </div>
                     </CardHeader>
                     <CardContent className="p-4 pt-0 text-sm flex items-center justify-between">
-                        <div className="text-muted-foreground">Kerala vision Customer: <span className="font-medium text-foreground">{profile.is_kv_customer ? 'Yes' : 'No'}</span></div>
+                        <div className="text-muted-foreground">Kerala Vision Customer: <span className="font-medium text-foreground">{profile.is_kv_customer ? 'Yes' : 'No'}</span></div>
                         <Badge variant="outline" className={cn("capitalize", getStatusBadgeColor(profile.status))}>{profile.status}</Badge>
                     </CardContent>
                 </Card>
@@ -356,7 +356,7 @@ export default function CustomersPage() {
                    <div className="flex items-center">Joined Date {renderSortArrow('created_at')}</div>
                 </TableHead>
                 <TableHead className="cursor-pointer hover:bg-muted" onClick={() => handleSort('is_kv_customer')}>
-                   <div className="flex items-center">Kerala vision Customer {renderSortArrow('is_kv_customer')}</div>
+                   <div className="flex items-center">Kerala Vision Customer {renderSortArrow('is_kv_customer')}</div>
                 </TableHead>
                 <TableHead className="cursor-pointer hover:bg-muted" onClick={() => handleSort('status')}>
                    <div className="flex items-center">Status {renderSortArrow('status')}</div>

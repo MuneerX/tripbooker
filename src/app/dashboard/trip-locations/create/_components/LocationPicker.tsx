@@ -11,9 +11,7 @@ import { Command, CommandGroup, CommandItem, CommandList } from '@/components/ui
 import { useDebounce } from '@/hooks/use-debounce';
 import type { TripLocation } from '@/lib/types';
 import { MapPin } from 'lucide-react';
-
-
-const LOCATIONIQ_API_KEY = "pk.a8d62ce33fb7db732bdcd81162108c18";
+import { searchGeocode, reverseGeocode } from '@/app/actions/geocode';
 
 // Fix for default icon path in webpack environments
 delete (L.Icon.Default.prototype as any)._getIconUrl;
@@ -113,19 +111,18 @@ export function LocationPicker({ initialPosition }: LocationPickerProps) {
     if (debouncedSearch.length > 2) {
       const fetchSuggestions = async () => {
         try {
-          const response = await fetch(
-            `https://api.locationiq.com/v1/autocomplete.php?key=${LOCATIONIQ_API_KEY}&q=${debouncedSearch}&format=json&addressdetails=1`
-          );
-          if (response.ok) {
-            const data: LocationIQResult[] = await response.json();
+          const data = await searchGeocode(debouncedSearch);
+          if (data && data.length > 0) {
             setSuggestions(data);
-            if(data.length > 0) setIsPopoverOpen(true);
+            setIsPopoverOpen(true);
           } else {
             setSuggestions([]);
+            setIsPopoverOpen(false);
           }
         } catch (error) {
-          console.error("Error fetching location suggestions:", error);
+          console.error("Geocoding search error:", error);
           setSuggestions([]);
+          setIsPopoverOpen(false);
         }
       };
       fetchSuggestions();
@@ -176,11 +173,12 @@ export function LocationPicker({ initialPosition }: LocationPickerProps) {
   const handleLocationChange = useCallback(async (lat: number, lon: number) => {
     setPosition([lat, lon]);
     try {
-        const response = await fetch(`https://us1.locationiq.com/v1/reverse.php?key=${LOCATIONIQ_API_KEY}&lat=${lat}&lon=${lon}&format=json&addressdetails=1`);
-        if (response.ok) {
-            const data: LocationIQResult = await response.json();
+        const { success, data } = await reverseGeocode(lat, lon);
+        if (success && data) {
             updateFormFields(lat, lon, data);
             if (data.display_name) setSearchQuery(data.display_name);
+        } else {
+            updateFormFields(lat, lon, {});
         }
     } catch (error) {
         console.error('Reverse geocoding error:', error);
@@ -253,7 +251,7 @@ export function LocationPicker({ initialPosition }: LocationPickerProps) {
             </Popover>
         </div>
 
-        <div ref={mapRef} className="h-80 w-full rounded-md overflow-hidden border relative z-0"></div>
+        <div ref={mapRef} style={{ height: "400px", width: "100%" }} className="rounded-md overflow-hidden border relative z-0"></div>
         <div className="grid grid-cols-2 gap-4">
              <div className="grid gap-2">
                 <label className="text-sm font-medium">Latitude</label>

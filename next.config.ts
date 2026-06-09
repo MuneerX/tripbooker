@@ -49,8 +49,8 @@ const nextConfig: NextConfig = {
               "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
               // Allow fonts from self and Google Fonts
               "font-src 'self' https://fonts.gstatic.com",
-              // Allow images from self + all explicitly allowed image domains
-              "img-src 'self' data: blob: https://ipuruidnljuolifndokh.supabase.co https://i.ibb.co https://placehold.co https://images.unsplash.com https://picsum.photos https://tour-locations.s3.amazonaws.com",
+              // Allow images from self + all explicitly allowed image domains + OpenStreetMap & Leaflet markers
+              "img-src 'self' data: blob: https://ipuruidnljuolifndokh.supabase.co https://i.ibb.co https://placehold.co https://images.unsplash.com https://picsum.photos https://tour-locations.s3.amazonaws.com https://*.tile.openstreetmap.org https://unpkg.com",
               // Allow connections to Supabase and self
               "connect-src 'self' https://ipuruidnljuolifndokh.supabase.co wss://ipuruidnljuolifndokh.supabase.co",
               // Allow leaflet CSS from unpkg

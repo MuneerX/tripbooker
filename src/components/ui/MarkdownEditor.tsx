@@ -3,6 +3,7 @@
 import React, { useMemo } from 'react';
 import dynamic from 'next/dynamic';
 import 'easymde/dist/easymde.min.css';
+import 'font-awesome/css/font-awesome.min.css';
 import type { Options } from 'easymde';
 
 const SimpleMDE = dynamic(() => import('react-simplemde-editor'), { ssr: false });

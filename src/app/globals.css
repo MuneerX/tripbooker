@@ -100,12 +100,17 @@
   .dark .editor-toolbar > * {
     color: hsl(var(--foreground));
   }
-  .dark .editor-toolbar a {
+  .dark .editor-toolbar a, .dark .editor-toolbar button {
     color: hsl(var(--foreground)) !important;
   }
-  .dark .editor-toolbar a.active, .dark .editor-toolbar a:hover {
+  .dark .editor-toolbar a.active, .dark .editor-toolbar a:hover,
+  .dark .editor-toolbar button.active, .dark .editor-toolbar button:hover {
     background-color: hsl(var(--accent));
     border-color: hsl(var(--border));
+    color: hsl(var(--accent-foreground)) !important;
+  }
+  .dark .editor-toolbar button.active i, .dark .editor-toolbar button:hover i {
+    color: hsl(var(--accent-foreground)) !important;
   }
   .dark .CodeMirror {
     background-color: hsl(var(--card));
