@@ -28,7 +28,7 @@ const operatorSchema = z.object({
   phone: z.string().optional(),
   contact_person: z.string().optional(),
   address: z.string().optional(),
-  referral_code: z.string().optional(),
+  referral_code: z.string().min(1, "Referral code is required. Please generate one."),
   description: z.string().optional(),
   is_verified: z.boolean().default(false),
   is_active: z.boolean().default(true),
@@ -362,7 +362,7 @@ export default function EditOperatorPage() {
                               name="referral_code"
                               render={({ field }) => ( 
                                 <FormItem>
-                                    <FormLabel>Referral Code</FormLabel>
+                                    <FormLabel>Referral Code <span className="text-destructive">*</span></FormLabel>
                                     <div className="flex items-center gap-2">
                                         <FormControl>
                                           <Input placeholder="e.g., HTI-REF" {...field} />

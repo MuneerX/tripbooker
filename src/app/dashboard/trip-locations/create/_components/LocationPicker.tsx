@@ -34,6 +34,8 @@ type LocationIQResult = {
     neighbourhood?: string;
     suburb?: string;
     city?: string;
+    town?: string;
+    village?: string;
     county?: string;
     state_district?: string;
     state?: string;
@@ -133,41 +135,32 @@ export function LocationPicker({ initialPosition }: LocationPickerProps) {
   }, [debouncedSearch]);
   
   const updateFormFields = useCallback((lat: number, lon: number, location: Partial<LocationIQResult>) => {
-    setValue('latitude', lat);
-    setValue('longitude', lon);
+    setValue('latitude', lat, { shouldValidate: true });
+    setValue('longitude', lon, { shouldValidate: true });
 
-    if (location.display_name) {
-      setValue('address', location.display_name);
-    }
+    setValue('address', location.display_name || '', { shouldValidate: true });
     
-    const locationName = location.name || getValues('name') || '';
-    const cityName = location.address?.city;
+    const cityName = location.address?.city || location.address?.town || location.address?.village || '';
+    setValue('city', cityName, { shouldValidate: true });
+    
+    setValue('state', location.address?.state || '', { shouldValidate: true });
+    setValue('country', location.address?.country || '', { shouldValidate: true });
+    
+    const district = location.address?.state_district || location.address?.county || '';
+    setValue('district', district, { shouldValidate: true });
 
-    if (cityName) {
-      setValue('city', cityName);
-    }
-    if (location.address?.state) {
-      setValue('state', location.address.state);
-    }
-    if (location.address?.country) {
-      setValue('country', location.address.country);
-    }
-    const district = location.address?.state_district || location.address?.county;
-    if (district) {
-      setValue('district', district);
-    }
+    const locationName = location.name || getValues('name') || '';
 
     if(cityName && locationName) {
         const cityCode = cityName.substring(0, 3).toUpperCase();
         const nameCode = locationName.substring(0, 3).toUpperCase();
-        setValue('code', `${cityCode}-${nameCode}`);
+        setValue('code', `${cityCode}-${nameCode}`, { shouldValidate: true });
     } else if (cityName) {
-        setValue('code', `${cityName.substring(0, 3).toUpperCase()}-LOC`);
+        setValue('code', `${cityName.substring(0, 3).toUpperCase()}-LOC`, { shouldValidate: true });
+    } else {
+        setValue('code', '', { shouldValidate: true });
     }
-
-    ['latitude', 'longitude', 'address', 'city', 'state', 'country', 'district', 'code'].forEach(field => trigger(field as keyof TripLocation));
-
-  }, [setValue, trigger, getValues]);
+  }, [setValue, getValues]);
 
 
   const handleLocationChange = useCallback(async (lat: number, lon: number) => {
@@ -191,10 +184,8 @@ export function LocationPicker({ initialPosition }: LocationPickerProps) {
     const lat = parseFloat(suggestion.lat);
     const lon = parseFloat(suggestion.lon);
     
-    if(!getValues('name')) {
-        const name = suggestion.display_name.split(',')[0];
-        setValue('name', name);
-    }
+    const name = suggestion.name || suggestion.display_name.split(',')[0];
+    setValue('name', name, { shouldValidate: true });
 
     setPosition([lat, lon]);
 
