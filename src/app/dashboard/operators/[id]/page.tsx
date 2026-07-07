@@ -5,7 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Edit, UserCheck, UserX, Mail, Phone, Hash, UserCog, Building, Contact, Check, ShieldCheck, Percent, DollarSign, Calendar, Clock, ArrowUp, ArrowDown, MoreHorizontal, Search, Copy } from "lucide-react";
+import { ArrowLeft, Edit, UserCheck, UserX, Mail, Phone, UserCog, Building, Contact, ShieldCheck, Percent, DollarSign, Clock, ArrowUp, ArrowDown, MoreHorizontal, Search, Copy } from "lucide-react";
 import { cn, formatCurrency, getStatusBadgeColor } from "@/lib/utils";
 import { Separator } from "@/components/ui/separator";
 import { getOperatorById, updateOperatorStatus, getAgentCommissions, updateCommissionStatus } from "@/lib/supabase/queries";
@@ -231,13 +231,6 @@ export default function OperatorDetailPage() {
                         <Separator/>
                         <div className="grid grid-cols-2 gap-4 text-sm">
                             <div className="flex items-start gap-2">
-                                <Hash className="h-5 w-5 text-muted-foreground mt-0.5" />
-                                <div>
-                                    <p className="font-medium text-muted-foreground">Agent Code</p>
-                                    <p>{operator.code || 'N/A'}</p>
-                                </div>
-                            </div>
-                            <div className="flex items-start gap-2">
                                 <UserCog className="h-5 w-5 text-muted-foreground mt-0.5" />
                                 <div>
                                     <p className="font-medium text-muted-foreground">Referral Code</p>
@@ -251,11 +244,15 @@ export default function OperatorDetailPage() {
                                     </div>
                                 </div>
                             </div>
-                            <div className="flex items-start gap-2 col-span-2">
+                            <div className="flex items-start gap-2">
                                 <ShieldCheck className="h-5 w-5 text-muted-foreground mt-0.5" />
                                 <div>
                                     <p className="font-medium text-muted-foreground">Verified</p>
-                                    <p>{operator.is_verified ? 'Yes' : 'No'}</p>
+                                    {operator.is_verified ? (
+                                        <Badge variant="outline" className="capitalize border-emerald-500 text-emerald-600 bg-emerald-50 mt-1">✓ Verified</Badge>
+                                    ) : (
+                                        <p className="text-muted-foreground mt-1">Not Verified</p>
+                                    )}
                                 </div>
                             </div>
                         </div>

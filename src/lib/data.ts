@@ -180,7 +180,7 @@ export const mockTourPackages: any[] = [
   },
 ];
 
-export const mockBookings: Booking[] = [
+export const mockBookings: any[] = [
   {
     id: 'book1',
     tourPackageId: 'pkg1',
@@ -285,7 +285,7 @@ export const mockBookings: Booking[] = [
   },
 ];
 
-export const mockReviews: Review[] = [
+export const mockReviews: any[] = [
   {
     id: 'rev1',
     tourPackageId: 'pkg2',

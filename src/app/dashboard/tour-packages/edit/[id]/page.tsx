@@ -118,6 +118,10 @@ export default function EditTourPackagePage() {
             commission_status: pkg.commission_status ?? false,
             commission_type: pkg.commission_type ?? 'percentage',
             commission_value: pkg.commission_value ?? 0,
+            package_type: pkg.package_type as 'World' | 'India' | 'Kerala',
+            category: pkg.category as 'Adventure' | 'Leisure' | 'Pilgrimage' | 'Cultural' | 'Wildlife' | 'Family' | 'Premium' | 'LadiesOnly',
+            is_active: pkg.is_active ?? true,
+            is_featured: pkg.is_featured ?? false,
           });
           setIsPayInPartsEnabled(!!pkg.pay_in_parts && pkg.pay_in_parts.length > 0);
         } else {

@@ -24,8 +24,7 @@ const operatorSchema = z.object({
   phone: z.string().optional(),
   contact_person: z.string().optional(),
   address: z.string().optional(),
-  code: z.string().optional(),
-  referral_code: z.string().optional(),
+  referral_code: z.string().min(1, "Referral code is required. Please generate one."),
   description: z.string().optional(),
   is_verified: z.boolean().default(false),
   is_active: z.boolean().default(true),
@@ -52,7 +51,6 @@ export default function CreateOperatorPage() {
       phone: "",
       contact_person: "",
       address: "",
-      code: "",
       referral_code: "",
       description: "",
       is_verified: false,
@@ -72,7 +70,7 @@ export default function CreateOperatorPage() {
         });
         return;
     }
-    const namePrefix = operatorName.substring(0, 3).toUpperCase();
+    const namePrefix = operatorName.replace(/\s+/g, '').substring(0, 3).toUpperCase();
     const randomSuffix = Math.random().toString(36).substring(2, 8).toUpperCase();
     const newCode = `${namePrefix}-${randomSuffix}`;
     form.setValue("referral_code", newCode);
@@ -297,28 +295,15 @@ export default function CreateOperatorPage() {
                     </Card>
                     <Card>
                         <CardHeader>
-                            <CardTitle>Codes</CardTitle>
+                            <CardTitle>Referral Code</CardTitle>
                         </CardHeader>
                         <CardContent className="space-y-4">
-                            <FormField
-                              control={form.control}
-                              name="code"
-                              render={({ field }) => (
-                                <FormItem>
-                                  <FormLabel>Agent Code</FormLabel>
-                                  <FormControl>
-                                    <Input placeholder="e.g., HTI001" {...field} />
-                                  </FormControl>
-                                  <FormMessage />
-                                </FormItem>
-                              )}
-                            />
                             <FormField
                               control={form.control}
                               name="referral_code"
                               render={({ field }) => ( 
                                 <FormItem>
-                                    <FormLabel>Referral Code</FormLabel>
+                                    <FormLabel>Referral Code <span className="text-destructive">*</span></FormLabel>
                                     <div className="flex items-center gap-2">
                                         <FormControl>
                                           <Input placeholder="e.g., HTI-REF" {...field} />

@@ -38,6 +38,8 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const { theme } = useTheme();
   const [mounted, setMounted] = useState(false);
+  const [failedAttempts, setFailedAttempts] = useState(0);
+  const [cooldown, setCooldown] = useState(false);
   const supabase = createClient();
 
   useEffect(() => {
@@ -56,23 +58,34 @@ export default function LoginPage() {
   });
 
   const onSubmit = async (data: LoginFormValues) => {
+    if (cooldown) return;
+
     const { error } = await supabase.auth.signInWithPassword({
       email: data.email,
       password: data.password,
     });
 
     if (error) {
+      const newAttempts = failedAttempts + 1;
+      setFailedAttempts(newAttempts);
+
+      // Enable cooldown after each failed attempt (increases with more failures)
+      const cooldownMs = Math.min(newAttempts * 3000, 15000); // 3s, 6s, 9s … max 15s
+      setCooldown(true);
+      setTimeout(() => setCooldown(false), cooldownMs);
+
       toast({
         variant: "destructive",
         title: "Login Failed",
-        description: error.message,
+        description: newAttempts >= 3
+          ? `${error.message} (${newAttempts} failed attempts — please wait before trying again.)`
+          : error.message,
       });
     } else {
       toast({
         title: "Login Successful",
         description: "Redirecting to your dashboard...",
       });
-      // Use router.push for client-side navigation and then refresh to ensure server session is picked up.
       router.push('/dashboard');
       router.refresh();
     }
@@ -132,9 +145,14 @@ export default function LoginPage() {
                   </FormItem>
                 )}
               />
-              <Button type="submit" className="w-full">
-                Login
+              <Button type="submit" className="w-full" disabled={cooldown}>
+                {cooldown ? 'Please wait...' : 'Login'}
               </Button>
+              {failedAttempts >= 3 && (
+                <p className="text-xs text-destructive text-center mt-1">
+                  Too many failed attempts. A cooldown is applied after each failure.
+                </p>
+              )}
             </form>
           </Form>
            <div className="mt-4 text-center text-sm">

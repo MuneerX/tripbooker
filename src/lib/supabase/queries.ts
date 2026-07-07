@@ -1,11 +1,22 @@
 
 "use server"
 
-import { createServerClient } from '@supabase/ssr'
-import { cookies } from 'next/headers'
-
 import type { TourPackage, TripDay, Activity, TripLocation, PayInPart, Booking, Review, BookingGuest, Payment, Profile, Operator, UserPipSchedule, CharterTour, AgentCommission } from '@/lib/types'
 import { createClient } from '@supabase/supabase-js'
+
+/**
+ * Safely parse a JSON string. Returns `fallback` if the input is invalid JSON.
+ * Prevents server actions from crashing on malformed FormData payloads.
+ */
+function safeJsonParse<T>(value: string | null | undefined, fallback: T): T {
+    if (!value) return fallback;
+    try {
+        return JSON.parse(value) as T;
+    } catch {
+        console.error('safeJsonParse: Invalid JSON received, using fallback.');
+        return fallback;
+    }
+}
 
 // Correctly create a Supabase client with admin privileges (service_role)
 // This client does not use user cookies and has full access.
@@ -128,7 +139,7 @@ export async function uploadTourImages(formData: FormData) {
   const imageFiles = formData.getAll('image_files') as File[];
   const featuredImageFile = formData.get('featured_image_file') as File | null;
   const payInPartsRaw = formData.get('pay_in_parts');
-  const payInParts = payInPartsRaw ? JSON.parse(payInPartsRaw as string) : [];
+  const payInParts = safeJsonParse<any[]>(payInPartsRaw as string, []);
 
 
   const imageUrls: string[] = [];
@@ -222,8 +233,8 @@ export async function updateTourPackage(id: string, formData: FormData) {
     };
 
     const isFeatured = formData.get('is_featured') === 'true';
-    const originalImageUrls: string[] = JSON.parse(formData.get('original_image_urls') as string || '[]');
-    const keptImageUrls: string[] = JSON.parse(formData.get('image_urls') as string || '[]');
+    const originalImageUrls: string[] = safeJsonParse<string[]>(formData.get('original_image_urls') as string, []);
+    const keptImageUrls: string[] = safeJsonParse<string[]>(formData.get('image_urls') as string, []);
     const originalFeaturedUrl = formData.get('original_featured_image_url') as string || null;
     
     const newGalleryFiles = formData.getAll('new_image_files').filter(f => f instanceof File && f.size > 0) as File[];
@@ -255,7 +266,7 @@ export async function updateTourPackage(id: string, formData: FormData) {
     }
 
     if (pathsToDelete.length > 0) {
-        console.log('Deleting paths from storage:', pathsToDelete);
+        // Deleting removed/replaced images from storage
         const { error: deleteError } = await supabase.storage.from('images').remove(pathsToDelete);
         if (deleteError) {
             console.error("Failed to delete some images from storage:", deleteError.message);
@@ -332,7 +343,7 @@ export async function updateTourPackage(id: string, formData: FormData) {
     
     // Smartly update Pay In Parts
     const payInPartsRaw = formData.get('pay_in_parts');
-    const payInParts = payInPartsRaw ? JSON.parse(payInPartsRaw as string) : [];
+    const payInParts = safeJsonParse<any[]>(payInPartsRaw as string, []);
 
     const { data: existingParts, error: fetchError } = await supabase
       .from('pay_in_parts')
@@ -797,8 +808,8 @@ export async function updateTripLocation(id: string, formData: FormData) {
         }
     };
 
-    const originalImageUrls: string[] = JSON.parse(formData.get('original_image_urls') as string || '[]');
-    const keptImageUrls: string[] = JSON.parse(formData.get('image_urls') as string || '[]');
+    const originalImageUrls: string[] = safeJsonParse<string[]>(formData.get('original_image_urls') as string, []);
+    const keptImageUrls: string[] = safeJsonParse<string[]>(formData.get('image_urls') as string, []);
     const newImageFiles = formData.getAll('new_image_files').filter(f => f instanceof File && f.size > 0) as File[];
     
     const pathsToDelete: string[] = [];
@@ -910,6 +921,24 @@ export async function deleteTripLocation(location: TripLocation) {
     return { success: true };
 }
 
+export async function deleteBooking(id: string) {
+    const supabase = createAdminClient();
+    const { error } = await supabase
+        .from('tour_bookings')
+        .update({ 
+            booking_status: 'cancelled',
+            is_cancelled: true,
+            cancellation_reason: 'deleted_by_admin'
+        })
+        .eq('id', id);
+        
+    if (error) {
+        console.error('Error deleting booking:', error);
+        throw new Error(error.message);
+    }
+    return { success: true };
+}
+
 
 // --- Booking and Review Functions ---
 
@@ -959,12 +988,14 @@ export async function getBookings(packageId?: string): Promise<Booking[]> {
       }
   }
   
-  const bookings = (bookingsData || []).map((item: any) => ({
+  const bookings = (bookingsData || [])
+    .filter((item: any) => item.cancellation_reason !== 'deleted_by_admin')
+    .map((item: any) => ({
     ...item,
     transaction_id: item.transaction_id || paymentsMap.get(item.order_id) || null,
     customer_name: item.customer?.full_name || 'N/A',
     customer_email: item.customer?.email || 'N/A',
-    avatar_url: item.customer?.avatar_url,
+    avatar_url: item.customer?.avatar_url ? item.customer.avatar_url.replace('profiles//', 'profiles/') : null,
     status: item.booking_status
   }));
 
@@ -1129,19 +1160,38 @@ export async function updateReviewStatus(reviewId: string, status: 'approved' | 
 
 export async function getProfiles(): Promise<Profile[]> {
     const supabase = createAdminClient();
-    const { data, error } = await supabase
-        .from('profiles')
-        .select('*')
-        .order('updated_at', { ascending: false });
+    let allData: any[] = [];
+    let hasMore = true;
+    let page = 0;
+    const pageSize = 1000;
 
-    if (error) {
-        console.error('Error fetching profiles:', error);
-        throw new Error(error.message);
+    while (hasMore) {
+        const { data, error } = await supabase
+            .from('profiles')
+            .select('*')
+            .order('updated_at', { ascending: false })
+            .range(page * pageSize, (page + 1) * pageSize - 1);
+
+        if (error) {
+            console.error('Error fetching profiles:', error);
+            throw new Error(error.message);
+        }
+        
+        if (data && data.length > 0) {
+            allData = [...allData, ...data];
+            page++;
+            if (data.length < pageSize) {
+                hasMore = false;
+            }
+        } else {
+            hasMore = false;
+        }
     }
     
-    return (data || []).map(profile => ({
+    return allData.map(profile => ({
       ...profile,
-      status: profile.is_active ? 'active' : 'inactive'
+      status: profile.is_active ? 'active' : 'inactive',
+      avatar_url: profile.avatar_url ? profile.avatar_url.replace('profiles//', 'profiles/') : null
     })) as Profile[];
 }
 
@@ -1255,6 +1305,37 @@ export async function getRecentOperators(): Promise<Operator[]> {
     })) as Operator[];
 }
 
+export async function getPendingOperators(): Promise<Operator[]> {
+    const supabase = createAdminClient();
+    const { data, error } = await supabase
+        .from('operators')
+        .select('*')
+        .eq('is_verified', false)
+        .order('created_at', { ascending: false });
+
+    if (error) {
+        console.error('Error fetching pending operators:', error);
+        return [];
+    }
+
+    return (data || []).map(op => ({
+        ...op,
+        status: op.is_active ? 'active' : 'blocked',
+    })) as Operator[];
+}
+
+export async function verifyOperator(id: string, is_verified: boolean, is_active: boolean = true): Promise<Operator> {
+    const supabase = createAdminClient();
+    const updateData = { is_verified, is_active, updated_at: new Date().toISOString() };
+    const { data, error } = await supabase.from('operators').update(updateData).eq('id', id).select().single();
+    if (error) {
+        console.error(`Error verifying operator ${id}:`, error);
+        throw new Error(error.message);
+    }
+    return data as Operator;
+}
+
+
 export async function getOperatorById(id: string): Promise<Operator | null> {
     const supabase = createAdminClient();
     const { data, error = null } = await supabase
@@ -1357,13 +1438,13 @@ export async function updateOperator(id: string, formData: FormData): Promise<Op
     
     const updateData: Partial<Operator> = {
         name: formData.get('name') as string,
-        code: formData.get('code') as string,
-        contact_person: formData.get('contact_person') as string,
-        email: formData.get('email') as string,
-        phone: formData.get('phone') as string,
-        address: formData.get('address') as string,
-        description: formData.get('description') as string,
-        referral_code: formData.get('referral_code') as string,
+        code: (formData.get('code') as string) || null,
+        contact_person: (formData.get('contact_person') as string) || null,
+        email: (formData.get('email') as string) || null,
+        phone: (formData.get('phone') as string) || null,
+        address: (formData.get('address') as string) || null,
+        description: (formData.get('description') as string) || null,
+        referral_code: (formData.get('referral_code') as string) || null,
         is_verified: formData.get('is_verified') === 'true',
         is_active: formData.get('is_active') === 'true',
         logo_url: logoUrl,

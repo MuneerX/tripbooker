@@ -90,4 +90,38 @@
   .CodeMirror-fullscreen {
     z-index: 1500 !important;
   }
+
+  /* EasyMDE Dark Mode Support */
+  .dark .editor-toolbar {
+    background-color: hsl(var(--card));
+    border-color: hsl(var(--border));
+    opacity: 1;
+  }
+  .dark .editor-toolbar > * {
+    color: hsl(var(--foreground));
+  }
+  .dark .editor-toolbar a, .dark .editor-toolbar button {
+    color: hsl(var(--foreground)) !important;
+  }
+  .dark .editor-toolbar a.active, .dark .editor-toolbar a:hover,
+  .dark .editor-toolbar button.active, .dark .editor-toolbar button:hover {
+    background-color: hsl(var(--accent));
+    border-color: hsl(var(--border));
+    color: hsl(var(--accent-foreground)) !important;
+  }
+  .dark .editor-toolbar button.active i, .dark .editor-toolbar button:hover i {
+    color: hsl(var(--accent-foreground)) !important;
+  }
+  .dark .CodeMirror {
+    background-color: hsl(var(--card));
+    color: hsl(var(--foreground));
+    border-color: hsl(var(--border));
+  }
+  .dark .editor-preview {
+    background-color: hsl(var(--card));
+    color: hsl(var(--foreground));
+  }
+  .dark .editor-statusbar {
+    color: hsl(var(--muted-foreground));
+  }
 }

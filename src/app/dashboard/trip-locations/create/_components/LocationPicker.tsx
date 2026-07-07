@@ -11,9 +11,7 @@ import { Command, CommandGroup, CommandItem, CommandList } from '@/components/ui
 import { useDebounce } from '@/hooks/use-debounce';
 import type { TripLocation } from '@/lib/types';
 import { MapPin } from 'lucide-react';
-
-
-const LOCATIONIQ_API_KEY = "pk.a8d62ce33fb7db732bdcd81162108c18";
+import { searchGeocode, reverseGeocode } from '@/app/actions/geocode';
 
 // Fix for default icon path in webpack environments
 delete (L.Icon.Default.prototype as any)._getIconUrl;
@@ -36,6 +34,8 @@ type LocationIQResult = {
     neighbourhood?: string;
     suburb?: string;
     city?: string;
+    town?: string;
+    village?: string;
     county?: string;
     state_district?: string;
     state?: string;
@@ -83,6 +83,11 @@ export function LocationPicker({ initialPosition }: LocationPickerProps) {
       map.on('click', (e) => {
         handleLocationChange(e.latlng.lat, e.latlng.lng);
       });
+
+      // Fix map sometimes not loading completely
+      setTimeout(() => {
+        map.invalidateSize();
+      }, 100);
     }
 
     // Cleanup function to remove the map
@@ -108,19 +113,18 @@ export function LocationPicker({ initialPosition }: LocationPickerProps) {
     if (debouncedSearch.length > 2) {
       const fetchSuggestions = async () => {
         try {
-          const response = await fetch(
-            `https://api.locationiq.com/v1/autocomplete.php?key=${LOCATIONIQ_API_KEY}&q=${debouncedSearch}&format=json&addressdetails=1`
-          );
-          if (response.ok) {
-            const data: LocationIQResult[] = await response.json();
+          const data = await searchGeocode(debouncedSearch);
+          if (data && data.length > 0) {
             setSuggestions(data);
-            if(data.length > 0) setIsPopoverOpen(true);
+            setIsPopoverOpen(true);
           } else {
             setSuggestions([]);
+            setIsPopoverOpen(false);
           }
         } catch (error) {
-          console.error("Error fetching location suggestions:", error);
+          console.error("Geocoding search error:", error);
           setSuggestions([]);
+          setIsPopoverOpen(false);
         }
       };
       fetchSuggestions();
@@ -131,51 +135,43 @@ export function LocationPicker({ initialPosition }: LocationPickerProps) {
   }, [debouncedSearch]);
   
   const updateFormFields = useCallback((lat: number, lon: number, location: Partial<LocationIQResult>) => {
-    setValue('latitude', lat);
-    setValue('longitude', lon);
+    setValue('latitude', lat, { shouldValidate: true });
+    setValue('longitude', lon, { shouldValidate: true });
 
-    if (location.display_name) {
-      setValue('address', location.display_name);
-    }
+    setValue('address', location.display_name || '', { shouldValidate: true });
     
-    const locationName = location.name || getValues('name') || '';
-    const cityName = location.address?.city;
+    const cityName = location.address?.city || location.address?.town || location.address?.village || '';
+    setValue('city', cityName, { shouldValidate: true });
+    
+    setValue('state', location.address?.state || '', { shouldValidate: true });
+    setValue('country', location.address?.country || '', { shouldValidate: true });
+    
+    const district = location.address?.state_district || location.address?.county || '';
+    setValue('district', district, { shouldValidate: true });
 
-    if (cityName) {
-      setValue('city', cityName);
-    }
-    if (location.address?.state) {
-      setValue('state', location.address.state);
-    }
-    if (location.address?.country) {
-      setValue('country', location.address.country);
-    }
-    const district = location.address?.state_district || location.address?.county;
-    if (district) {
-      setValue('district', district);
-    }
+    const locationName = location.name || getValues('name') || '';
 
     if(cityName && locationName) {
         const cityCode = cityName.substring(0, 3).toUpperCase();
         const nameCode = locationName.substring(0, 3).toUpperCase();
-        setValue('code', `${cityCode}-${nameCode}`);
+        setValue('code', `${cityCode}-${nameCode}`, { shouldValidate: true });
     } else if (cityName) {
-        setValue('code', `${cityName.substring(0, 3).toUpperCase()}-LOC`);
+        setValue('code', `${cityName.substring(0, 3).toUpperCase()}-LOC`, { shouldValidate: true });
+    } else {
+        setValue('code', '', { shouldValidate: true });
     }
-
-    ['latitude', 'longitude', 'address', 'city', 'state', 'country', 'district', 'code'].forEach(field => trigger(field as keyof TripLocation));
-
-  }, [setValue, trigger, getValues]);
+  }, [setValue, getValues]);
 
 
   const handleLocationChange = useCallback(async (lat: number, lon: number) => {
     setPosition([lat, lon]);
     try {
-        const response = await fetch(`https://us1.locationiq.com/v1/reverse.php?key=${LOCATIONIQ_API_KEY}&lat=${lat}&lon=${lon}&format=json&addressdetails=1`);
-        if (response.ok) {
-            const data: LocationIQResult = await response.json();
+        const { success, data } = await reverseGeocode(lat, lon);
+        if (success && data) {
             updateFormFields(lat, lon, data);
             if (data.display_name) setSearchQuery(data.display_name);
+        } else {
+            updateFormFields(lat, lon, {});
         }
     } catch (error) {
         console.error('Reverse geocoding error:', error);
@@ -188,10 +184,8 @@ export function LocationPicker({ initialPosition }: LocationPickerProps) {
     const lat = parseFloat(suggestion.lat);
     const lon = parseFloat(suggestion.lon);
     
-    if(!getValues('name')) {
-        const name = suggestion.display_name.split(',')[0];
-        setValue('name', name);
-    }
+    const name = suggestion.name || suggestion.display_name.split(',')[0];
+    setValue('name', name, { shouldValidate: true });
 
     setPosition([lat, lon]);
 
@@ -248,7 +242,7 @@ export function LocationPicker({ initialPosition }: LocationPickerProps) {
             </Popover>
         </div>
 
-        <div ref={mapRef} className="h-80 w-full rounded-md overflow-hidden border relative z-0"></div>
+        <div ref={mapRef} style={{ height: "400px", width: "100%" }} className="rounded-md overflow-hidden border relative z-0"></div>
         <div className="grid grid-cols-2 gap-4">
              <div className="grid gap-2">
                 <label className="text-sm font-medium">Latitude</label>

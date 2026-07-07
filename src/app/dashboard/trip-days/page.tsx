@@ -54,7 +54,7 @@ export default function TripDaysPage() {
       const processedDays = days.map(day => ({
         ...day,
         activityCount: day.activities?.length || 0,
-        totalCost: day.activities?.reduce((sum, act) => sum + (Number(act.additional_cost) || 0), 0) || 0
+        totalCost: day.activities?.reduce((sum: number, act: { additional_cost: number | null }) => sum + (Number(act.additional_cost) || 0), 0) || 0
       })) as TripDayWithPackageAndActivities[];
       setAllTripDays(processedDays);
       setLoading(false);

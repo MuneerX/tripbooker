@@ -29,7 +29,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useRouter } from "next/navigation";
 import { format } from 'date-fns';
 
-type SortableKeys = 'name' | 'status';
+type SortableKeys = 'name' | 'status' | 'is_verified';
 
 export default function OperatorsPage() {
   const { toast } = useToast();
@@ -85,8 +85,8 @@ export default function OperatorsPage() {
     }
 
     const headers = [
-        "Agent Name", "Agent Code", "Referral Code", "Contact Person", 
-        "Email", "Phone", "Status", "Verified", "Joined Date", "Address"
+        "Agent Name", "Verified", "Referral Code", "Contact Person", 
+        "Email", "Phone", "Status", "Joined Date", "Address"
     ];
 
     const csvRows = [headers.join(",")];
@@ -94,13 +94,12 @@ export default function OperatorsPage() {
     allOperators.forEach(op => {
         const row = [
             `"${op.name?.replace(/"/g, '""') || 'N/A'}"`,
-            `"${op.code || 'N/A'}"`,
+            op.is_verified ? "Yes" : "No",
             `"${op.referral_code || 'N/A'}"`,
             `"${op.contact_person?.replace(/"/g, '""') || 'N/A'}"`,
             `"${op.email || 'N/A'}"`,
             `"${op.phone || 'N/A'}"`,
             `"${op.status}"`,
-            op.is_verified ? "Yes" : "No",
             `"${op.created_at ? format(new Date(op.created_at), "yyyy-MM-dd") : 'N/A'}"`,
             `"${op.address?.replace(/"/g, '""') || 'N/A'}"`,
         ];
@@ -172,7 +171,6 @@ export default function OperatorsPage() {
     return (
       operator.name?.toLowerCase().includes(term) ||
       operator.email?.toLowerCase().includes(term) ||
-      operator.code?.toLowerCase().includes(term) ||
       operator.phone?.toLowerCase().includes(term) ||
       operator.referral_code?.toLowerCase().includes(term)
     );
@@ -318,7 +316,12 @@ export default function OperatorsPage() {
                     </CardHeader>
                     <CardContent className="p-4 pt-0 text-sm flex items-center justify-between">
                          <div className="text-muted-foreground">Ref: <span className="font-medium text-foreground font-mono text-xs">{operator.referral_code || 'N/A'}</span></div>
-                        <Badge variant="outline" className={cn("capitalize", getStatusBadgeColor(operator.status === 'active' ? 'active' : 'inactive'))}>{operator.status}</Badge>
+                        <div className="flex items-center gap-2">
+                            {operator.is_verified && (
+                                <Badge variant="outline" className="capitalize border-emerald-500 text-emerald-600 bg-emerald-50">✓ Verified</Badge>
+                            )}
+                            <Badge variant="outline" className={cn("capitalize", getStatusBadgeColor(operator.status === 'active' ? 'active' : 'inactive'))}>{operator.status}</Badge>
+                        </div>
                     </CardContent>
                 </Card>
               ))
@@ -337,8 +340,8 @@ export default function OperatorsPage() {
                 <TableHead>
                   Referral Code
                 </TableHead>
-                <TableHead>
-                  Agent Code
+                <TableHead className="cursor-pointer hover:bg-muted" onClick={() => handleSort('is_verified')}>
+                  <div className="flex items-center">Verified {renderSortArrow('is_verified')}</div>
                 </TableHead>
                 <TableHead className="hidden md:table-cell">
                   Email
@@ -374,7 +377,13 @@ export default function OperatorsPage() {
                       </div>
                     </TableCell>
                     <TableCell className="font-mono">{operator.referral_code || 'N/A'}</TableCell>
-                    <TableCell>{operator.code || 'N/A'}</TableCell>
+                    <TableCell>
+                      {operator.is_verified ? (
+                        <Badge variant="outline" className="capitalize border-emerald-500 text-emerald-600 bg-emerald-50">✓ Verified</Badge>
+                      ) : (
+                        <Badge variant="outline" className="capitalize text-muted-foreground">Unverified</Badge>
+                      )}
+                    </TableCell>
                     <TableCell className="hidden md:table-cell">{operator.email || 'N/A'}</TableCell>
                     <TableCell className="hidden lg:table-cell">{operator.phone || 'N/A'}</TableCell>
                     <TableCell>

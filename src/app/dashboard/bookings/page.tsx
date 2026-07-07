@@ -24,7 +24,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { getBookings, getOperators } from "@/lib/supabase/queries";
+import { getBookings, getOperators, deleteBooking } from "@/lib/supabase/queries";
 import { useToast } from "@/hooks/use-toast";
 
 type SortableKeys = 'tour_package.name' | 'booking_date' | 'total_amount' | 'booking_status';
@@ -58,9 +58,7 @@ export default function BookingsPage() {
     fetchInitialData();
   }, []);
   
-  React.useEffect(() => {
-    setCurrentPage(1);
-  }, [searchTerm, sortConfig, startDate, endDate]);
+
 
   React.useEffect(() => {
     if (itemToDelete) {
@@ -83,7 +81,11 @@ export default function BookingsPage() {
         return;
     }
 
-    const agentMap = new Map(allOperators.map(op => [op.referral_code, op.name]).filter(([code]) => code));
+    const agentMap = new Map<string, string>(
+        allOperators
+            .filter(op => op.referral_code != null)
+            .map(op => [op.referral_code as string, op.name] as [string, string])
+    );
 
     const headers = [
         "Order ID", "Tour Name", "Reservation Date", "Travel Date", 
@@ -137,15 +139,22 @@ export default function BookingsPage() {
   const handleDelete = async () => {
     if (!itemToDelete) return;
     
-    // In a real app, you would call a delete function here
-    // For now, we will just filter it out from the state
-    
-    toast({
-      title: "Success",
-      description: `Booking "${itemToDelete.order_id}" has been notionally deleted.`,
-    });
-    setAllBookings(prev => prev.filter(b => b.id !== itemToDelete.id));
-    setItemToDelete(null);
+    try {
+        await deleteBooking(itemToDelete.id);
+        toast({
+          title: "Success",
+          description: `Booking "${itemToDelete.order_id}" has been deleted.`,
+        });
+        setAllBookings(prev => prev.filter(b => b.id !== itemToDelete.id));
+    } catch (error: any) {
+        toast({
+          variant: "destructive",
+          title: "Error deleting booking",
+          description: error.message,
+        });
+    } finally {
+        setItemToDelete(null);
+    }
   };
 
 
@@ -176,6 +185,7 @@ export default function BookingsPage() {
       direction = 'desc';
     }
     setSortConfig({ key, direction });
+    setCurrentPage(1);
   };
   
   const renderSortArrow = (key: SortableKeys) => {
@@ -251,7 +261,7 @@ export default function BookingsPage() {
                         type="date"
                         placeholder="From"
                         value={startDate}
-                        onChange={(e) => setStartDate(e.target.value)}
+                        onChange={(e) => { setStartDate(e.target.value); setCurrentPage(1); }}
                         className="w-full"
                     />
                     <span className="text-muted-foreground">-</span>
@@ -259,7 +269,7 @@ export default function BookingsPage() {
                         type="date"
                         placeholder="To"
                         value={endDate}
-                        onChange={(e) => setEndDate(e.target.value)}
+                        onChange={(e) => { setEndDate(e.target.value); setCurrentPage(1); }}
                         min={startDate}
                         className="w-full"
                     />
@@ -267,7 +277,7 @@ export default function BookingsPage() {
               <Input
                 placeholder="Search by ID or Tour..."
                 value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
+                onChange={(e) => { setSearchTerm(e.target.value); setCurrentPage(1); }}
                 className="w-full sm:w-auto"
               />
               <Button onClick={handleExport} className="w-full sm:w-auto">

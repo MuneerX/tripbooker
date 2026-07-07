@@ -151,7 +151,7 @@ export default function CustomerDetailPage() {
                             <div className="flex items-center gap-2 col-span-2">
                                 <User className="h-5 w-5 text-muted-foreground" />
                                 <div>
-                                    <p className="font-medium text-muted-foreground">KV Customer</p>
+                                    <p className="font-medium text-muted-foreground">Kerala Vision Customer</p>
                                     <p>{profile.is_kv_customer ? 'Yes' : 'No'}</p>
                                 </div>
                             </div>

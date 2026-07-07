@@ -70,7 +70,10 @@ export function ActivityFormModal({ children, activity, onSave }: ActivityFormMo
     
     const activityForm = useForm<ActivityFormValues>({
         resolver: zodResolver(activitySchema),
-        defaultValues: activity || defaultActivityValues,
+        defaultValues: activity ? {
+            ...activity,
+            activity_type: (activity.activity_type ?? undefined) as 'food' | 'explore' | 'stay' | 'activity' | undefined,
+        } : defaultActivityValues,
     });
     
     const activityType = activityForm.watch("activity_type");
@@ -95,12 +98,12 @@ export function ActivityFormModal({ children, activity, onSave }: ActivityFormMo
             activityForm.reset(activity ? {
               ...activity,
               activity_time: activity.activity_time || "00:00:00",
+              activity_type: (activity.activity_type ?? undefined) as 'food' | 'explore' | 'stay' | 'activity' | undefined,
             } : defaultActivityValues);
         }
     }, [isOpen, activity, activityForm]);
 
     const handleSave = (data: ActivityFormValues) => {
-        console.log('Saving activity data:', data);
         onSave(data);
         setIsOpen(false);
     }

@@ -62,6 +62,15 @@ const navItems: NavItem[] = [
     subItems: [],
   },
   {
+    title: 'Trip Locations',
+    href: '/dashboard/trip-locations',
+    icon: MapPin,
+    subItems: [
+      { title: 'All Locations', href: '/dashboard/trip-locations', icon: MapPin },
+      { title: 'Create New', href: '/dashboard/trip-locations/create', icon: PlusCircle },
+    ],
+  },
+  {
     title: 'Tour Packages',
     href: '/dashboard/tour-packages',
     icon: Package,
@@ -77,15 +86,6 @@ const navItems: NavItem[] = [
     subItems: [
       { title: 'All Trip Days', href: '/dashboard/trip-days', icon: CalendarDays },
       { title: 'Create New', href: '/dashboard/trip-days/create', icon: PlusCircle },
-    ],
-  },
-  {
-    title: 'Trip Locations',
-    href: '/dashboard/trip-locations',
-    icon: MapPin,
-    subItems: [
-      { title: 'All Locations', href: '/dashboard/trip-locations', icon: MapPin },
-      { title: 'Create New', href: '/dashboard/trip-locations/create', icon: PlusCircle },
     ],
   },
   {
