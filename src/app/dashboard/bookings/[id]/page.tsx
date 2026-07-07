@@ -535,10 +535,10 @@ export default function BookingDetailPage() {
                             <Card>
                                 <CardHeader><CardTitle>Customer Details</CardTitle></CardHeader>
                                 <CardContent className="grid grid-cols-2 gap-x-6 gap-y-4">
-                                    <div className="flex items-start gap-3"><User className="h-5 w-5 text-muted-foreground mt-1" /><div><p className="text-sm text-muted-foreground">Customer Name</p><p className="font-medium">{booking.customer.full_name}</p></div></div>
-                                    <div className="flex items-start gap-3"><MapPinIcon className="h-5 w-5 text-muted-foreground mt-1" /><div><p className="text-sm text-muted-foreground">City</p><p className="font-medium">{booking.customer.city || 'N/A'}</p></div></div>
-                                    <div className="flex items-start gap-3"><Phone className="h-5 w-5 text-muted-foreground mt-1" /><div><p className="text-sm text-muted-foreground">Contact Number</p><p className="font-medium">{booking.customer.phone_number || 'N/A'}</p></div></div>
-                                    <div className="flex items-start gap-3"><Hash className="h-5 w-5 text-muted-foreground mt-1" /><div><p className="text-sm text-muted-foreground">Pincode</p><p className="font-medium">{booking.customer.pincode || 'N/A'}</p></div></div>
+                                    <div className="flex items-start gap-3"><User className="h-5 w-5 text-muted-foreground mt-1" /><div><p className="text-sm text-muted-foreground">Customer Name</p><p className="font-medium">{booking.customer?.full_name || 'N/A'}</p></div></div>
+                                    <div className="flex items-start gap-3"><MapPinIcon className="h-5 w-5 text-muted-foreground mt-1" /><div><p className="text-sm text-muted-foreground">City</p><p className="font-medium">{booking.customer?.city || 'N/A'}</p></div></div>
+                                    <div className="flex items-start gap-3"><Phone className="h-5 w-5 text-muted-foreground mt-1" /><div><p className="text-sm text-muted-foreground">Contact Number</p><p className="font-medium">{booking.customer?.phone_number || 'N/A'}</p></div></div>
+                                    <div className="flex items-start gap-3"><Hash className="h-5 w-5 text-muted-foreground mt-1" /><div><p className="text-sm text-muted-foreground">Pincode</p><p className="font-medium">{booking.customer?.pincode || 'N/A'}</p></div></div>
                                 </CardContent>
                             </Card>
                              {agent && commission !== null && (

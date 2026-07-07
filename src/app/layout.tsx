@@ -4,10 +4,10 @@ import { Toaster } from "@/components/ui/toaster";
 import { ThemeProvider } from '@/components/theme-provider';
 
 export const metadata: Metadata = {
-  title: 'Yes To Go Admin',
-  description: 'Admin Dashboard for Yes To Go',
+  title: 'Trip Booking Admin',
+  description: 'Admin Dashboard for Trip Booking',
   icons: {
-    icon: '/favicon.ico',
+    icon: '/branding/favicon2.png',
   },
 };
 

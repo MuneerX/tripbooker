@@ -1,6 +1,6 @@
-# Yes To Go Admin Dashboard
+# Trip Booking Admin Dashboard
 
-This is the administrative dashboard for the Yes To Go travel platform, built with Next.js, Supabase, and Tailwind CSS.
+This is the administrative dashboard for the Trip Booking travel platform, built with Next.js, Supabase, and Tailwind CSS.
 
 ## Features
 

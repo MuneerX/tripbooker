@@ -162,19 +162,17 @@ export function AppSidebar() {
     router.push(logoutNav.href);
   };
   
-  const logoUrl = theme === 'dark' 
-    ? "https://i.ibb.co/7xpjJbKh/logoy2go-white.png" 
-    : "https://i.ibb.co/VpQvKQ2X/logoy2go.png";
+  const logoUrl = "/branding/logo2.png";
 
   const matrimoreLogoUrl = theme === 'dark'
-    ? "https://i.ibb.co/V0Cmj4jw/matrimore.png"
-    : "https://i.ibb.co/PvP7hVCn/photo-2026-02-08-19-05-02-Edited.png";
+    ? "/branding/logo.png"
+    : "/branding/logo.png";
 
   return (
       <Sidebar>
-        <SidebarHeader>
-          <Link href="/dashboard" className="flex items-center justify-center gap-2 py-2">
-            {mounted && <Image src={logoUrl} alt="Yes To Go Logo" width={120} height={32} />}
+        <SidebarHeader className="p-1 pb-0">
+          <Link href="/dashboard" className="flex items-center justify-center gap-2 pt-0.5 pb-0">
+            {mounted && <Image src={logoUrl} alt="Trip Booking Logo" width={120} height={32} />}
           </Link>
         </SidebarHeader>
         <SidebarContent className="p-2 overflow-y-auto">

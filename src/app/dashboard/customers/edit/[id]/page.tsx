@@ -23,7 +23,7 @@ const profileSchema = z.object({
   full_name: z.string().min(1, "Full name is required"),
   email: z.string().email("Invalid email address"),
   phone_number: z.string().min(1, "Phone number is required"),
-  whatsapp_number: z.string().min(1, "WhatsApp number is required"),
+  whatsapp_number: z.string().optional().nullable().or(z.literal("")),
   dob: z.date({ invalid_type_error: "Invalid date" }).optional().nullable(),
   gender: z.enum(["male", "female", "other"]).optional().nullable(),
   address: z.string().min(1, "Address is required"),

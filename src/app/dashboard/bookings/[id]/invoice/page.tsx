@@ -22,9 +22,7 @@ const InvoiceDetail = ({ booking }: { booking: Booking }) => {
 
     if (!booking || !booking.tour_package) return null;
 
-    const logoUrl = theme === 'dark' 
-    ? "https://i.ibb.co/7xpjJbKh/logoy2go-white.png" 
-    : "https://i.ibb.co/VpQvKQ2X/logoy2go.png";
+    const logoUrl = "/branding/logo2.png";
 
     const customer = booking.customer;
     const tourPackage = booking.tour_package;
@@ -40,7 +38,7 @@ const InvoiceDetail = ({ booking }: { booking: Booking }) => {
         <div className="max-w-4xl mx-auto p-8 bg-background text-foreground rounded-lg shadow-lg my-12 print:shadow-none print:my-0 print:bg-white print:text-black">
             <header className="flex justify-between items-start mb-8">
                 <div>
-                     {mounted && <Image src={logoUrl} alt="Yes To Go Logo" width={120} height={32} />}
+                     {mounted && <Image src={logoUrl} alt="Trip Booking Logo" width={120} height={32} />}
                      <p className="text-muted-foreground text-sm mt-2">
                         Invoice / Bill of Supply
                      </p>
@@ -142,7 +140,7 @@ const InvoiceDetail = ({ booking }: { booking: Booking }) => {
 
 
             <footer className="mt-12 text-center text-muted-foreground text-sm print:break-before-page">
-                <p>Thank you for booking with Yes To Go!</p>
+                <p>Thank you for booking with Trip Booking!</p>
                 <p>This is a computer-generated invoice and does not require a signature.</p>
             </footer>
         </div>

@@ -44,9 +44,7 @@ export default function LoginPage() {
     setMounted(true);
   }, []);
 
-  const logoUrl = theme === 'dark' 
-    ? "https://i.ibb.co/7xpjJbKh/logoy2go-white.png" 
-    : "https://i.ibb.co/VpQvKQ2X/logoy2go.png";
+  const logoUrl = "/branding/logo2.png";
 
   const form = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
@@ -84,12 +82,12 @@ export default function LoginPage() {
     <div className="w-full lg:grid lg:min-h-screen lg:grid-cols-2">
       <div className="relative flex items-center justify-center p-6 lg:p-12">
         <div className="absolute top-6 left-6 hidden lg:block">
-            {mounted && <Image src={logoUrl} alt="Yes To Go Logo" width={120} height={32} />}
+            {mounted && <Image src={logoUrl} alt="Trip Booking Logo" width={120} height={32} />}
         </div>
         <div className="mx-auto grid w-full max-w-[350px] gap-6">
           <div className="grid gap-4 text-center">
              <div className="flex justify-center lg:hidden">
-                {mounted && <Image src={logoUrl} alt="Yes To Go Logo" width={120} height={32} />}
+                {mounted && <Image src={logoUrl} alt="Trip Booking Logo" width={120} height={32} />}
             </div>
             <h1 className="text-2xl font-bold">Welcome Back!</h1>
             <p className="text-muted-foreground">
@@ -147,20 +145,20 @@ export default function LoginPage() {
               </DialogTrigger>
               <DialogContent>
                 <DialogHeader>
-                  <DialogTitle>Yes To Go Terms of Service</DialogTitle>
+                  <DialogTitle>Trip Booking Terms of Service</DialogTitle>
                   <DialogDescription>
-                    These terms and conditions outline the rules and regulations for the use of Yes To Go's Admin Dashboard.
+                    These terms and conditions outline the rules and regulations for the use of Trip Booking's Admin Dashboard.
                   </DialogDescription>
                 </DialogHeader>
                 <div className="space-y-4 text-sm text-muted-foreground max-h-[60vh] overflow-y-auto pr-4">
-                    <p>Welcome to Yes To Go! By accessing this dashboard, we assume you accept these terms and conditions. Do not continue to use Yes To Go if you do not agree to all of the terms and conditions stated on this page.</p>
+                    <p>Welcome to Trip Booking! By accessing this dashboard, we assume you accept these terms and conditions. Do not continue to use Trip Booking if you do not agree to all of the terms and conditions stated on this page.</p>
                     <h3 className="font-semibold text-foreground">1. License to Use Dashboard</h3>
-                    <p>Unless otherwise stated, Yes To Go and/or its licensors own the intellectual property rights for all material on Yes To Go. You may access this from Yes To Go for your own personal and business use subjected to restrictions set in these terms and conditions.</p>
-                    <p>You must not: Republish material from Yes To Go, sell, rent or sub-license material from Yes To Go, or reproduce, duplicate or copy material from Yes To Go.</p>
+                    <p>Unless otherwise stated, Trip Booking and/or its licensors own the intellectual property rights for all material on Trip Booking. You may access this from Trip Booking for your own personal and business use subjected to restrictions set in these terms and conditions.</p>
+                    <p>You must not: Republish material from Trip Booking, sell, rent or sub-license material from Trip Booking, or reproduce, duplicate or copy material from Trip Booking.</p>
                     <h3 className="font-semibold text-foreground">2. User Accounts</h3>
                     <p>You are responsible for maintaining the security of your account, and you are fully responsible for all activities that occur under the account and any other actions taken in connection with it. You must immediately notify us of any unauthorized uses of your account or any other breaches of security.</p>
                     <h3 className="font-semibold text-foreground">3. Disclaimer</h3>
-                    <p>The materials on Yes To Go's dashboard are provided on an 'as is' basis. Yes To Go makes no warranties, expressed or implied, and hereby disclaims and negates all other warranties including, without limitation, implied warranties or conditions of merchantability, fitness for a particular purpose, or non-infringement of intellectual property or other violation of rights.</p>
+                    <p>The materials on Trip Booking's dashboard are provided on an 'as is' basis. Trip Booking makes no warranties, expressed or implied, and hereby disclaims and negates all other warranties including, without limitation, implied warranties or conditions of merchantability, fitness for a particular purpose, or non-infringement of intellectual property or other violation of rights.</p>
                 </div>
               </DialogContent>
             </Dialog>
@@ -171,9 +169,9 @@ export default function LoginPage() {
               </DialogTrigger>
               <DialogContent>
                 <DialogHeader>
-                  <DialogTitle>Yes To Go Privacy Policy</DialogTitle>
+                  <DialogTitle>Trip Booking Privacy Policy</DialogTitle>
                   <DialogDescription>
-                    This Privacy Policy describes how your personal information is collected, used, and shared when you use the Yes To Go Admin Dashboard.
+                    This Privacy Policy describes how your personal information is collected, used, and shared when you use the Trip Booking Admin Dashboard.
                   </DialogDescription>
                 </DialogHeader>
                 <div className="space-y-4 text-sm text-muted-foreground max-h-[60vh] overflow-y-auto pr-4">
@@ -196,7 +194,7 @@ export default function LoginPage() {
       </div>
       <div className="hidden bg-muted lg:block">
         <Image
-          src="https://i.ibb.co/Y6b5J0Z/Gemini-Generated-Image-e79d8je79d8je79d-2.png"
+          src="/branding/cover.jpg"
           alt="Image"
           width="1920"
           height="1080"
